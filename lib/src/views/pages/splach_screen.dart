@@ -53,12 +53,14 @@ class _SplachScreenState extends State<SplachScreen>
     );
     Size size = MediaQuery.of(context).size;
     return Scaffold(
-      body: Column(
-        children: [
-          logoImageBuilder(size),
-          SizedBox(height: size.height * .12),
-          loadingSplach(),
-        ],
+      body: SingleChildScrollView(
+        child: Column(
+          children: [
+            logoImageBuilder(size),
+            SizedBox(height: size.height * .12),
+            loadingSplach(),
+          ],
+        ),
       ),
     );
   }

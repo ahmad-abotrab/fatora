@@ -28,13 +28,13 @@ environment:
 # versions available, run `flutter pub outdated`.
 dependencies:
   cupertino_icons: null
-  flutter_localizations: # Add this line
-    sdk: flutter
   flutter:
+    sdk: flutter
+  flutter_localizations:
     sdk: flutter
   flutter_spinkit: null
   font_awesome_flutter: null
-  get: null
+  get:
 
 dev_dependencies:
   flutter_lints: ^1.0.0
