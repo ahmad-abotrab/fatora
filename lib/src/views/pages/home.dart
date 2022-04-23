@@ -1,11 +1,9 @@
 import 'package:fatora/src/Constant/color_app.dart';
-import 'package:fatora/src/views/widgets/catch_page.dart';
-import 'package:fatora/src/views/widgets/payment_page.dart';
 import 'package:flutter/gestures.dart';
 import 'package:flutter/material.dart';
-import 'package:get/get.dart';
-
-import '../../logic/data_invoice.dart';
+import '../widgets/drawer.dart';
+import 'catch_page.dart';
+import 'payment_page.dart';
 
 class HomePage extends StatefulWidget {
   const HomePage({Key? key}) : super(key: key);
@@ -20,6 +18,8 @@ class _HomePageState extends State<HomePage>
   TabController? tabController;
   bool? isSelected;
   Color? selectedTabColor;
+  final GlobalKey<RefreshIndicatorState> refreshIndicatorKey =
+      GlobalKey<RefreshIndicatorState>();
 
   @override
   void initState() {
@@ -58,8 +58,10 @@ class _HomePageState extends State<HomePage>
     return DefaultTabController(
       length: 2,
       child: Scaffold(
+        extendBodyBehindAppBar: true,
         backgroundColor: Theme.of(context).backgroundColor,
         appBar: appBar(context),
+        drawer: const DrawerApp(),
         body: TabBarView(
           controller: tabController!,
           dragStartBehavior: DragStartBehavior.start,
@@ -84,6 +86,7 @@ class _HomePageState extends State<HomePage>
         "الصفحة الرئيسية",
         style: TextStyle(fontFamily: 'Forum'),
       ),
+      automaticallyImplyLeading: false,    
       actions: [
         IconButton(
           onPressed: () {},

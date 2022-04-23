@@ -1,5 +1,7 @@
 import 'package:flutter/material.dart';
+import '../widgets/abstrach_receipt.dart';
 
+// ignore: must_be_immutable
 class PaymentPage extends StatefulWidget {
   const PaymentPage({Key? key}) : super(key: key);
 
@@ -10,6 +12,6 @@ class PaymentPage extends StatefulWidget {
 class _PaymentPageState extends State<PaymentPage> {
   @override
   Widget build(BuildContext context) {
-    return Container();
+    return const AbstrachReceipt();
   }
 }

@@ -29,13 +29,12 @@ class Fatora extends StatelessWidget {
         // Locale('en', 'UK'), // English, United Kingdom  country code
         Locale('ar', 'SY'), // Arabic,  Syria           country code
       ],
-      
       theme: ThemeData(
         primaryColor: ColorApp.primaryColor,
         backgroundColor: ColorApp.backgroundColor,
         bottomAppBarColor: ColorApp.primaryColor,
       ),
-      color: ColorApp.helperColor,
+      color: ColorApp.primaryColor,
       debugShowCheckedModeBanner: false,
       initialRoute: URLPath.splachScreen,
       onGenerateRoute: appRoute!.generateRoute,

@@ -1,7 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:get/get.dart';
 
-class DataInvoice extends GetxController {
+class DataForCatch extends GetxController {
   TextEditingController? price;
 
   TextEditingController? whoIsPay;
@@ -14,8 +14,7 @@ class DataInvoice extends GetxController {
 
   @override
   void onInit() {
-    
-        price = TextEditingController();
+    price = TextEditingController();
     whoIsPay = TextEditingController();
     whoIsTake = TextEditingController();
     priceWithText = TextEditingController();
@@ -23,15 +22,11 @@ class DataInvoice extends GetxController {
     super.onInit();
   }
 
-  
-  
-  
   changeValueOfTabController(value) {
-  
     update();
   }
-  changeValueOfSelectedIndex(value) {
 
+  changeValueOfSelectedIndex(value) {
     update();
   }
 }
