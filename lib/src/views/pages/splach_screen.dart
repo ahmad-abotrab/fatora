@@ -15,10 +15,9 @@ class SplachScreen extends StatefulWidget {
 
 class _SplachScreenState extends State<SplachScreen>
     with SingleTickerProviderStateMixin {
-
   late AnimationController animationController;
   Duration duration = const Duration(milliseconds: 1200);
-  
+
   @override
   void initState() {
     super.initState();
@@ -48,7 +47,7 @@ class _SplachScreenState extends State<SplachScreen>
   @override
   Widget build(BuildContext context) {
     Timer(
-      const Duration(milliseconds: 2400),
+      const Duration(milliseconds: 1400),
       checkAvailableUser,
     );
     Size size = MediaQuery.of(context).size;

@@ -27,14 +27,16 @@ environment:
 # the latest version available on pub.dev. To see which dependencies have newer
 # versions available, run `flutter pub outdated`.
 dependencies:
-  cupertino_icons: null
+  cupertino_icons:
   flutter:
     sdk: flutter
   flutter_localizations:
     sdk: flutter
-  flutter_spinkit: null
-  font_awesome_flutter: null
+  flutter_spinkit:
+  flutter_typeahead: ^3.2.5
+  font_awesome_flutter:
   get:
+  pin_code_fields:
 
 dev_dependencies:
   flutter_lints: ^1.0.0
