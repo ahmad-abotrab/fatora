@@ -61,7 +61,6 @@ class _HomePageState extends State<HomePage>
         extendBodyBehindAppBar: true,
         backgroundColor: Theme.of(context).backgroundColor,
         appBar: appBar(context),
-        drawer: const DrawerApp(),
         body: TabBarView(
           controller: tabController!,
           dragStartBehavior: DragStartBehavior.start,
@@ -70,13 +69,22 @@ class _HomePageState extends State<HomePage>
             PaymentPage(),
           ],
         ),
+        drawer: const DrawerApp(),
         floatingActionButton: FloatingActionButton(
           backgroundColor: ColorApp.primaryColor,
-          onPressed: () {},
+          onPressed: onPressedFloatingButton,
           child: const Icon(Icons.done),
         ),
       ),
     );
+  }
+
+  onPressedFloatingButton(){
+    if (tabController!.index == 0){
+
+    }else{
+
+    }
   }
 
   AppBar appBar(BuildContext context) {
@@ -86,7 +94,7 @@ class _HomePageState extends State<HomePage>
         "الصفحة الرئيسية",
         style: TextStyle(fontFamily: 'Forum'),
       ),
-      automaticallyImplyLeading: false,    
+      // automaticallyImplyLeading: false,
       actions: [
         IconButton(
           onPressed: () {},
