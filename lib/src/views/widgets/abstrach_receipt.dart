@@ -17,8 +17,7 @@ class _AbstrachReceiptState extends State<AbstrachReceipt> {
     return SafeArea(
       child: SingleChildScrollView(
         child: Center(
-          child: Form(
-            child: GetBuilder<DataForCatch>(
+          child: GetBuilder<DataForCatch>(
               init: DataForCatch(),
               builder: (_) => Column(
                 children: [
@@ -26,6 +25,7 @@ class _AbstrachReceiptState extends State<AbstrachReceipt> {
                     height: MediaQuery.of(context).size.height * 0.03,
                   ),
                   FieldData(
+                    isNumber:false,
                     controller: fieldsTest.whoIsPay,
                     labelText: 'قبضت من السيد ...',
                     hintText: 'قبضت من السيد ...',
@@ -34,6 +34,7 @@ class _AbstrachReceiptState extends State<AbstrachReceipt> {
                     height: MediaQuery.of(context).size.height * 0.03,
                   ),
                   FieldData(
+                    isNumber:true,
                     controller: fieldsTest.price,
                     labelText: 'مبلغاً وقدره ...',
                     hintText: 'مبلغاً وقدره ...',
@@ -42,6 +43,7 @@ class _AbstrachReceiptState extends State<AbstrachReceipt> {
                     height: MediaQuery.of(context).size.height * 0.03,
                   ),
                   FieldData(
+                    isNumber:false,
                     controller: fieldsTest.causeOfPayment,
                     labelText: 'وذلك لقاء ...',
                     hintText: 'وذلك لقاء ...',
@@ -50,6 +52,7 @@ class _AbstrachReceiptState extends State<AbstrachReceipt> {
                     height: MediaQuery.of(context).size.height * 0.03,
                   ),
                   FieldData(
+                    isNumber:false,
                     controller: fieldsTest.whoIsTake,
                     labelText: 'اسم الذي قبض المال ...',
                     hintText: 'اسم الذي قبض المال ...',
@@ -59,7 +62,7 @@ class _AbstrachReceiptState extends State<AbstrachReceipt> {
             ),
           ),
         ),
-      ),
+
     );
   }
 }

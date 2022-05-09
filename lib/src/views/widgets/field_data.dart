@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:flutter/services.dart';
 
 class FieldData extends StatelessWidget {
   const FieldData({
@@ -6,11 +7,13 @@ class FieldData extends StatelessWidget {
     required this.controller,
     required this.labelText,
     required this.hintText,
+    required this.isNumber,
   }) : super(key: key);
 
   final TextEditingController? controller;
   final String? labelText;
   final String? hintText;
+  final bool isNumber;
 
   @override
   Widget build(BuildContext context) {
@@ -18,15 +21,19 @@ class FieldData extends StatelessWidget {
       padding: EdgeInsets.symmetric(
           horizontal: MediaQuery.of(context).size.width * 0.06),
       child: TextFormField(
+        validator: (value) {
+          if (value == null || value.isEmpty) {
+            return 'Please enter some text';
+          }
+          return null;
+        },
         controller: controller,
-        keyboardType: TextInputType.number,
+        keyboardType: isNumber ? TextInputType.number : TextInputType.text,
         decoration: InputDecoration(
           // prefixIcon: Icon(Icons.coins),
           labelText: labelText,
           hintText: hintText,
-          // helperText: 'المبلغ',
-          // isDense: true,
-          // isCollapsed: true,
+
           focusColor: Theme.of(context).primaryColor,
           fillColor: Theme.of(context).primaryColor,
           hoverColor: Theme.of(context).primaryColor,

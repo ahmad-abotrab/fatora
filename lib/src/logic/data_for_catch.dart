@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:get/get.dart';
 
 class DataForCatch extends GetxController {
+  int selectedTabIndex = 0;
   TextEditingController? price;
 
   TextEditingController? whoIsPay;
@@ -19,6 +20,7 @@ class DataForCatch extends GetxController {
     whoIsTake = TextEditingController();
     priceWithText = TextEditingController();
     causeOfPayment = TextEditingController();
+    selectedTabIndex = 0;
     super.onInit();
   }
 
@@ -27,6 +29,19 @@ class DataForCatch extends GetxController {
   }
 
   changeValueOfSelectedIndex(value) {
+    update();
+  }
+  changeSelectedTab(value){
+    selectedTabIndex = value;
+    update();
+  }
+
+  reinitialize() {
+    price = TextEditingController();
+    whoIsPay = TextEditingController();
+    whoIsTake = TextEditingController();
+    priceWithText = TextEditingController();
+    causeOfPayment = TextEditingController();
     update();
   }
 }

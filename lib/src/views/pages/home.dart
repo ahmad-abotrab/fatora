@@ -1,9 +1,16 @@
+import 'dart:io';
+
 import 'package:fatora/src/Constant/color_app.dart';
+import 'package:fatora/src/data/server/pdf_opened.dart';
 import 'package:flutter/gestures.dart';
 import 'package:flutter/material.dart';
+import '../../data/server/api_pdf.dart';
+import '../../logic/data_for_catch.dart';
+import '../../logic/form_validation-control.dart';
 import '../widgets/drawer.dart';
 import 'catch_page.dart';
 import 'payment_page.dart';
+import 'package:get/get.dart';
 
 class HomePage extends StatefulWidget {
   const HomePage({Key? key}) : super(key: key);
@@ -14,7 +21,8 @@ class HomePage extends StatefulWidget {
 
 class _HomePageState extends State<HomePage>
     with SingleTickerProviderStateMixin {
-  int selectedTabIndex = 0;
+  var changeSelectedTab = Get.put(DataForCatch(), permanent: true);
+  var controllerValidation = Get.put(FormValidationController(), permanent: true);
   TabController? tabController;
   bool? isSelected;
   Color? selectedTabColor;
@@ -26,9 +34,7 @@ class _HomePageState extends State<HomePage>
     tabController = TabController(length: 2, vsync: this, initialIndex: 0)
       ..addListener(
         () {
-          setState(() {
-            selectedTabIndex = tabController!.index;
-          });
+          changeSelectedTab.changeSelectedTab(tabController!.index);
         },
       );
     super.initState();
@@ -39,9 +45,7 @@ class _HomePageState extends State<HomePage>
     tabController = TabController(length: 2, vsync: this, initialIndex: 0)
       ..addListener(
         () {
-          setState(() {
-            selectedTabIndex = tabController!.index;
-          });
+          changeSelectedTab.changeSelectedTab(tabController!.index);
         },
       );
     super.didUpdateWidget(oldWidget);
@@ -61,15 +65,18 @@ class _HomePageState extends State<HomePage>
         extendBodyBehindAppBar: true,
         backgroundColor: Theme.of(context).backgroundColor,
         appBar: appBar(context),
-        body: TabBarView(
-          controller: tabController!,
-          dragStartBehavior: DragStartBehavior.start,
-          children: const [
-            CatchPage(),
-            PaymentPage(),
-          ],
-        ),
-        drawer: const DrawerApp(),
+        body: GetBuilder<DataForCatch>(
+            init: DataForCatch(),
+            builder: (controller) {
+              return TabBarView(
+                controller: tabController!,
+                dragStartBehavior: DragStartBehavior.start,
+                children: const [
+                  CatchPage(),
+                  PaymentPage(),
+                ],
+              );
+            }),
         floatingActionButton: FloatingActionButton(
           backgroundColor: ColorApp.primaryColor,
           onPressed: onPressedFloatingButton,
@@ -79,12 +86,35 @@ class _HomePageState extends State<HomePage>
     );
   }
 
-  onPressedFloatingButton(){
-    if (tabController!.index == 0){
+  onPressedFloatingButton() async{
+    String fileName = '';
+    List<String> data = [];
+    int id = 0;
 
-    }else{
-
+    String imageSignature = 'assets/images/signature.png';
+    if (tabController!.index == 0) {
+      fileName = 'catch{$id}.pdf';
+      if (controllerValidation.formStateCatch.currentState!.validate()) {
+        final pdfFile  = await abstractTaskInSubmissionProcess(fileName, data, imageSignature, id);
+        PDFOpened.openFile(pdfFile);
+      }
+    } else {
+      if (controllerValidation.formStatePayment.currentState!.validate()) {
+        fileName = 'payment{$id}.pdf';
+        final pdfFile  = await abstractTaskInSubmissionProcess(fileName, data, imageSignature, id);
+        PDFOpened.openFile(pdfFile);
+      }
     }
+
+  }
+
+  abstractTaskInSubmissionProcess(fileName, data, imageSignature, id) async{
+    data.add(changeSelectedTab.whoIsPay!.text);
+    data.add(changeSelectedTab.whoIsTake!.text);
+    data.add(changeSelectedTab.price!.text.toString());
+    data.add(changeSelectedTab.causeOfPayment!.text);
+
+    return await ApiPdf.generate(fileName, data, imageSignature, id);
   }
 
   AppBar appBar(BuildContext context) {
@@ -94,8 +124,16 @@ class _HomePageState extends State<HomePage>
         "الصفحة الرئيسية",
         style: TextStyle(fontFamily: 'Forum'),
       ),
-      // automaticallyImplyLeading: false,
+      leading: null,
       actions: [
+        IconButton(
+          // splashRadius: ,
+          onPressed: () {
+            changeSelectedTab.reinitialize();
+          },
+          icon: const Icon(Icons.cleaning_services_rounded),
+          tooltip: 'تهيئة',
+        ),
         IconButton(
           onPressed: () {},
           icon: const Icon(Icons.sync_outlined),
@@ -117,7 +155,7 @@ class _HomePageState extends State<HomePage>
         indicatorWeight: 2,
         labelColor: ColorApp.primaryColor,
         automaticIndicatorColorAdjustment: false,
-        tabs: buildTabs(selectedTabIndex, context),
+        tabs: buildTabs(changeSelectedTab.selectedTabIndex, context),
       ),
     );
   }
@@ -132,7 +170,9 @@ class _HomePageState extends State<HomePage>
           child: Text(
             'وصل قبض',
             style: TextStyle(
-              color: selectedTabIndex == 0 ? Colors.white : Colors.white54,
+              color: changeSelectedTab.selectedTabIndex == 0
+                  ? Colors.white
+                  : Colors.white54,
               fontFamily: 'Fourm',
               fontSize: 17,
             ),
@@ -148,7 +188,9 @@ class _HomePageState extends State<HomePage>
           child: Text(
             'وصل دفع',
             style: TextStyle(
-              color: selectedTabIndex == 1 ? Colors.white : Colors.white54,
+              color: changeSelectedTab.selectedTabIndex == 1
+                  ? Colors.white
+                  : Colors.white54,
               fontFamily: 'Fourm',
               fontSize: 17,
             ),
