@@ -1,5 +1,3 @@
-import 'dart:io';
-
 import 'package:fatora/src/Constant/color_app.dart';
 import 'package:fatora/src/data/server/pdf_opened.dart';
 import 'package:flutter/gestures.dart';
@@ -7,7 +5,6 @@ import 'package:flutter/material.dart';
 import '../../data/server/api_pdf.dart';
 import '../../logic/data_for_catch.dart';
 import '../../logic/form_validation-control.dart';
-import '../widgets/drawer.dart';
 import 'catch_page.dart';
 import 'payment_page.dart';
 import 'package:get/get.dart';

@@ -7,7 +7,7 @@ class DrawerApp extends StatelessWidget {
   Widget build(BuildContext context) {
     return Drawer(
       semanticLabel: "Hello",
-      // shape: ShapeBorder.lerp(a, b, t),
+
       child: ListView(
         // Important: Remove any padding from the ListView.
         padding: EdgeInsets.zero,

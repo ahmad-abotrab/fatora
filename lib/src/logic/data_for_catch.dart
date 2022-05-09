@@ -31,7 +31,8 @@ class DataForCatch extends GetxController {
   changeValueOfSelectedIndex(value) {
     update();
   }
-  changeSelectedTab(value){
+
+  changeSelectedTab(value) {
     selectedTabIndex = value;
     update();
   }

@@ -10,5 +10,4 @@ class FormValidationController extends GetxController{
     formStatePayment = GlobalKey<FormState>();
     super.onInit();
   }
-
 }

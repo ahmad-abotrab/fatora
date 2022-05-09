@@ -3,14 +3,14 @@ import 'package:get/get.dart';
 import '../../logic/data_for_catch.dart';
 import 'field_data.dart';
 
-class AbstrachReceipt extends StatefulWidget {
-  const AbstrachReceipt({Key? key}) : super(key: key);
+class AbstractReceipt extends StatefulWidget {
+  const AbstractReceipt({Key? key}) : super(key: key);
 
   @override
-  State<AbstrachReceipt> createState() => _AbstrachReceiptState();
+  State<AbstractReceipt> createState() => _AbstractReceiptState();
 }
 
-class _AbstrachReceiptState extends State<AbstrachReceipt> {
+class _AbstractReceiptState extends State<AbstractReceipt> {
   var fieldsTest = Get.put<DataForCatch>(DataForCatch(),permanent: true);
   @override
   Widget build(BuildContext context) {

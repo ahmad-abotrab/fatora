@@ -62,7 +62,7 @@ class ApiPdf {
                     border: Border.all(width: 2),
                     borderRadius: BorderRadius.circular(12),
                   ),
-                  child: Text(price, style: TextStyle(fontSize: 18)),
+                  child: Text(price, style: const TextStyle(fontSize: 18)),
                 ),
               ),
               Directionality(

@@ -2,7 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:get/get.dart';
 import '../../Constant/color_app.dart';
 import '../../logic/form_validation-control.dart';
-import '../widgets/abstrach_receipt.dart';
+import '../widgets/abstract_receipt.dart';
 
 // ignore: must_be_immutable
 class PaymentPage extends StatefulWidget {
@@ -23,7 +23,7 @@ class _PaymentPageState extends State<PaymentPage> {
         children: [
           Form(
             key: controllerValidation.formStatePayment,
-            child: const AbstrachReceipt(),
+            child: const AbstractReceipt(),
           ),
           Padding(
             padding: EdgeInsets.only(
