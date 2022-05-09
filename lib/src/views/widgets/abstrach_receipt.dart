@@ -11,6 +11,7 @@ class AbstrachReceipt extends StatefulWidget {
 }
 
 class _AbstrachReceiptState extends State<AbstrachReceipt> {
+  var fieldsTest = Get.put<DataForCatch>(DataForCatch(),permanent: true);
   @override
   Widget build(BuildContext context) {
     return SafeArea(
@@ -25,7 +26,7 @@ class _AbstrachReceiptState extends State<AbstrachReceipt> {
                     height: MediaQuery.of(context).size.height * 0.03,
                   ),
                   FieldData(
-                    controller: Get.find<DataForCatch>().whoIsPay,
+                    controller: fieldsTest.whoIsPay,
                     labelText: 'قبضت من السيد ...',
                     hintText: 'قبضت من السيد ...',
                   ),
@@ -33,7 +34,7 @@ class _AbstrachReceiptState extends State<AbstrachReceipt> {
                     height: MediaQuery.of(context).size.height * 0.03,
                   ),
                   FieldData(
-                    controller: Get.find<DataForCatch>().price,
+                    controller: fieldsTest.price,
                     labelText: 'مبلغاً وقدره ...',
                     hintText: 'مبلغاً وقدره ...',
                   ),
@@ -41,7 +42,7 @@ class _AbstrachReceiptState extends State<AbstrachReceipt> {
                     height: MediaQuery.of(context).size.height * 0.03,
                   ),
                   FieldData(
-                    controller: Get.find<DataForCatch>().causeOfPayment,
+                    controller: fieldsTest.causeOfPayment,
                     labelText: 'وذلك لقاء ...',
                     hintText: 'وذلك لقاء ...',
                   ),
@@ -49,7 +50,7 @@ class _AbstrachReceiptState extends State<AbstrachReceipt> {
                     height: MediaQuery.of(context).size.height * 0.03,
                   ),
                   FieldData(
-                    controller: Get.find<DataForCatch>().whoIsTake,
+                    controller: fieldsTest.whoIsTake,
                     labelText: 'اسم الذي قبض المال ...',
                     hintText: 'اسم الذي قبض المال ...',
                   ),

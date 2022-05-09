@@ -37,7 +37,10 @@ dependencies:
   font_awesome_flutter:
   get:
   pin_code_fields:
-  syncfusion_flutter_pdf:
+  pdf:
+  path_provider:
+  open_file:
+  intl:
 
 dev_dependencies:
   flutter_lints: ^1.0.0

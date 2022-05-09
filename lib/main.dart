@@ -1,8 +1,10 @@
 import 'package:fatora/app_route.dart';
 import 'package:fatora/src/Constant/color_app.dart';
 import 'package:fatora/src/Constant/url_path.dart';
+import 'package:fatora/src/views/pages/splash_screen.dart';
 import 'package:flutter/material.dart';
-import 'package:flutter_localizations/flutter_localizations.dart';
+import 'package:get/get.dart';
+import 'src/views/pages/home.dart';
 
 void main() {
   runApp(
@@ -18,17 +20,10 @@ class Fatora extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    return MaterialApp(
+    return GetMaterialApp(
       title: 'شركة الأمل',
-      localizationsDelegates: const [
-        GlobalMaterialLocalizations.delegate,
-        GlobalWidgetsLocalizations.delegate,
-        GlobalCupertinoLocalizations.delegate,
-      ],
-      supportedLocales: const [
-        // Locale('en', 'UK'), // English, United Kingdom  country code
-        Locale('ar', 'SY'), // Arabic,  Syria           country code
-      ],
+      initialRoute: '/',
+      locale: const Locale('ar', 'SY'), // Arabic,  Syria           country code
       theme: ThemeData(
         primaryColor: ColorApp.primaryColor,
         backgroundColor: ColorApp.backgroundColor,
@@ -36,8 +31,12 @@ class Fatora extends StatelessWidget {
       ),
       color: ColorApp.primaryColor,
       debugShowCheckedModeBanner: false,
-      initialRoute: URLPath.splachScreen,
+
       onGenerateRoute: appRoute!.generateRoute,
+      getPages: [
+        GetPage(name: URLPath.splachScreen, page: () => const SplashScreen()),
+        GetPage(name: URLPath.home, page: () => const HomePage()),
+      ],
     );
   }
 }

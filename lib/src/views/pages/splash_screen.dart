@@ -5,15 +5,16 @@ import 'package:fatora/src/Constant/path_images.dart';
 import 'package:fatora/src/Constant/url_path.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_spinkit/flutter_spinkit.dart';
+import 'package:get/get.dart';
 
-class SplachScreen extends StatefulWidget {
-  const SplachScreen({Key? key}) : super(key: key);
+class SplashScreen extends StatefulWidget {
+  const SplashScreen({Key? key}) : super(key: key);
 
   @override
-  State<SplachScreen> createState() => _SplachScreenState();
+  State<SplashScreen> createState() => _SplashScreenState();
 }
 
-class _SplachScreenState extends State<SplachScreen>
+class _SplashScreenState extends State<SplashScreen>
     with SingleTickerProviderStateMixin {
   late AnimationController animationController;
   Duration duration = const Duration(milliseconds: 1200);
@@ -29,7 +30,7 @@ class _SplachScreenState extends State<SplachScreen>
   }
 
   @override
-  void didUpdateWidget(SplachScreen oldWidget) {
+  void didUpdateWidget(SplashScreen oldWidget) {
     super.didUpdateWidget(oldWidget);
     animationController.duration = duration;
   }
@@ -41,7 +42,7 @@ class _SplachScreenState extends State<SplachScreen>
   }
 
   checkAvailableUser() {
-    Navigator.pushReplacementNamed(context, URLPath.home);
+    Get.toNamed(URLPath.home);
   }
 
   @override
@@ -64,9 +65,8 @@ class _SplachScreenState extends State<SplachScreen>
     );
   }
 
-  SpinKitSpinningLines loadingSplach() {
-    return SpinKitSpinningLines(
-      lineWidth: 3.0,
+  loadingSplach() {
+    return SpinKitCircle(
       color: ColorApp.primaryColor,
       size: 40.0,
       controller: animationController,
