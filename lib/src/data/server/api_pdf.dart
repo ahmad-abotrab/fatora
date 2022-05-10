@@ -15,14 +15,15 @@ class ApiPdf {
         await rootBundle.load("assets/fonts/Tajawal/Tajawal-Bold.ttf"));
     final pdf = Document();
     pdf.addPage(MultiPage(
-      theme:
-          ThemeData.withFont(base: arabicFontRegular, bold: arabicFontBold /**/
-              ),
+      theme: ThemeData.withFont(
+        base: arabicFontRegular,
+        bold: arabicFontBold,
+      ),
       pageFormat: PdfPageFormat.a4,
       build: (context) => [
         SizedBox(height: 1 * PdfPageFormat.cm),
         buildHeader(id, data[2]),
-        SizedBox(height: 3 * PdfPageFormat.cm),
+        SizedBox(height: 2 * PdfPageFormat.cm),
         Divider(),
       ],
       // footer: (context) => buildFooter(),
@@ -51,41 +52,41 @@ class ApiPdf {
               ),
             ],
           ),
-          SizedBox(height: 1 * PdfPageFormat.cm),
+          SizedBox(height: 1.5 * PdfPageFormat.cm),
           Row(
             mainAxisAlignment: MainAxisAlignment.spaceBetween,
             children: [
               Directionality(
                 textDirection: textDirection,
-                child: Container(
-                  decoration: BoxDecoration(
-                    border: Border.all(width: 2),
-                    borderRadius: BorderRadius.circular(12),
+                child: Text(
+                  price + "    " + ' ل.س',
+                  style: TextStyle(
+                    fontSize: 23,
+                    fontWeight: FontWeight.bold,
                   ),
-                  child: Text(price, style: const TextStyle(fontSize: 18)),
                 ),
               ),
               Directionality(
-                  textDirection: textDirection,
-                  child: Text("$id", style: const TextStyle(fontSize: 20))),
+                textDirection: textDirection,
+                child: Text(
+                  'رقم   '  "$id",
+                  style: TextStyle(
+                    fontSize: 23,
+                    fontWeight: FontWeight.bold,
+                    color: const PdfColor.fromInt(0xFFe63946),
+                  ),
+                ),
+              ),
             ],
           ),
         ],
       );
-
-  static buildTotal() {
-    return null;
-  }
 
   static buildFooter() => Column(
         crossAxisAlignment: CrossAxisAlignment.center,
         children: [],
       );
 
-  static buildSimpleText({
-    required String title,
-    required String value,
-  }) {}
 
   static buildText({
     required String title,
