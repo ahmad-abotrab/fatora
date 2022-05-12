@@ -1,1 +1,2 @@
-const  String logoPath = 'assets/images/logo_1.jpeg';
+const String logoPath = 'assets/images/logo_1.jpeg';
+String fileNameSignature = '';
