@@ -3,10 +3,13 @@ import 'dart:typed_data';
 import 'dart:ui' as ui;
 
 import 'package:fatora/src/Constant/color_app.dart';
-import 'package:fatora/src/Constant/path_images.dart';
+import 'package:fatora/src/views/pages/home.dart';
 import 'package:flutter/material.dart';
+import 'package:get/get.dart';
 import 'package:path_provider/path_provider.dart';
 import 'package:syncfusion_flutter_signaturepad/signaturepad.dart';
+
+import '../../logic/data_for_catch.dart';
 
 class SignaturePage extends StatefulWidget {
   const SignaturePage({Key? key}) : super(key: key);
@@ -16,7 +19,7 @@ class SignaturePage extends StatefulWidget {
 }
 
 class _SignaturePageState extends State<SignaturePage> {
-  GlobalKey<SfSignaturePadState> signaturePadKey = GlobalKey();
+  var signaturePadKey = GlobalKey<SfSignaturePadState>();
 
   @override
   Widget build(BuildContext context) {
@@ -28,58 +31,63 @@ class _SignaturePageState extends State<SignaturePage> {
           child: Text('إضافة توقيع'),
         ),
       ),
-      body: Center(
-        child: Column(
-          crossAxisAlignment: CrossAxisAlignment.center,
-          children: [
-            Expanded(
-              child: Container(),
+      body: Stack(
+        children: [
+          Align(
+            alignment: Alignment.topCenter,
+            child: SfSignaturePad(
+              key: signaturePadKey,
+              backgroundColor: Colors.white,
+              strokeColor: Colors.blue,
+              minimumStrokeWidth: 4.0,
+              maximumStrokeWidth: 6.0,
             ),
-            SizedBox(
-              height: MediaQuery.of(context).size.height * 0.8,
-              width: MediaQuery.of(context).size.width * 0.99,
-              child: SfSignaturePad(
-                key: signaturePadKey,
-                backgroundColor: Colors.grey,
-                strokeColor: Colors.white,
-                minimumStrokeWidth: 4.0,
-                maximumStrokeWidth: 6.0,
+          ),
+          const Align(
+              alignment: Alignment.bottomRight,
+              child: SizedBox(
+                width: 20,
+              )),
+          Align(
+            alignment: Alignment.bottomRight,
+            child: Container(
+              decoration: const BoxDecoration(
+                borderRadius: BorderRadius.all(Radius.circular(12)),
+                color: ColorApp.primaryColor,
+              ),
+              child: TextButton(
+                onPressed: saveButton,
+                child: const Text(
+                  'save Image',
+                  style: TextStyle(color: Colors.white),
+                ),
               ),
             ),
-            Row(
-              mainAxisAlignment: MainAxisAlignment.spaceBetween,
-              children: [
-                Expanded(
-                  child: Container(),
+          ),
+          const Align(
+              alignment: Alignment.bottomLeft,
+              child: SizedBox(
+                width: 20,
+              )),
+          Align(
+            alignment: Alignment.bottomLeft,
+            child: Container(
+              decoration: const BoxDecoration(
+                borderRadius: BorderRadius.all(Radius.circular(12)),
+                color: ColorApp.primaryColor,
+              ),
+              child: TextButton(
+                onPressed: clearButton,
+                child: const Text(
+                  'clear',
+                  style: TextStyle(color: Colors.white),
                 ),
-                Container(
-                  decoration: const BoxDecoration(
-                    color: ColorApp.primaryColor,
-                  ),
-                  child: ElevatedButton(
-                      onPressed: clearButton, child: const Text('clear')),
-                ),
-                Expanded(
-                  child: Container(),
-                ),
-                Container(
-                  decoration: const BoxDecoration(
-                    color: ColorApp.primaryColor,
-                  ),
-                  child: ElevatedButton(
-                      onPressed: saveButton, child: const Text('save Image')),
-                ),
-                Expanded(
-                  child: Container(),
-                ),
-              ],
+              ),
             ),
-            Expanded(
-              child: Container(),
-            ),
-          ],
-        ),
+          ),
+        ],
       ),
+      // resizeToAvoidBottomInset: false,
     );
   }
 
@@ -94,8 +102,10 @@ class _SignaturePageState extends State<SignaturePage> {
         .asUint8List(bytesData.offsetInBytes, bytesData.lengthInBytes);
     final String path = (await getApplicationDocumentsDirectory()).path;
     final String fileName = "$path/signature.png";
-    fileNameSignature = fileName;
+    Get.find<DataForCatch>().changeFileNameSignature(fileName);
     final File file = File(fileName);
     await file.writeAsBytes(imageBytes, flush: true);
+    Navigator.push(
+        context, MaterialPageRoute(builder: (_) => const HomePage()));
   }
 }

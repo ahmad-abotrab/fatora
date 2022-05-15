@@ -12,6 +12,7 @@ class DataForCatch extends GetxController {
   TextEditingController? priceWithText;
 
   TextEditingController? causeOfPayment;
+  String fileNameSignature = '';
 
   @override
   void onInit() {
@@ -21,6 +22,7 @@ class DataForCatch extends GetxController {
     priceWithText = TextEditingController();
     causeOfPayment = TextEditingController();
     selectedTabIndex = 0;
+    fileNameSignature = '';
     super.onInit();
   }
 
@@ -37,12 +39,18 @@ class DataForCatch extends GetxController {
     update();
   }
 
+  changeFileNameSignature(value) {
+    fileNameSignature = value;
+    update();
+  }
+
   reinitialize() {
     price = TextEditingController();
     whoIsPay = TextEditingController();
     whoIsTake = TextEditingController();
     priceWithText = TextEditingController();
     causeOfPayment = TextEditingController();
+    fileNameSignature = '';
     update();
   }
 }

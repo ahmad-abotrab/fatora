@@ -1,68 +1,69 @@
 import 'package:flutter/material.dart';
 import 'package:get/get.dart';
+
 import '../../logic/data_for_catch.dart';
 import 'field_data.dart';
 
-class AbstractReceipt extends StatefulWidget {
-  const AbstractReceipt({Key? key}) : super(key: key);
+// ignore: must_be_immutable
+class AbstractReceipt extends StatelessWidget {
+  AbstractReceipt({
+    Key? key,
+    required this.keyForm,
+  }) : super(key: key);
+  var keyForm = GlobalKey<FormState>();
 
-  @override
-  State<AbstractReceipt> createState() => _AbstractReceiptState();
-}
-
-class _AbstractReceiptState extends State<AbstractReceipt> {
-  var fieldsTest = Get.put<DataForCatch>(DataForCatch(),permanent: true);
   @override
   Widget build(BuildContext context) {
     return SafeArea(
-      child: SingleChildScrollView(
-        child: Center(
+      child: Form(
+        key: keyForm,
+        child: SingleChildScrollView(
           child: GetBuilder<DataForCatch>(
               init: DataForCatch(),
-              builder: (_) => Column(
-                children: [
-                  SizedBox(
-                    height: MediaQuery.of(context).size.height * 0.03,
-                  ),
-                  FieldData(
-                    isNumber:false,
-                    controller: fieldsTest.whoIsPay,
-                    labelText: 'قبضت من السيد ...',
-                    hintText: 'قبضت من السيد ...',
-                  ),
-                  SizedBox(
-                    height: MediaQuery.of(context).size.height * 0.03,
-                  ),
-                  FieldData(
-                    isNumber:true,
-                    controller: fieldsTest.price,
-                    labelText: 'مبلغاً وقدره ...',
-                    hintText: 'مبلغاً وقدره ...',
-                  ),
-                  SizedBox(
-                    height: MediaQuery.of(context).size.height * 0.03,
-                  ),
-                  FieldData(
-                    isNumber:false,
-                    controller: fieldsTest.causeOfPayment,
-                    labelText: 'وذلك لقاء ...',
-                    hintText: 'وذلك لقاء ...',
-                  ),
-                  SizedBox(
-                    height: MediaQuery.of(context).size.height * 0.03,
-                  ),
-                  FieldData(
-                    isNumber:false,
-                    controller: fieldsTest.whoIsTake,
-                    labelText: 'اسم الذي قبض المال ...',
-                    hintText: 'اسم الذي قبض المال ...',
-                  ),
-                ],
-              ),
-            ),
-          ),
+              builder: (controller) {
+                return Column(
+                  children: [
+                    SizedBox(
+                      height: MediaQuery.of(context).size.height * 0.03,
+                    ),
+                    FieldData(
+                      isNumber: false,
+                      controller: controller.whoIsPay,
+                      labelText: 'قبضت من السيد ...',
+                      hintText: 'قبضت من السيد ...',
+                    ),
+                    SizedBox(
+                      height: MediaQuery.of(context).size.height * 0.03,
+                    ),
+                    FieldData(
+                      isNumber: true,
+                      controller: controller.price,
+                      labelText: 'مبلغاً وقدره ...',
+                      hintText: 'مبلغاً وقدره ...',
+                    ),
+                    SizedBox(
+                      height: MediaQuery.of(context).size.height * 0.03,
+                    ),
+                    FieldData(
+                      isNumber: false,
+                      controller: controller.causeOfPayment,
+                      labelText: 'وذلك لقاء ...',
+                      hintText: 'وذلك لقاء ...',
+                    ),
+                    SizedBox(
+                      height: MediaQuery.of(context).size.height * 0.03,
+                    ),
+                    FieldData(
+                      isNumber: false,
+                      controller: controller.whoIsTake,
+                      labelText: 'اسم الذي قبض المال ...',
+                      hintText: 'اسم الذي قبض المال ...',
+                    ),
+                  ],
+                );
+              }),
         ),
-
+      ),
     );
   }
 }

@@ -1,14 +1,17 @@
+import 'dart:io';
+import 'dart:typed_data';
+
 import 'package:fatora/src/Constant/color_app.dart';
 import 'package:fatora/src/data/server/pdf_opened.dart';
 import 'package:flutter/gestures.dart';
 import 'package:flutter/material.dart';
+import 'package:flutter/services.dart';
 import 'package:get/get.dart';
 import 'package:intl/intl.dart';
 
 import '../../Constant/url_path.dart';
 import '../../data/server/api_pdf.dart';
 import '../../logic/data_for_catch.dart';
-import '../../logic/form_validation-control.dart';
 import 'catch_page.dart';
 import 'payment_page.dart';
 
@@ -22,16 +25,15 @@ class HomePage extends StatefulWidget {
 class _HomePageState extends State<HomePage>
     with SingleTickerProviderStateMixin {
   var changeSelectedTab = Get.put(DataForCatch(), permanent: true);
-  var controllerValidation =
-      Get.put(FormValidationController(), permanent: true);
+
   TabController? tabController;
   bool? isSelected;
   Color? selectedTabColor;
-  final GlobalKey<RefreshIndicatorState> refreshIndicatorKey =
-      GlobalKey<RefreshIndicatorState>();
+  var keyForm = GlobalKey<FormState>();
 
   @override
   void initState() {
+    keyForm = GlobalKey<FormState>();
     tabController = TabController(length: 2, vsync: this, initialIndex: 0)
       ..addListener(
         () {
@@ -43,6 +45,7 @@ class _HomePageState extends State<HomePage>
 
   @override
   void didUpdateWidget(covariant HomePage oldWidget) {
+    keyForm = GlobalKey<FormState>();
     tabController = TabController(length: 2, vsync: this, initialIndex: 0)
       ..addListener(
         () {
@@ -66,39 +69,39 @@ class _HomePageState extends State<HomePage>
         extendBodyBehindAppBar: true,
         backgroundColor: Theme.of(context).backgroundColor,
         appBar: appBar(context),
-        body: GetBuilder<DataForCatch>(
-            init: DataForCatch(),
-            builder: (controller) {
-              return TabBarView(
+        body: Column(
+          children: [
+            Expanded(
+              child: TabBarView(
                 controller: tabController!,
                 dragStartBehavior: DragStartBehavior.start,
-                children: const [
-                  CatchPage(),
-                  PaymentPage(),
+                children: [
+                  CatchPage(keyForm: keyForm),
+                  PaymentPage(keyForm: keyForm),
                 ],
-              );
-            }),
-        floatingActionButton: GetBuilder<DataForCatch>(
-          init: DataForCatch(),
-          builder: (controller) {
-            return Row(
-              // mainAxisAlignment: MainAxisAlignment.spaceBetween,
-              children: [
-                SizedBox(width: MediaQuery.of(context).size.width * 0.1),
-                tabController!.index == 0
-                    ? submissionButton()
-                    : loadSignatureIfPayment(),
-                Expanded(
-                    child: SizedBox(
-                        width: MediaQuery.of(context).size.width * 0.1)),
-                FloatingActionButton(
-                  backgroundColor: ColorApp.primaryColor,
-                  onPressed: onPressedFloatingButton,
-                  child: const Icon(Icons.done),
+              ),
+            ),
+            GetBuilder<DataForCatch>(builder: (controller) {
+              return Padding(
+                padding: EdgeInsets.only(
+                  // top: MediaQuery.of(context).size.height * 0.1,
+                  bottom: MediaQuery.of(context).size.height * 0.035,
+                  left: MediaQuery.of(context).size.width * 0.43,
                 ),
-              ],
-            );
-          },
+                child: tabController!.index == 0
+                    ? controller.fileNameSignature == ''
+                        ? submissionButton()
+                        : loadImageFromInternalPath(
+                            controller.fileNameSignature)
+                    : loadSignatureFromAssetFile('assets/images/signature.png'),
+              );
+            })
+          ],
+        ),
+        floatingActionButton: FloatingActionButton(
+          backgroundColor: ColorApp.primaryColor,
+          onPressed: onPressedFloatingButton,
+          child: const Icon(Icons.done),
         ),
       ),
     );
@@ -129,7 +132,7 @@ class _HomePageState extends State<HomePage>
     );
   }
 
-  loadSignatureIfPayment() {
+  loadSignatureFromAssetFile(pathImageSignature) {
     return Container(
       decoration: BoxDecoration(
         border: Border.all(
@@ -139,7 +142,24 @@ class _HomePageState extends State<HomePage>
         borderRadius: BorderRadius.circular(12),
       ),
       child: Image.asset(
-        'assets/images/signature.png',
+        pathImageSignature,
+        height: MediaQuery.of(context).size.width * 0.25,
+        width: MediaQuery.of(context).size.width * 0.4,
+      ),
+    );
+  }
+
+  loadImageFromInternalPath(pathImageSignature) {
+    return Container(
+      decoration: BoxDecoration(
+        border: Border.all(
+          color: ColorApp.helperColor,
+          width: 1,
+        ),
+        borderRadius: BorderRadius.circular(12),
+      ),
+      child: Image.file(
+        File(pathImageSignature),
         height: MediaQuery.of(context).size.width * 0.25,
         width: MediaQuery.of(context).size.width * 0.4,
       ),
@@ -154,13 +174,13 @@ class _HomePageState extends State<HomePage>
     String imageSignature = 'assets/images/signature.png';
     if (tabController!.index == 0) {
       fileName = 'catch{$id}.pdf';
-      if (controllerValidation.formStateCatch.currentState!.validate()) {
+      if (keyForm.currentState!.validate()) {
         final pdfFile = await abstractTaskInSubmissionProcess(
-            fileName, data, imageSignature, id);
+            fileName, data, Get.find<DataForCatch>().fileNameSignature, id);
         PDFOpened.openFile(pdfFile);
       }
     } else {
-      if (controllerValidation.formStatePayment.currentState!.validate()) {
+      if (keyForm.currentState!.validate()) {
         fileName = 'payment{$id}.pdf';
         final pdfFile = await abstractTaskInSubmissionProcess(
             fileName, data, imageSignature, id);
@@ -177,17 +197,27 @@ class _HomePageState extends State<HomePage>
     final DateTime now = DateTime.now();
     final DateFormat formatter = DateFormat('yyyy-MM-dd');
     final String dateTime = formatter.format(now);
-    return await ApiPdf.generate(fileName, data, imageSignature, id, dateTime);
+
+    Uint8List imagePath;
+    if (tabController!.index == 1) {
+      imagePath = (await rootBundle.load(imageSignature)).buffer.asUint8List();
+    } else {
+      File file = File(imageSignature);
+      var bytes = await file.readAsBytes();
+      imagePath = bytes.buffer.asUint8List();
+    }
+    return await ApiPdf.generate(fileName, data, imagePath, id, dateTime);
   }
 
   AppBar appBar(BuildContext context) {
     return AppBar(
       backgroundColor: Theme.of(context).bottomAppBarColor,
-      title: const Text(
-        "الصفحة الرئيسية",
-        style: TextStyle(fontFamily: 'Forum'),
+      title: const FittedBox(
+        child: Text(
+          "الصفحة الرئيسية",
+          style: TextStyle(fontFamily: 'Forum'),
+        ),
       ),
-      leading: null,
       actions: [
         IconButton(
           // splashRadius: ,
@@ -213,7 +243,7 @@ class _HomePageState extends State<HomePage>
       bottom: TabBar(
         controller: tabController,
         isScrollable: true,
-        indicatorColor: ColorApp.secondryColor,
+        indicatorColor: ColorApp.secondaryColor,
         indicatorSize: TabBarIndicatorSize.label,
         indicatorWeight: 2,
         labelColor: ColorApp.primaryColor,

@@ -5,7 +5,6 @@ import 'package:fatora/src/Constant/path_images.dart';
 import 'package:fatora/src/Constant/url_path.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_spinkit/flutter_spinkit.dart';
-import 'package:get/get.dart';
 
 class SplashScreen extends StatefulWidget {
   const SplashScreen({Key? key}) : super(key: key);
@@ -17,7 +16,7 @@ class SplashScreen extends StatefulWidget {
 class _SplashScreenState extends State<SplashScreen>
     with SingleTickerProviderStateMixin {
   late AnimationController animationController;
-  Duration duration = const Duration(milliseconds: 1200);
+  Duration duration = const Duration(milliseconds: 3200);
 
   @override
   void initState() {
@@ -42,13 +41,13 @@ class _SplashScreenState extends State<SplashScreen>
   }
 
   checkAvailableUser() {
-    Get.toNamed(URLPath.home);
+    Navigator.pushReplacementNamed(context, URLPath.home);
   }
 
   @override
   Widget build(BuildContext context) {
     Timer(
-      const Duration(milliseconds: 1400),
+      const Duration(milliseconds: 3400),
       checkAvailableUser,
     );
     Size size = MediaQuery.of(context).size;
@@ -58,14 +57,14 @@ class _SplashScreenState extends State<SplashScreen>
           children: [
             logoImageBuilder(size),
             SizedBox(height: size.height * .12),
-            loadingSplach(),
+            loadingSplash(),
           ],
         ),
       ),
     );
   }
 
-  loadingSplach() {
+  loadingSplash() {
     return SpinKitCircle(
       color: ColorApp.primaryColor,
       size: 40.0,

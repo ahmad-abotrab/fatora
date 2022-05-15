@@ -31,7 +31,7 @@ class ApiPdf {
         buildBody(data[0], data[1], data[2], data[3]),
         SizedBox(height: 1 * PdfPageFormat.cm),
         Divider(),
-        buildFooter(dataTime),
+        buildFooter(dataTime, signature: imageSignature),
       ],
       // footer: (context) => buildFooter(),
     ));
@@ -124,6 +124,13 @@ class ApiPdf {
                 ),
               ),
               SizedBox(height: 0.5 * PdfPageFormat.cm),
+              Container(
+                child: Image(
+                  MemoryImage(signature),
+                  width: 6 * PdfPageFormat.cm,
+                  height: 6 * PdfPageFormat.cm,
+                ),
+              )
             ],
           ),
         ],
