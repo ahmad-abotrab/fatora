@@ -90,7 +90,7 @@ class _HomePageState extends State<HomePage>
                 ),
                 child: tabController!.index == 0
                     ? controller.fileNameSignature == ''
-                        ? submissionButton()
+                        ? addSignature()
                         : loadImageFromInternalPath(
                             controller.fileNameSignature)
                     : loadSignatureFromAssetFile('assets/images/signature.png'),
@@ -107,7 +107,7 @@ class _HomePageState extends State<HomePage>
     );
   }
 
-  submissionButton() {
+  addSignature() {
     return Container(
       decoration: BoxDecoration(
         border: Border.all(

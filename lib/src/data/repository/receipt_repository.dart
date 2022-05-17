@@ -11,4 +11,9 @@ class ReceiptRepository {
     final response = await ReceiptApi().addNewReceipt(receipt.toJson());
     print(response);
   }
+
+  Future<dynamic> getLastId() async {
+    final response = await ReceiptApi().getLastId();
+    print(response);
+  }
 }
