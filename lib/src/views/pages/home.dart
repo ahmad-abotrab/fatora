@@ -9,7 +9,7 @@ import 'package:flutter/services.dart';
 import 'package:get/get.dart';
 import 'package:intl/intl.dart';
 
-import '../../Constant/url_path.dart';
+import '../../Constant/route_screen.dart';
 import '../../data/server/api_pdf.dart';
 import '../../logic/data_for_catch.dart';
 import 'catch_page.dart';
@@ -118,7 +118,7 @@ class _HomePageState extends State<HomePage>
       ),
       child: TextButton(
         onPressed: () {
-          Get.toNamed(URLPath.signaturePage);
+          Get.toNamed(RouteScreens.signaturePage);
         },
         child: const Text(
           'Add signature',
@@ -190,10 +190,11 @@ class _HomePageState extends State<HomePage>
   }
 
   abstractTaskInSubmissionProcess(fileName, data, imageSignature, id) async {
-    data.add(changeSelectedTab.whoIsPay!.text);
-    data.add(changeSelectedTab.price!.text.toString());
-    data.add(changeSelectedTab.causeOfPayment!.text);
     data.add(changeSelectedTab.whoIsTake!.text);
+    data.add(changeSelectedTab.price!.text.toString());
+    data.add(changeSelectedTab.amountText!.text);
+    data.add(changeSelectedTab.causeOfPayment!.text);
+
     final DateTime now = DateTime.now();
     final DateFormat formatter = DateFormat('yyyy-MM-dd');
     final String dateTime = formatter.format(now);

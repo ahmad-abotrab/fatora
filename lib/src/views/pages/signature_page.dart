@@ -44,12 +44,12 @@ class _SignaturePageState extends State<SignaturePage> {
             ),
           ),
           const Align(
-              alignment: Alignment.bottomRight,
+              alignment: Alignment.bottomLeft,
               child: SizedBox(
                 width: 20,
               )),
           Align(
-            alignment: Alignment.bottomRight,
+            alignment: Alignment.bottomLeft,
             child: Container(
               decoration: const BoxDecoration(
                 borderRadius: BorderRadius.all(Radius.circular(12)),
@@ -65,12 +65,12 @@ class _SignaturePageState extends State<SignaturePage> {
             ),
           ),
           const Align(
-              alignment: Alignment.bottomLeft,
+              alignment: Alignment.bottomRight,
               child: SizedBox(
                 width: 20,
               )),
           Align(
-            alignment: Alignment.bottomLeft,
+            alignment: Alignment.bottomRight,
             child: Container(
               decoration: const BoxDecoration(
                 borderRadius: BorderRadius.all(Radius.circular(12)),

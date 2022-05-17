@@ -1,7 +1,6 @@
 import 'package:flutter/material.dart';
 
 import '../widgets/abstract_receipt.dart';
-
 // ignore: must_be_immutable
 class CatchPage extends StatelessWidget {
   CatchPage({

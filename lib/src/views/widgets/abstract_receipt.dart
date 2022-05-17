@@ -28,7 +28,7 @@ class AbstractReceipt extends StatelessWidget {
                     ),
                     FieldData(
                       isNumber: false,
-                      controller: controller.whoIsPay,
+                      controller: controller.whoIsTake,
                       labelText: 'قبضت من السيد ...',
                       hintText: 'قبضت من السيد ...',
                     ),
@@ -38,8 +38,17 @@ class AbstractReceipt extends StatelessWidget {
                     FieldData(
                       isNumber: true,
                       controller: controller.price,
-                      labelText: 'مبلغاً وقدره ...',
-                      hintText: 'مبلغاً وقدره ...',
+                      labelText: 'مبلغاً وقدره رقماً ...',
+                      hintText: 'مبلغاً وقدره رقماً ...',
+                    ),
+                    SizedBox(
+                      height: MediaQuery.of(context).size.height * 0.03,
+                    ),
+                    FieldData(
+                      isNumber: false,
+                      controller: controller.amountText,
+                      labelText: 'مبلغاً وقدره كتابةً ...',
+                      hintText: 'مبلغاً وقدره كتابةً ...',
                     ),
                     SizedBox(
                       height: MediaQuery.of(context).size.height * 0.03,
@@ -49,15 +58,6 @@ class AbstractReceipt extends StatelessWidget {
                       controller: controller.causeOfPayment,
                       labelText: 'وذلك لقاء ...',
                       hintText: 'وذلك لقاء ...',
-                    ),
-                    SizedBox(
-                      height: MediaQuery.of(context).size.height * 0.03,
-                    ),
-                    FieldData(
-                      isNumber: false,
-                      controller: controller.whoIsTake,
-                      labelText: 'اسم الذي قبض المال ...',
-                      hintText: 'اسم الذي قبض المال ...',
                     ),
                   ],
                 );

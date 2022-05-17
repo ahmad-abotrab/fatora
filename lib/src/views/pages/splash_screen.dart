@@ -2,9 +2,10 @@ import 'dart:async';
 
 import 'package:fatora/src/Constant/color_app.dart';
 import 'package:fatora/src/Constant/path_images.dart';
-import 'package:fatora/src/Constant/url_path.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_spinkit/flutter_spinkit.dart';
+
+import '../../Constant/route_screen.dart';
 
 class SplashScreen extends StatefulWidget {
   const SplashScreen({Key? key}) : super(key: key);
@@ -41,7 +42,7 @@ class _SplashScreenState extends State<SplashScreen>
   }
 
   checkAvailableUser() {
-    Navigator.pushReplacementNamed(context, URLPath.home);
+    Navigator.pushReplacementNamed(context, RouteScreens.home);
   }
 
   @override

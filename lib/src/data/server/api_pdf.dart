@@ -27,8 +27,12 @@ class ApiPdf {
         SizedBox(height: 1 * PdfPageFormat.cm),
         buildHeader(id, data[1]),
         SizedBox(height: 1 * PdfPageFormat.cm),
-        // Divider(),
-        buildBody(data[0], data[1], data[2], data[3]),
+
+        /*   data[0] who is take money
+         **  data[2] amount text
+         **  data[3] cause of payment
+        */
+        buildBody(data[0], data[2], data[3]),
         SizedBox(height: 1 * PdfPageFormat.cm),
         Divider(),
         buildFooter(dataTime, signature: imageSignature),
@@ -185,31 +189,30 @@ class ApiPdf {
       );
 
   static buildBody(
-    whoIsPay,
-    price,
-    causeOfPayment,
     whoIsTake,
+    amountText,
+    causeOfPayment,
   ) =>
       Column(crossAxisAlignment: CrossAxisAlignment.end, children: [
         buildText(
           staticText: 'قبضت من السيد   ',
-          dynamicText: whoIsPay,
+          dynamicText: whoIsTake,
           secondaryStaticText: 'المحترم',
         ),
         SizedBox(height: 0.4 * PdfPageFormat.cm),
         buildText(
             staticText: 'مبلغاً وقدره  ',
-            dynamicText: price.toString(),
+            dynamicText: amountText.toString(),
             secondaryStaticText: 'فقط لاغير'),
         SizedBox(height: 0.4 * PdfPageFormat.cm),
         buildText(
           staticText: 'وذلك لقاء  ',
           dynamicText: causeOfPayment,
         ),
-        SizedBox(height: 0.4 * PdfPageFormat.cm),
-        buildText(
-          staticText: 'ل ',
-          dynamicText: whoIsTake,
-        ),
+        // SizedBox(height: 0.4 * PdfPageFormat.cm),
+        // buildText(
+        //   staticText: 'ل ',
+        //   dynamicText: whoIsTake,
+        // ),
       ]);
 }

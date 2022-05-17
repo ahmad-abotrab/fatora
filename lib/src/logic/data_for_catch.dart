@@ -5,7 +5,7 @@ class DataForCatch extends GetxController {
   int selectedTabIndex = 0;
   TextEditingController? price;
 
-  TextEditingController? whoIsPay;
+  TextEditingController? amountText;
 
   TextEditingController? whoIsTake;
 
@@ -17,7 +17,7 @@ class DataForCatch extends GetxController {
   @override
   void onInit() {
     price = TextEditingController();
-    whoIsPay = TextEditingController();
+    amountText = TextEditingController();
     whoIsTake = TextEditingController();
     priceWithText = TextEditingController();
     causeOfPayment = TextEditingController();
@@ -46,7 +46,7 @@ class DataForCatch extends GetxController {
 
   reinitialize() {
     price = TextEditingController();
-    whoIsPay = TextEditingController();
+    amountText = TextEditingController();
     whoIsTake = TextEditingController();
     priceWithText = TextEditingController();
     causeOfPayment = TextEditingController();
