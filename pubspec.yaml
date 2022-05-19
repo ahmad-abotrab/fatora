@@ -45,6 +45,7 @@ dependencies:
   syncfusion_flutter_signaturepad:
   sqflite:
   http:
+  empty_widget:
 
 dev_dependencies:
   flutter_lints: ^1.0.0

@@ -1,3 +1,4 @@
+import 'package:fatora/src/views/pages/log_history.dart';
 import 'package:flutter/material.dart';
 import 'package:get/get.dart';
 
@@ -26,11 +27,20 @@ class Fatora extends StatelessWidget {
       debugShowCheckedModeBanner: false,
       getPages: [
         GetPage(
-            name: RouteScreens.splachScreen, page: () => const SplashScreen()),
-        GetPage(name: RouteScreens.home, page: () => const HomePage()),
+          name: RouteScreens.splachScreen,
+          page: () => const SplashScreen(),
+        ),
+        GetPage(
+          name: RouteScreens.home,
+          page: () => const HomePage(),
+        ),
         GetPage(
             name: RouteScreens.signaturePage,
             page: () => const SignaturePage()),
+        GetPage(
+          name: RouteScreens.logHistory,
+          page: () => LogHistory(),
+        ),
       ],
     );
   }

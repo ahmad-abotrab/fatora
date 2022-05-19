@@ -17,10 +17,12 @@ class SplashScreen extends StatefulWidget {
 class _SplashScreenState extends State<SplashScreen>
     with SingleTickerProviderStateMixin {
   late AnimationController animationController;
-  Duration duration = const Duration(milliseconds: 3200);
+  Duration duration = const Duration(milliseconds: 1);
 
   @override
   void initState() {
+    if (!mounted) return;
+    setState(() {});
     super.initState();
     animationController = AnimationController(
       vsync: this, // the SingleTickerProviderStateMixin
@@ -31,6 +33,8 @@ class _SplashScreenState extends State<SplashScreen>
 
   @override
   void didUpdateWidget(SplashScreen oldWidget) {
+    if (!mounted) return;
+    setState(() {});
     super.didUpdateWidget(oldWidget);
     animationController.duration = duration;
   }
@@ -48,7 +52,7 @@ class _SplashScreenState extends State<SplashScreen>
   @override
   Widget build(BuildContext context) {
     Timer(
-      const Duration(milliseconds: 3400),
+      const Duration(milliseconds: 1),
       checkAvailableUser,
     );
     Size size = MediaQuery.of(context).size;

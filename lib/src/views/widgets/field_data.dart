@@ -21,10 +21,18 @@ class FieldData extends StatelessWidget {
           horizontal: MediaQuery.of(context).size.width * 0.06),
       child: TextFormField(
         validator: (value) {
-          if (value == null || value.isEmpty) {
-            return 'Please enter some text';
+          if (isNumber) {
+            final isDigitsOnly = int.tryParse(value!);
+            print(isDigitsOnly);
+            return isDigitsOnly == null
+                ? 'Input needs to be digits only'
+                : null;
+          } else {
+            if (value == null || value.isEmpty) {
+              return 'Please enter some text';
+            }
+            return null;
           }
-          return null;
         },
         controller: controller,
         keyboardType: isNumber ? TextInputType.number : TextInputType.text,

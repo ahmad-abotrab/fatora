@@ -2,7 +2,6 @@ import 'dart:io';
 import 'dart:typed_data';
 
 import 'package:fatora/src/Constant/color_app.dart';
-import 'package:fatora/src/data/server/pdf_opened.dart';
 import 'package:flutter/gestures.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
@@ -10,6 +9,8 @@ import 'package:get/get.dart';
 import 'package:intl/intl.dart';
 
 import '../../Constant/route_screen.dart';
+import '../../data/model/Receipt.dart';
+import '../../data/repository/receipt_repository.dart';
 import '../../data/server/api_pdf.dart';
 import '../../logic/data_for_catch.dart';
 import 'catch_page.dart';
@@ -33,6 +34,8 @@ class _HomePageState extends State<HomePage>
 
   @override
   void initState() {
+    if (!mounted) return;
+    setState(() {});
     keyForm = GlobalKey<FormState>();
     tabController = TabController(length: 2, vsync: this, initialIndex: 0)
       ..addListener(
@@ -45,6 +48,8 @@ class _HomePageState extends State<HomePage>
 
   @override
   void didUpdateWidget(covariant HomePage oldWidget) {
+    if (!mounted) return;
+    setState(() {});
     keyForm = GlobalKey<FormState>();
     tabController = TabController(length: 2, vsync: this, initialIndex: 0)
       ..addListener(
@@ -169,24 +174,38 @@ class _HomePageState extends State<HomePage>
   onPressedFloatingButton() async {
     String fileName = '';
     List<String> data = [];
+    File? pdfFile;
     int id = 0;
-
+    var oldReceipt = await ReceiptRepository().getLastId();
+    if (oldReceipt == null) {
+      id = 0;
+    } else {
+      id = int.parse(oldReceipt.id!) + 1;
+    }
     String imageSignature = 'assets/images/signature.png';
     if (tabController!.index == 0) {
       fileName = 'catch{$id}.pdf';
       if (keyForm.currentState!.validate()) {
-        final pdfFile = await abstractTaskInSubmissionProcess(
+        pdfFile = await abstractTaskInSubmissionProcess(
             fileName, data, Get.find<DataForCatch>().fileNameSignature, id);
-        PDFOpened.openFile(pdfFile);
       }
     } else {
       if (keyForm.currentState!.validate()) {
         fileName = 'payment{$id}.pdf';
-        final pdfFile = await abstractTaskInSubmissionProcess(
+        pdfFile = await abstractTaskInSubmissionProcess(
             fileName, data, imageSignature, id);
-        PDFOpened.openFile(pdfFile);
       }
     }
+    final DateFormat formatter = DateFormat('yyyy-MM-dd/hh:mm a');
+
+    Receipt receipt = Receipt();
+
+    receipt.whoIsTake = changeSelectedTab.whoIsTake!.text;
+    receipt.amountText = changeSelectedTab.amountText!.text;
+    receipt.amountNumeric = changeSelectedTab.price!.text;
+    receipt.causeOfPayment = changeSelectedTab.causeOfPayment!.text;
+    receipt.date = formatter.format(DateTime.now());
+    await ReceiptRepository().addNewReceipt(receipt, pdfFile!, fileName);
   }
 
   abstractTaskInSubmissionProcess(fileName, data, imageSignature, id) async {
@@ -196,7 +215,7 @@ class _HomePageState extends State<HomePage>
     data.add(changeSelectedTab.causeOfPayment!.text);
 
     final DateTime now = DateTime.now();
-    final DateFormat formatter = DateFormat('yyyy-MM-dd');
+    final DateFormat formatter = DateFormat('yyyy-MM-dd-hh:mm');
     final String dateTime = formatter.format(now);
 
     Uint8List imagePath;
@@ -236,7 +255,9 @@ class _HomePageState extends State<HomePage>
         ),
         IconButton(
           // splashRadius: ,
-          onPressed: () {},
+          onPressed: () {
+            Navigator.pushNamed(context, RouteScreens.logHistory);
+          },
           icon: const Icon(Icons.history),
           tooltip: 'السجل',
         ),

@@ -1,52 +1,49 @@
-/// whoIsTake : "String"
-/// whoIsPay : "String"
-/// amount : "double"
-/// causeOfAmount : "String"
-
 class Receipt {
+  String? id;
   String? whoIsTake;
   String? amountText;
-  double? amount;
-  String? causeOfAmount;
+  String? amountNumeric;
+  String? causeOfPayment;
+  String? date;
 
   Receipt({
-    required String? whoIsTake,
-    required String? amountText,
-    required double? amount,
-    required String? causeOfAmount,
-  }) {
-    whoIsTake = whoIsTake!;
-    amountText = amountText!;
-    amount = amount!;
-    causeOfAmount = causeOfAmount!;
-  }
+    this.id,
+    this.whoIsTake,
+    this.amountText,
+    this.amountNumeric,
+    this.causeOfPayment,
+    this.date,
+  });
 
-  Receipt.fromJson(dynamic json) {
+  Receipt.fromJson(Map<String, dynamic> json) {
+    id = json['id'].toString();
     whoIsTake = json['whoIsTake'];
     amountText = json['amountText'];
-    amount = json['amount'];
-    causeOfAmount = json['causeOfAmount'];
+    amountNumeric = json['amountNumeric'];
+    causeOfPayment = json['causeOfPayment'];
+    date = json['date'];
   }
 
-  Receipt copyWith({
-    String? whoIsTake,
-    String? amountText,
-    double? amount,
-    String? causeOfAmount,
-  }) =>
-      Receipt(
-        whoIsTake: whoIsTake ?? whoIsTake,
-        amountText: amountText ?? amountText,
-        amount: amount ?? amount,
-        causeOfAmount: causeOfAmount ?? causeOfAmount,
-      );
-
   Map<String, dynamic> toJson() {
-    final map = <String, dynamic>{};
-    map['whoIsTake'] = whoIsTake;
-    map['amountText'] = amountText;
-    map['amount'] = amount;
-    map['causeOfAmount'] = causeOfAmount;
-    return map;
+    final Map<String, dynamic> data = <String, dynamic>{};
+    data['whoIsTake'] = whoIsTake;
+    data['amountText'] = amountText;
+    data['amountNumeric'] = amountNumeric!;
+    data['causeOfPayment'] = causeOfPayment;
+    data['date'] = date;
+    return data;
+  }
+
+  sout() {
+    print(id);
+    print("\n");
+    print(whoIsTake);
+    print("\n");
+    print(amountNumeric);
+    print("\n");
+    print(amountText);
+    print("\n");
+    print(causeOfPayment);
+    print("\n");
   }
 }
