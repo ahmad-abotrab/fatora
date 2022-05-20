@@ -5,12 +5,8 @@ import 'package:get/get.dart';
 class LogController extends GetxController {
   List<Receipt>? receipts = [];
   var isLoading = false;
+  var whatIsFail = '';
 
-  @override
-  void onReady() {
-    // fetchAllReceipt();
-    super.onReady();
-  }
 
   @override
   void onInit() {
@@ -19,11 +15,18 @@ class LogController extends GetxController {
   }
 
   fetchAllReceipt() async {
-    receipts = await ReceiptRepository().getAllReceipts();
-    if (receipts!.isEmpty) {
+    try  {
+      final result = await ReceiptRepository().getAllReceipts();
+      if (result.isEmpty) {
+        isLoading = false;
+        whatIsFail = 'لا يوجد بيانات في قاعدة البيانات';
+      } else {
+        receipts = result.map((e) => Receipt.fromJson(e));
+        isLoading = true;
+      }
+    } catch (e) {
       isLoading = false;
-    } else {
-      isLoading = true;
+      whatIsFail = 'قد لا تكون متصل بالانترنت أو أن السيرفر معطل';
     }
     update();
   }

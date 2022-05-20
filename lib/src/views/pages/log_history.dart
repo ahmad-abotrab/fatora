@@ -1,6 +1,6 @@
 import 'package:empty_widget/empty_widget.dart';
-import 'package:fatora/src/Constant/color_app.dart';
-import 'package:fatora/src/logic/log_controller.dart';
+import '/src/Constant/color_app.dart';
+import '/src/logic/log_controller.dart';
 import 'package:flutter/material.dart';
 import 'package:get/get.dart';
 
@@ -24,12 +24,12 @@ class LogHistory extends StatelessWidget {
         child: GetBuilder<LogController>(
           init: LogController(),
           builder: (controller) {
-            return Get.find<LogController>().isLoading
+            return controller.isLoading
                 ? SingleChildScrollView(
                     scrollDirection: Axis.horizontal,
                     child: DataTable(
                       columns: buildColumnTable(),
-                      rows: buildRowTable(Get.find<LogController>().receipts!),
+                      rows: buildRowTable(controller.receipts!),
                     ),
                   )
                 : Container(
@@ -38,7 +38,7 @@ class LogHistory extends StatelessWidget {
                       image: null,
                       packageImage: PackageImage.Image_1,
                       title: 'لا يوجد بيانات',
-                      subTitle: 'قد يكون لا يوجد اتصال بالسيرفر',
+                      subTitle: controller.whatIsFail,
                       titleTextStyle: const TextStyle(
                         fontSize: 22,
                         color: Color(0xff9da9c7),

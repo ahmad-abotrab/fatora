@@ -44,7 +44,7 @@ dependencies:
   printing:
   syncfusion_flutter_signaturepad:
   sqflite:
-  http:
+  dio:
   empty_widget:
 
 dev_dependencies:

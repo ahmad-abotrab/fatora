@@ -1,8 +1,8 @@
 import 'dart:io';
 
-import 'package:fatora/src/data/server/pdf_opened.dart';
+import '/src/data/web_services/pdf_opened.dart';
 import 'package:flutter/services.dart';
-// import 'package:intl/intl.dart';
+
 import 'package:pdf/pdf.dart';
 import 'package:pdf/widgets.dart';
 

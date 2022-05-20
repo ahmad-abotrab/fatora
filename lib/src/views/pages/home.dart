@@ -1,17 +1,18 @@
 import 'dart:io';
 import 'dart:typed_data';
 
-import 'package:fatora/src/Constant/color_app.dart';
+// import 'package:awesome_dialog/awesome_dialog.dart';
 import 'package:flutter/gestures.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:get/get.dart';
 import 'package:intl/intl.dart';
-
+// import 'lib/src/data/web_services/api_pdf.dart';
+import '../../data/web_services/api_pdf.dart';
+import '/src/Constant/color_app.dart';
 import '../../Constant/route_screen.dart';
 import '../../data/model/Receipt.dart';
 import '../../data/repository/receipt_repository.dart';
-import '../../data/server/api_pdf.dart';
 import '../../logic/data_for_catch.dart';
 import 'catch_page.dart';
 import 'payment_page.dart';
@@ -39,7 +40,7 @@ class _HomePageState extends State<HomePage>
     keyForm = GlobalKey<FormState>();
     tabController = TabController(length: 2, vsync: this, initialIndex: 0)
       ..addListener(
-        () {
+            () {
           changeSelectedTab.changeSelectedTab(tabController!.index);
         },
       );
@@ -53,7 +54,7 @@ class _HomePageState extends State<HomePage>
     keyForm = GlobalKey<FormState>();
     tabController = TabController(length: 2, vsync: this, initialIndex: 0)
       ..addListener(
-        () {
+            () {
           changeSelectedTab.changeSelectedTab(tabController!.index);
         },
       );
@@ -95,9 +96,9 @@ class _HomePageState extends State<HomePage>
                 ),
                 child: tabController!.index == 0
                     ? controller.fileNameSignature == ''
-                        ? addSignature()
-                        : loadImageFromInternalPath(
-                            controller.fileNameSignature)
+                    ? addSignature()
+                    : loadImageFromInternalPath(
+                    controller.fileNameSignature)
                     : loadSignatureFromAssetFile('assets/images/signature.png'),
               );
             })
@@ -176,36 +177,42 @@ class _HomePageState extends State<HomePage>
     List<String> data = [];
     File? pdfFile;
     int id = 0;
-    var oldReceipt = await ReceiptRepository().getLastId();
-    if (oldReceipt == null) {
-      id = 0;
-    } else {
-      id = int.parse(oldReceipt.id!) + 1;
-    }
-    String imageSignature = 'assets/images/signature.png';
-    if (tabController!.index == 0) {
-      fileName = 'catch{$id}.pdf';
-      if (keyForm.currentState!.validate()) {
-        pdfFile = await abstractTaskInSubmissionProcess(
-            fileName, data, Get.find<DataForCatch>().fileNameSignature, id);
-      }
-    } else {
-      if (keyForm.currentState!.validate()) {
-        fileName = 'payment{$id}.pdf';
-        pdfFile = await abstractTaskInSubmissionProcess(
-            fileName, data, imageSignature, id);
-      }
-    }
-    final DateFormat formatter = DateFormat('yyyy-MM-dd/hh:mm a');
 
-    Receipt receipt = Receipt();
+    try {
+      var oldReceipt = await ReceiptRepository().getLastId();
+      if (oldReceipt == null) {
+        id = 0;
+      } else {
+        id = int.parse(oldReceipt.id!) + 1;
+      }
+      String imageSignature = 'assets/images/signature.png';
+      if (tabController!.index == 0) {
+        fileName = 'catch{$id}.pdf';
+        if (keyForm.currentState!.validate()) {
+          pdfFile = await abstractTaskInSubmissionProcess(
+              fileName, data, Get.find<DataForCatch>().fileNameSignature, id);
+        }
+      } else {
+        if (keyForm.currentState!.validate()) {
+          fileName = 'payment{$id}.pdf';
+          pdfFile = await abstractTaskInSubmissionProcess(
+              fileName, data, imageSignature, id);
+        }
+      }
+      final DateFormat formatter = DateFormat('yyyy-MM-dd/hh:mm a');
 
-    receipt.whoIsTake = changeSelectedTab.whoIsTake!.text;
-    receipt.amountText = changeSelectedTab.amountText!.text;
-    receipt.amountNumeric = changeSelectedTab.price!.text;
-    receipt.causeOfPayment = changeSelectedTab.causeOfPayment!.text;
-    receipt.date = formatter.format(DateTime.now());
-    await ReceiptRepository().addNewReceipt(receipt, pdfFile!, fileName);
+      Receipt receipt = Receipt();
+
+      receipt.whoIsTake = changeSelectedTab.whoIsTake!.text;
+      receipt.amountText = changeSelectedTab.amountText!.text;
+      receipt.amountNumeric = changeSelectedTab.price!.text;
+      receipt.causeOfPayment = changeSelectedTab.causeOfPayment!.text;
+      receipt.date = formatter.format(DateTime.now());
+      await ReceiptRepository().addNewReceipt(receipt, pdfFile!, fileName);
+    } catch (e) {
+      print('ahmad');
+      // buildDialog(e,context);
+    }
   }
 
   abstractTaskInSubmissionProcess(fileName, data, imageSignature, id) async {
@@ -315,4 +322,40 @@ class _HomePageState extends State<HomePage>
     );
     return tabs;
   }
+
+  // buildDialog(errorText,context) {
+  //   return AwesomeDialog(
+  //     context: context,
+  //     dialogType: DialogType.INFO,
+  //     animType: AnimType.BOTTOMSLIDE,
+  //     title: 'Dialog Title',
+  //     desc: 'Dialog description here.............',
+  //     btnCancelOnPress: () {
+  //       Navigator.pop(context);
+  //     },
+  //     btnOkOnPress: () {},
+  //   )..show();
+  //   // return AwesomeDialog(
+  //   //   context: context,
+  //   //   customHeader: Container(
+  //   //     decoration: BoxDecoration(
+  //   //       borderRadius: BorderRadius.circular(35),
+  //   //       image: DecorationImage(
+  //   //         image: AssetImage('assets/images/signature.png'),
+  //   //       ),
+  //   //     ),
+  //   //   ),
+  //   //   animType: AnimType.BOTTOMSLIDE,
+  //   //   dialogType: DialogType.ERROR,
+  //   //   body: Center(
+  //   //     child: Text(
+  //   //       errorText,
+  //   //       style: const TextStyle(fontStyle: FontStyle.italic),
+  //   //     ),
+  //   //   ),
+  //   //   title: 'This is Ignored',
+  //   //   desc: 'This is also Ignored',
+  //   //   btnCancelOnPress: () {},
+  //   // )..show();
+  // }
 }

@@ -1,7 +1,7 @@
 import 'dart:async';
 
-import 'package:fatora/src/Constant/color_app.dart';
-import 'package:fatora/src/Constant/path_images.dart';
+import '/src/Constant/color_app.dart';
+import '/src/Constant/path_images.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_spinkit/flutter_spinkit.dart';
 
