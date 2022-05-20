@@ -39,7 +39,7 @@ class Fatora extends StatelessWidget {
             page: () => const SignaturePage()),
         GetPage(
           name: RouteScreens.logHistory,
-          page: () => LogHistory(),
+          page: () => const LogHistory(),
         ),
       ],
     );

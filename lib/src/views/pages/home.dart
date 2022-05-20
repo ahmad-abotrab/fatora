@@ -1,17 +1,15 @@
 import 'dart:io';
 import 'dart:typed_data';
 
-// import 'package:awesome_dialog/awesome_dialog.dart';
 import 'package:flutter/gestures.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:get/get.dart';
 import 'package:intl/intl.dart';
-// import 'lib/src/data/web_services/api_pdf.dart';
 import '../../data/web_services/api_pdf.dart';
 import '/src/Constant/color_app.dart';
 import '../../Constant/route_screen.dart';
-import '../../data/model/Receipt.dart';
+import '../../data/model/receipt_model.dart';
 import '../../data/repository/receipt_repository.dart';
 import '../../logic/data_for_catch.dart';
 import 'catch_page.dart';
@@ -73,7 +71,9 @@ class _HomePageState extends State<HomePage>
       length: 2,
       child: Scaffold(
         extendBodyBehindAppBar: true,
-        backgroundColor: Theme.of(context).backgroundColor,
+        backgroundColor: Theme
+            .of(context)
+            .backgroundColor,
         appBar: appBar(context),
         body: Column(
           children: [
@@ -91,8 +91,14 @@ class _HomePageState extends State<HomePage>
               return Padding(
                 padding: EdgeInsets.only(
                   // top: MediaQuery.of(context).size.height * 0.1,
-                  bottom: MediaQuery.of(context).size.height * 0.035,
-                  left: MediaQuery.of(context).size.width * 0.43,
+                  bottom: MediaQuery
+                      .of(context)
+                      .size
+                      .height * 0.035,
+                  left: MediaQuery
+                      .of(context)
+                      .size
+                      .width * 0.43,
                 ),
                 child: tabController!.index == 0
                     ? controller.fileNameSignature == ''
@@ -149,8 +155,14 @@ class _HomePageState extends State<HomePage>
       ),
       child: Image.asset(
         pathImageSignature,
-        height: MediaQuery.of(context).size.width * 0.25,
-        width: MediaQuery.of(context).size.width * 0.4,
+        height: MediaQuery
+            .of(context)
+            .size
+            .width * 0.25,
+        width: MediaQuery
+            .of(context)
+            .size
+            .width * 0.4,
       ),
     );
   }
@@ -166,8 +178,14 @@ class _HomePageState extends State<HomePage>
       ),
       child: Image.file(
         File(pathImageSignature),
-        height: MediaQuery.of(context).size.width * 0.25,
-        width: MediaQuery.of(context).size.width * 0.4,
+        height: MediaQuery
+            .of(context)
+            .size
+            .width * 0.25,
+        width: MediaQuery
+            .of(context)
+            .size
+            .width * 0.4,
       ),
     );
   }
@@ -190,7 +208,9 @@ class _HomePageState extends State<HomePage>
         fileName = 'catch{$id}.pdf';
         if (keyForm.currentState!.validate()) {
           pdfFile = await abstractTaskInSubmissionProcess(
-              fileName, data, Get.find<DataForCatch>().fileNameSignature, id);
+              fileName, data, Get
+              .find<DataForCatch>()
+              .fileNameSignature, id);
         }
       } else {
         if (keyForm.currentState!.validate()) {
@@ -238,7 +258,9 @@ class _HomePageState extends State<HomePage>
 
   AppBar appBar(BuildContext context) {
     return AppBar(
-      backgroundColor: Theme.of(context).bottomAppBarColor,
+      backgroundColor: Theme
+          .of(context)
+          .bottomAppBarColor,
       title: const FittedBox(
         child: Text(
           "الصفحة الرئيسية",
@@ -322,40 +344,4 @@ class _HomePageState extends State<HomePage>
     );
     return tabs;
   }
-
-  // buildDialog(errorText,context) {
-  //   return AwesomeDialog(
-  //     context: context,
-  //     dialogType: DialogType.INFO,
-  //     animType: AnimType.BOTTOMSLIDE,
-  //     title: 'Dialog Title',
-  //     desc: 'Dialog description here.............',
-  //     btnCancelOnPress: () {
-  //       Navigator.pop(context);
-  //     },
-  //     btnOkOnPress: () {},
-  //   )..show();
-  //   // return AwesomeDialog(
-  //   //   context: context,
-  //   //   customHeader: Container(
-  //   //     decoration: BoxDecoration(
-  //   //       borderRadius: BorderRadius.circular(35),
-  //   //       image: DecorationImage(
-  //   //         image: AssetImage('assets/images/signature.png'),
-  //   //       ),
-  //   //     ),
-  //   //   ),
-  //   //   animType: AnimType.BOTTOMSLIDE,
-  //   //   dialogType: DialogType.ERROR,
-  //   //   body: Center(
-  //   //     child: Text(
-  //   //       errorText,
-  //   //       style: const TextStyle(fontStyle: FontStyle.italic),
-  //   //     ),
-  //   //   ),
-  //   //   title: 'This is Ignored',
-  //   //   desc: 'This is also Ignored',
-  //   //   btnCancelOnPress: () {},
-  //   // )..show();
-  // }
 }

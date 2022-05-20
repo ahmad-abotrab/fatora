@@ -23,7 +23,6 @@ class FieldData extends StatelessWidget {
         validator: (value) {
           if (isNumber) {
             final isDigitsOnly = int.tryParse(value!);
-            print(isDigitsOnly);
             return isDigitsOnly == null
                 ? 'Input needs to be digits only'
                 : null;

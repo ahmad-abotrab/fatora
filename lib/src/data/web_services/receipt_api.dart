@@ -54,7 +54,7 @@ class ReceiptApi {
     });
 
     try {
-      var response = await dio?.post(urlUploadFile, data: formData);
+      await dio?.post(urlUploadFile, data: formData);
     } on DioError catch (errorDio) {
       throw DioExceptions.fromDioError(errorDio);
     }

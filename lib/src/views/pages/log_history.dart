@@ -4,10 +4,10 @@ import '/src/logic/log_controller.dart';
 import 'package:flutter/material.dart';
 import 'package:get/get.dart';
 
-import '../../data/model/Receipt.dart';
+import '../../data/model/receipt_model.dart';
 
 class LogHistory extends StatelessWidget {
-  LogHistory({Key? key}) : super(key: key);
+  const LogHistory({Key? key}) : super(key: key);
 
   // var controllerLogHistory = Get.put<LogController>(LogController());
 

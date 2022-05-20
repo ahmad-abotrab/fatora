@@ -1,4 +1,4 @@
-import 'package:fatora/src/data/model/Receipt.dart';
+import 'package:fatora/src/data/model/receipt_model.dart';
 import 'package:fatora/src/data/repository/receipt_repository.dart';
 import 'package:get/get.dart';
 
@@ -33,7 +33,7 @@ class LogController extends GetxController {
 
   initializeList() async {
     receipts = await ReceiptRepository().getAllReceipts();
-    ;
+    
     update();
   }
 }

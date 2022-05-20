@@ -2,7 +2,7 @@ import 'dart:convert' as convert;
 import 'dart:io';
 
 import '../web_services/receipt_api.dart';
-import '/src/data/model/Receipt.dart';
+import '../model/receipt_model.dart';
 
 
 class ReceiptRepository {
