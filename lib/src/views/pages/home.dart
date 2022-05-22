@@ -1,8 +1,10 @@
 import 'dart:io';
 import 'dart:typed_data';
 
-import 'package:fatora/src/views/widgets/dialog_loading.dart';
-import 'package:fatora/src/views/widgets/loading_widget.dart';
+import 'package:fatora/src/logic/loading_animation_controller.dart';
+
+import '/src/views/components/dialog_loading.dart';
+import '/src/views/components/loading_widget.dart';
 import 'package:flutter/gestures.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
@@ -212,7 +214,6 @@ class _HomePageState extends State<HomePage>
           pdfFile = await abstractTaskInSubmissionProcess(
               fileName, data, imageSignature, id);
         }
-        final DateFormat formatter = DateFormat('yyyy-MM-dd/hh:mm a');
 
         Receipt receipt = Receipt();
 
@@ -220,8 +221,10 @@ class _HomePageState extends State<HomePage>
         receipt.amountText = changeSelectedTab.amountText!.text;
         receipt.amountNumeric = changeSelectedTab.price!.text;
         receipt.causeOfPayment = changeSelectedTab.causeOfPayment!.text;
-        receipt.date = formatter.format(DateTime.now());
+        receipt.date = DateTime.now();
         await ReceiptRepository().addNewReceipt(receipt, pdfFile!, fileName);
+        Get.find<LoadingAnimationController>().changeStatus();
+        await Future.delayed(const Duration(seconds: 1));
         Navigator.of(context,rootNavigator: true).pop();
       } catch (e) {
         Navigator.of(context, rootNavigator: true).pop();
@@ -365,9 +368,7 @@ class _HomePageState extends State<HomePage>
         context: context,
         builder: (_) => DialogLoading(
           content:
-              e.toString() == 'Receive timeout in connection with API server'
-                  ? 'لا يوجد اتصال بالسيرفر'
-                  : e.toString(),
+              e.toString() ,
         ),
       );
     }

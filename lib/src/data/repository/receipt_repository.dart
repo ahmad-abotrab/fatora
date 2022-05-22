@@ -1,4 +1,3 @@
-import 'dart:convert' as convert;
 import 'dart:io';
 
 import '../model/receipt_model.dart';
@@ -21,9 +20,10 @@ class ReceiptRepository {
       Receipt receiptObject, File receiptFile, String fileName) async {
     try {
       final source = await ReceiptApi().addNewReceipt(
-          convert.jsonEncode(receiptObject), receiptFile, fileName);
+          receiptObject.toJson(), receiptFile, fileName);
       return source;
     } catch (e) {
+
       rethrow;
     }
   }

@@ -47,6 +47,7 @@ class ReceiptApi {
         }
       }
     } on DioError catch (errorDio) {
+      print(errorDio.toString());
       throw DioExceptions.fromDioError(errorDio);
     }
   }
@@ -59,6 +60,7 @@ class ReceiptApi {
 
     try {
       await dio?.post(urlUploadFile, data: formData);
+      return "success";
     } on DioError catch (errorDio) {
       throw DioExceptions.fromDioError(errorDio);
     }
@@ -69,7 +71,6 @@ class ReceiptApi {
     var url = URLApi.getLastId;
     try {
       final response = await dio?.get(url);
-
       return response;
     } on DioError catch (errorDio) {
       throw DioExceptions.fromDioError(errorDio);

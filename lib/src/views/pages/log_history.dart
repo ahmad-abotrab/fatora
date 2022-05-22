@@ -1,9 +1,7 @@
-
-import 'package:fatora/src/views/widgets/empty_widget_response.dart';
 import 'package:flutter/material.dart';
 
-
 import '/src/Constant/color_app.dart';
+import '/src/views/components/empty_widget_response.dart';
 import '../../data/model/receipt_model.dart';
 
 class LogHistory extends StatelessWidget {
@@ -22,18 +20,17 @@ class LogHistory extends StatelessWidget {
           child: Text('السجل'),
         ),
       ),
-      body:SingleChildScrollView(
-              child: receipts.isEmpty
-                  ? const EmptyWidgetResponse(
-                      title: 'امممممم', content: 'لا يوجد بيانات')
-                  : SingleChildScrollView(
-                      scrollDirection: Axis.horizontal,
-                      child: DataTable(
-                        columns: buildColumnTable(),
-                        rows: buildRowTable(receipts),
-                      ),
-                    ),
-
+      body: SingleChildScrollView(
+        child: receipts.isEmpty
+            ? const EmptyWidgetResponse(
+                title: 'امممممم', content: 'لا يوجد بيانات')
+            : SingleChildScrollView(
+                scrollDirection: Axis.horizontal,
+                child: DataTable(
+                  columns: buildColumnTable(),
+                  rows: buildRowTable(receipts),
+                ),
+              ),
       ),
     );
   }
@@ -85,7 +82,19 @@ class LogHistory extends StatelessWidget {
                 ? "لايوجد"
                 : receipts[i].amountNumeric.toString())),
             DataCell(Text(receipts[i].causeOfPayment ?? "لايوجد")),
-            DataCell(Text(receipts[i].date ?? "لايوجد")),
+            DataCell(
+              Text(
+                receipts[i].date!.year.toString() +
+                    ":" +
+                    receipts[i].date!.month.toString() +
+                    ":" +
+                    receipts[i].date!.day.toString() +
+                    "/" +
+                    receipts[i].date!.hour.toString() +
+                    ":" +
+                    receipts[i].date!.minute.toString(),
+              ),
+            ),
           ],
         ),
       );
