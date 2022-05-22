@@ -22,6 +22,7 @@ class ReceiptApi {
     var url = URLApi.getAllReceipts;
     try {
       final response = await dio?.get(url);
+
       return response!.data;
     } on DioError catch (errorDio) {
       throw DioExceptions.fromDioError(errorDio);
@@ -29,11 +30,14 @@ class ReceiptApi {
   }
 
   Future<dynamic> addNewReceipt(
+
       receiptObject, File receiptFile, fileName) async {
+
     var urlAddNewReceipt = URLApi.addNewReceipt;
     try {
       final responseAddReceipt =
-      await dio?.post(urlAddNewReceipt, data: receiptObject);
+          await dio?.post(urlAddNewReceipt, data: receiptObject);
+      
 
       if (responseAddReceipt!.data == "success") {
         try {
@@ -61,9 +65,11 @@ class ReceiptApi {
   }
 
   Future<dynamic> getLastId() async {
+   
     var url = URLApi.getLastId;
     try {
       final response = await dio?.get(url);
+
       return response;
     } on DioError catch (errorDio) {
       throw DioExceptions.fromDioError(errorDio);

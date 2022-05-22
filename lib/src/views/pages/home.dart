@@ -1,18 +1,22 @@
 import 'dart:io';
 import 'dart:typed_data';
 
+import 'package:fatora/src/views/widgets/dialog_loading.dart';
+import 'package:fatora/src/views/widgets/loading_widget.dart';
 import 'package:flutter/gestures.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:get/get.dart';
 import 'package:intl/intl.dart';
-import '../../data/web_services/api_pdf.dart';
+
 import '/src/Constant/color_app.dart';
 import '../../Constant/route_screen.dart';
 import '../../data/model/receipt_model.dart';
 import '../../data/repository/receipt_repository.dart';
+import '../../data/web_services/api_pdf.dart';
 import '../../logic/data_for_catch.dart';
 import 'catch_page.dart';
+import 'log_history.dart';
 import 'payment_page.dart';
 
 class HomePage extends StatefulWidget {
@@ -25,20 +29,26 @@ class HomePage extends StatefulWidget {
 class _HomePageState extends State<HomePage>
     with SingleTickerProviderStateMixin {
   var changeSelectedTab = Get.put(DataForCatch(), permanent: true);
+  List<Receipt> receipts = [];
 
   TabController? tabController;
   bool? isSelected;
   Color? selectedTabColor;
   var keyForm = GlobalKey<FormState>();
+  late GlobalKey<State> keyLoader = GlobalKey<State>();
+
 
   @override
   void initState() {
+
     if (!mounted) return;
     setState(() {});
     keyForm = GlobalKey<FormState>();
+
+    keyLoader = GlobalKey<State>();
     tabController = TabController(length: 2, vsync: this, initialIndex: 0)
       ..addListener(
-            () {
+        () {
           changeSelectedTab.changeSelectedTab(tabController!.index);
         },
       );
@@ -50,9 +60,11 @@ class _HomePageState extends State<HomePage>
     if (!mounted) return;
     setState(() {});
     keyForm = GlobalKey<FormState>();
+
+    keyLoader = GlobalKey<State>();
     tabController = TabController(length: 2, vsync: this, initialIndex: 0)
       ..addListener(
-            () {
+        () {
           changeSelectedTab.changeSelectedTab(tabController!.index);
         },
       );
@@ -71,9 +83,7 @@ class _HomePageState extends State<HomePage>
       length: 2,
       child: Scaffold(
         extendBodyBehindAppBar: true,
-        backgroundColor: Theme
-            .of(context)
-            .backgroundColor,
+        backgroundColor: Theme.of(context).backgroundColor,
         appBar: appBar(context),
         body: Column(
           children: [
@@ -91,20 +101,14 @@ class _HomePageState extends State<HomePage>
               return Padding(
                 padding: EdgeInsets.only(
                   // top: MediaQuery.of(context).size.height * 0.1,
-                  bottom: MediaQuery
-                      .of(context)
-                      .size
-                      .height * 0.035,
-                  left: MediaQuery
-                      .of(context)
-                      .size
-                      .width * 0.43,
+                  bottom: MediaQuery.of(context).size.height * 0.035,
+                  left: MediaQuery.of(context).size.width * 0.43,
                 ),
                 child: tabController!.index == 0
                     ? controller.fileNameSignature == ''
-                    ? addSignature()
-                    : loadImageFromInternalPath(
-                    controller.fileNameSignature)
+                        ? addSignature()
+                        : loadImageFromInternalPath(
+                            controller.fileNameSignature)
                     : loadSignatureFromAssetFile('assets/images/signature.png'),
               );
             })
@@ -155,14 +159,8 @@ class _HomePageState extends State<HomePage>
       ),
       child: Image.asset(
         pathImageSignature,
-        height: MediaQuery
-            .of(context)
-            .size
-            .width * 0.25,
-        width: MediaQuery
-            .of(context)
-            .size
-            .width * 0.4,
+        height: MediaQuery.of(context).size.width * 0.25,
+        width: MediaQuery.of(context).size.width * 0.4,
       ),
     );
   }
@@ -178,14 +176,8 @@ class _HomePageState extends State<HomePage>
       ),
       child: Image.file(
         File(pathImageSignature),
-        height: MediaQuery
-            .of(context)
-            .size
-            .width * 0.25,
-        width: MediaQuery
-            .of(context)
-            .size
-            .width * 0.4,
+        height: MediaQuery.of(context).size.width * 0.25,
+        width: MediaQuery.of(context).size.width * 0.4,
       ),
     );
   }
@@ -196,42 +188,50 @@ class _HomePageState extends State<HomePage>
     File? pdfFile;
     int id = 0;
 
-    try {
-      var oldReceipt = await ReceiptRepository().getLastId();
-      if (oldReceipt == null) {
-        id = 0;
-      } else {
-        id = int.parse(oldReceipt.id!) + 1;
-      }
-      String imageSignature = 'assets/images/signature.png';
-      if (tabController!.index == 0) {
-        fileName = 'catch{$id}.pdf';
-        if (keyForm.currentState!.validate()) {
-          pdfFile = await abstractTaskInSubmissionProcess(
-              fileName, data, Get
-              .find<DataForCatch>()
-              .fileNameSignature, id);
+    if (keyForm.currentState!.validate()) {
+      GlobalKey<State> keyLoader1 = GlobalKey<State>();
+      try {
+        showDialog(
+            barrierDismissible: false,
+            context: context,
+            builder: (_) => LoadingWidget(keyLoader: keyLoader1));
+        var oldReceipt = await ReceiptRepository().getLastId();
+        if (oldReceipt == null) {
+          id = 0;
+        } else {
+          id = int.parse(oldReceipt.id!) + 1;
         }
-      } else {
-        if (keyForm.currentState!.validate()) {
+        String imageSignature = 'assets/images/signature.png';
+        if (tabController!.index == 0) {
+          fileName = 'catch{$id}.pdf';
+
+          pdfFile = await abstractTaskInSubmissionProcess(
+              fileName, data, Get.find<DataForCatch>().fileNameSignature, id);
+        } else {
           fileName = 'payment{$id}.pdf';
           pdfFile = await abstractTaskInSubmissionProcess(
               fileName, data, imageSignature, id);
         }
+        final DateFormat formatter = DateFormat('yyyy-MM-dd/hh:mm a');
+
+        Receipt receipt = Receipt();
+
+        receipt.whoIsTake = changeSelectedTab.whoIsTake!.text;
+        receipt.amountText = changeSelectedTab.amountText!.text;
+        receipt.amountNumeric = changeSelectedTab.price!.text;
+        receipt.causeOfPayment = changeSelectedTab.causeOfPayment!.text;
+        receipt.date = formatter.format(DateTime.now());
+        await ReceiptRepository().addNewReceipt(receipt, pdfFile!, fileName);
+        Navigator.of(context,rootNavigator: true).pop();
+      } catch (e) {
+        Navigator.of(context, rootNavigator: true).pop();
+        showDialog(
+            context: context,
+            builder: (_) => DialogLoading(
+                  content: e.toString(),
+                ));
+        // buildDialog(e,context);
       }
-      final DateFormat formatter = DateFormat('yyyy-MM-dd/hh:mm a');
-
-      Receipt receipt = Receipt();
-
-      receipt.whoIsTake = changeSelectedTab.whoIsTake!.text;
-      receipt.amountText = changeSelectedTab.amountText!.text;
-      receipt.amountNumeric = changeSelectedTab.price!.text;
-      receipt.causeOfPayment = changeSelectedTab.causeOfPayment!.text;
-      receipt.date = formatter.format(DateTime.now());
-      await ReceiptRepository().addNewReceipt(receipt, pdfFile!, fileName);
-    } catch (e) {
-      print('ahmad');
-      // buildDialog(e,context);
     }
   }
 
@@ -258,9 +258,7 @@ class _HomePageState extends State<HomePage>
 
   AppBar appBar(BuildContext context) {
     return AppBar(
-      backgroundColor: Theme
-          .of(context)
-          .bottomAppBarColor,
+      backgroundColor: Theme.of(context).bottomAppBarColor,
       title: const FittedBox(
         child: Text(
           "الصفحة الرئيسية",
@@ -283,10 +281,7 @@ class _HomePageState extends State<HomePage>
           autofocus: true,
         ),
         IconButton(
-          // splashRadius: ,
-          onPressed: () {
-            Navigator.pushNamed(context, RouteScreens.logHistory);
-          },
+          onPressed: () => loadReceiptsFormServer(),
           icon: const Icon(Icons.history),
           tooltip: 'السجل',
         ),
@@ -343,5 +338,38 @@ class _HomePageState extends State<HomePage>
       ),
     );
     return tabs;
+  }
+
+  loadReceiptsFormServer() async {
+    try {
+      showDialog(
+          barrierDismissible: false,
+          context: context,
+          builder: (_) => LoadingWidget(
+                keyLoader: keyLoader,
+              ));
+      // await Future.delayed(Duration(minutes: 1),);
+      await ReceiptRepository()
+          .getAllReceipts()
+          .then((value) => receipts = value);
+      Navigator.of(context, rootNavigator: true).pop();
+      Navigator.push(
+          context,
+          MaterialPageRoute(
+              builder: (_) => LogHistory(
+                    receipts: receipts,
+                  )));
+    } catch (e) {
+      Navigator.of(context, rootNavigator: true).pop();
+      showDialog(
+        context: context,
+        builder: (_) => DialogLoading(
+          content:
+              e.toString() == 'Receive timeout in connection with API server'
+                  ? 'لا يوجد اتصال بالسيرفر'
+                  : e.toString(),
+        ),
+      );
+    }
   }
 }

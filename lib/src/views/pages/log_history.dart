@@ -1,15 +1,17 @@
-import 'package:empty_widget/empty_widget.dart';
-import '/src/Constant/color_app.dart';
-import '/src/logic/log_controller.dart';
-import 'package:flutter/material.dart';
-import 'package:get/get.dart';
 
+import 'package:fatora/src/views/widgets/empty_widget_response.dart';
+import 'package:flutter/material.dart';
+
+
+import '/src/Constant/color_app.dart';
 import '../../data/model/receipt_model.dart';
 
 class LogHistory extends StatelessWidget {
-  const LogHistory({Key? key}) : super(key: key);
-
-  // var controllerLogHistory = Get.put<LogController>(LogController());
+  const LogHistory({
+    Key? key,
+    required this.receipts,
+  }) : super(key: key);
+  final List<Receipt> receipts;
 
   @override
   Widget build(BuildContext context) {
@@ -20,38 +22,18 @@ class LogHistory extends StatelessWidget {
           child: Text('السجل'),
         ),
       ),
-      body: SingleChildScrollView(
-        child: GetBuilder<LogController>(
-          init: LogController(),
-          builder: (controller) {
-            return controller.isLoading
-                ? SingleChildScrollView(
-                    scrollDirection: Axis.horizontal,
-                    child: DataTable(
-                      columns: buildColumnTable(),
-                      rows: buildRowTable(controller.receipts!),
-                    ),
-                  )
-                : Container(
-                    alignment: Alignment.center,
-                    child: EmptyWidget(
-                      image: null,
-                      packageImage: PackageImage.Image_1,
-                      title: 'لا يوجد بيانات',
-                      subTitle: controller.whatIsFail,
-                      titleTextStyle: const TextStyle(
-                        fontSize: 22,
-                        color: Color(0xff9da9c7),
-                        fontWeight: FontWeight.w500,
-                      ),
-                      subtitleTextStyle: const TextStyle(
-                        fontSize: 14,
-                        color: Color(0xffabb8d6),
+      body:SingleChildScrollView(
+              child: receipts.isEmpty
+                  ? const EmptyWidgetResponse(
+                      title: 'امممممم', content: 'لا يوجد بيانات')
+                  : SingleChildScrollView(
+                      scrollDirection: Axis.horizontal,
+                      child: DataTable(
+                        columns: buildColumnTable(),
+                        rows: buildRowTable(receipts),
                       ),
                     ),
-                  );
-          },
-        ),
+
       ),
     );
   }

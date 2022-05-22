@@ -1,4 +1,4 @@
-import 'package:fatora/src/views/pages/log_history.dart';
+
 import 'package:flutter/material.dart';
 import 'package:get/get.dart';
 
@@ -37,10 +37,10 @@ class Fatora extends StatelessWidget {
         GetPage(
             name: RouteScreens.signaturePage,
             page: () => const SignaturePage()),
-        GetPage(
-          name: RouteScreens.logHistory,
-          page: () => const LogHistory(),
-        ),
+        // GetPage(
+        //   name: RouteScreens.logHistory,
+        //   page: () => LogHistory(),
+        // ),
       ],
     );
   }

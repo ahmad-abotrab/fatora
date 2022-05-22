@@ -1,45 +1,44 @@
 import 'dart:convert' as convert;
 import 'dart:io';
 
-import '../web_services/receipt_api.dart';
 import '../model/receipt_model.dart';
-
+import '../web_services/receipt_api.dart';
 
 class ReceiptRepository {
-  ReceiptApi receiptApi  =  ReceiptApi();
+  ReceiptApi receiptApi = ReceiptApi();
 
   Future<dynamic> getAllReceipts() async {
-    try{
+    try {
       final source = await receiptApi.getAllReceipt();
-      return source.data;
-    } catch (e){
+      var result = source.map<Receipt>((e) => Receipt.fromJson(e)).toList();
+      return result;
+    } catch (e) {
       rethrow;
     }
   }
 
   Future<dynamic> addNewReceipt(
       Receipt receiptObject, File receiptFile, String fileName) async {
-    try{
-      final source = await ReceiptApi()
-          .addNewReceipt(receiptObject.toJson(), receiptFile, fileName);
+    try {
+      final source = await ReceiptApi().addNewReceipt(
+          convert.jsonEncode(receiptObject), receiptFile, fileName);
       return source;
-    }catch (e){
+    } catch (e) {
       rethrow;
     }
   }
 
   Future<dynamic> getLastId() async {
-    try{
-      final response = await ReceiptApi().getLastId();
 
-      if (response.body == '') {
+    try {
+      final response = await ReceiptApi().getLastId();
+      if (response.data == '') {
         return null;
       }
-      var result = convert.jsonDecode(response.body);
-      return Receipt.fromJson(result);
-    }
-    catch (e){
-      rethrow ;
+
+      return Receipt.fromJson(response.data);
+    } catch (e) {
+      rethrow;
     }
   }
 }
