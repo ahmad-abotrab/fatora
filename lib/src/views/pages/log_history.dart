@@ -1,24 +1,60 @@
+import 'package:fatora/src/logic/date_time_range_controller.dart';
 import 'package:flutter/material.dart';
+import 'package:get/get.dart';
 
 import '/src/Constant/color_app.dart';
 import '/src/views/components/empty_widget_response.dart';
 import '../../data/model/receipt_model.dart';
 
+// ignore: must_be_immutable
 class LogHistory extends StatelessWidget {
-  const LogHistory({
+  LogHistory({
     Key? key,
     required this.receipts,
   }) : super(key: key);
-  final List<Receipt> receipts;
+  late List<Receipt> receipts = [];
+  final List<String> tableName = [
+    'رقم',
+    'القابض',
+    'المبلغ',
+    'السبب',
+    'التاريخ'
+  ];
 
   @override
   Widget build(BuildContext context) {
+    onRefresh() async {}
+
     return Scaffold(
       appBar: AppBar(
         backgroundColor: ColorApp.primaryColor,
         title: const FittedBox(
           child: Text('السجل'),
         ),
+        actions: [
+          GetBuilder<DateTimeRangeController>(
+              init: DateTimeRangeController(),
+              builder: (controllerBasic) {
+                return TextButton(
+                  onPressed: () => pickerDateRange(
+                    context,
+                    controllerBasic.dateTimeRange,
+                    DateTime(2020),
+                    DateTime(2050),
+                  ),
+                  child: GetBuilder<DateTimeRangeController>(
+                      init: DateTimeRangeController(),
+                      builder: (controller) {
+                        return Text(
+                          formatDate(controller.startDate) +
+                              "    " +
+                              formatDate(controller.endDate),
+                          style: const TextStyle(color: Colors.white),
+                        );
+                      }),
+                );
+              }),
+        ],
       ),
       body: SingleChildScrollView(
         child: receipts.isEmpty
@@ -35,39 +71,42 @@ class LogHistory extends StatelessWidget {
     );
   }
 
+  Future pickerDateRange(
+      context, initialDateTimeRange, startDate, endDate) async {
+    DateTimeRange? dateTimeRange = await showDateRangePicker(
+      context: context,
+      initialDateRange: initialDateTimeRange,
+      firstDate: startDate,
+      lastDate: endDate,
+    );
+    if (dateTimeRange == null) return;
+    Get.find<DateTimeRangeController>()
+        .changedDateRange(dateTimeRange.start, dateTimeRange.end);
+  }
+
+  formatDate(DateTime dateTime) {
+    return dateTime.year.toString() +
+        ":" +
+        dateTime.month.toString() +
+        ":" +
+        dateTime.day.toString();
+  }
+
+  getSingleDataColumnWidget(String valueLabel) {
+    return DataColumn(
+      label: Directionality(
+        textDirection: TextDirection.rtl,
+        child: Text(valueLabel),
+      ),
+    );
+  }
+
   buildColumnTable() {
-    return const [
-      DataColumn(
-        label: Directionality(
-          textDirection: TextDirection.rtl,
-          child: Text('رقم'),
-        ),
-      ),
-      DataColumn(
-        label: Directionality(
-          textDirection: TextDirection.rtl,
-          child: Text('القابض'),
-        ),
-      ),
-      DataColumn(
-        label: Directionality(
-          textDirection: TextDirection.rtl,
-          child: Text('المبلغ'),
-        ),
-      ),
-      DataColumn(
-        label: Directionality(
-          textDirection: TextDirection.rtl,
-          child: Text('السبب'),
-        ),
-      ),
-      DataColumn(
-        label: Directionality(
-          textDirection: TextDirection.rtl,
-          child: Text('التاريخ'),
-        ),
-      ),
-    ];
+    List<DataColumn> columns = [];
+    for (int i = 0; i < tableName.length; i++) {
+      columns.add(getSingleDataColumnWidget(tableName[i]));
+    }
+    return columns;
   }
 
   buildRowTable(List<Receipt> receipts) {

@@ -1,10 +1,5 @@
 import 'dart:io';
 import 'dart:typed_data';
-
-import 'package:fatora/src/logic/loading_animation_controller.dart';
-
-import '/src/views/components/dialog_loading.dart';
-import '/src/views/components/loading_widget.dart';
 import 'package:flutter/gestures.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
@@ -12,6 +7,9 @@ import 'package:get/get.dart';
 import 'package:intl/intl.dart';
 
 import '/src/Constant/color_app.dart';
+import '/src/logic/loading_animation_controller.dart';
+import '/src/views/components/dialog_loading.dart';
+import '/src/views/components/loading_widget.dart';
 import '../../Constant/route_screen.dart';
 import '../../data/model/receipt_model.dart';
 import '../../data/repository/receipt_repository.dart';
@@ -39,14 +37,11 @@ class _HomePageState extends State<HomePage>
   var keyForm = GlobalKey<FormState>();
   late GlobalKey<State> keyLoader = GlobalKey<State>();
 
-
   @override
   void initState() {
-
     if (!mounted) return;
     setState(() {});
     keyForm = GlobalKey<FormState>();
-
     keyLoader = GlobalKey<State>();
     tabController = TabController(length: 2, vsync: this, initialIndex: 0)
       ..addListener(
@@ -62,8 +57,8 @@ class _HomePageState extends State<HomePage>
     if (!mounted) return;
     setState(() {});
     keyForm = GlobalKey<FormState>();
-
     keyLoader = GlobalKey<State>();
+
     tabController = TabController(length: 2, vsync: this, initialIndex: 0)
       ..addListener(
         () {
@@ -189,51 +184,78 @@ class _HomePageState extends State<HomePage>
     List<String> data = [];
     File? pdfFile;
     int id = 0;
+    if (Get.find<DataForCatch>().fileNameSignature == '') {
+      showDialog(
+          context: context,
+          builder: (_) => AlertDialog(
+                shape: RoundedRectangleBorder(
+                    borderRadius: BorderRadius.circular(22)),
+                // titlePadding: EdgeInsets.only(bottom: MediaQuery.of(context).size.width*0.01,),
+                title: Row(children: [
+                  const Icon(
+                    Icons.warning,
+                    color: Colors.amberAccent,
+                  ),
+                  SizedBox(
+                    width: MediaQuery.of(context).size.width * 0.05,
+                  ),
+                  const Text('تحذير'),
+                ]),
+                content: const Text('الرجاء إدخال التوقيع'),
+                actions: [
+                  FlatButton(
+                      onPressed: () {
+                        Navigator.pop(context);
+                      },
+                      child: const Text('رجوع'))
+                ],
+              ));
+    } else {
+      if (keyForm.currentState!.validate()) {
+        GlobalKey<State> keyLoader1 = GlobalKey<State>();
+        try {
+          showDialog(
+              barrierDismissible: false,
+              context: context,
+              builder: (_) => LoadingWidget(keyLoader: keyLoader1));
+          var oldReceipt = await ReceiptRepository().getLastId();
+          if (oldReceipt == null) {
+            id = 0;
+          } else {
+            id = int.parse(oldReceipt.id!) + 1;
+          }
+          String imageSignature = 'assets/images/signature.png';
+          if (tabController!.index == 0) {
+            fileName = 'catch{$id}.pdf';
 
-    if (keyForm.currentState!.validate()) {
-      GlobalKey<State> keyLoader1 = GlobalKey<State>();
-      try {
-        showDialog(
-            barrierDismissible: false,
-            context: context,
-            builder: (_) => LoadingWidget(keyLoader: keyLoader1));
-        var oldReceipt = await ReceiptRepository().getLastId();
-        if (oldReceipt == null) {
-          id = 0;
-        } else {
-          id = int.parse(oldReceipt.id!) + 1;
+            pdfFile = await abstractTaskInSubmissionProcess(
+                fileName, data, Get.find<DataForCatch>().fileNameSignature, id);
+          } else {
+            fileName = 'payment{$id}.pdf';
+            pdfFile = await abstractTaskInSubmissionProcess(
+                fileName, data, imageSignature, id);
+          }
+
+          Receipt receipt = Receipt();
+
+          receipt.whoIsTake = changeSelectedTab.whoIsTake!.text;
+          receipt.amountText = changeSelectedTab.amountText!.text;
+          receipt.amountNumeric = changeSelectedTab.price!.text;
+          receipt.causeOfPayment = changeSelectedTab.causeOfPayment!.text;
+          receipt.date = DateTime.now();
+          await ReceiptRepository().addNewReceipt(receipt, pdfFile!, fileName);
+          Get.find<LoadingAnimationController>().changeStatus();
+          await Future.delayed(const Duration(seconds: 1));
+          Navigator.of(context, rootNavigator: true).pop();
+        } catch (e) {
+          Navigator.of(context, rootNavigator: true).pop();
+          showDialog(
+              context: context,
+              builder: (_) => DialogLoading(
+                    content: e.toString(),
+                  ));
+          // buildDialog(e,context);
         }
-        String imageSignature = 'assets/images/signature.png';
-        if (tabController!.index == 0) {
-          fileName = 'catch{$id}.pdf';
-
-          pdfFile = await abstractTaskInSubmissionProcess(
-              fileName, data, Get.find<DataForCatch>().fileNameSignature, id);
-        } else {
-          fileName = 'payment{$id}.pdf';
-          pdfFile = await abstractTaskInSubmissionProcess(
-              fileName, data, imageSignature, id);
-        }
-
-        Receipt receipt = Receipt();
-
-        receipt.whoIsTake = changeSelectedTab.whoIsTake!.text;
-        receipt.amountText = changeSelectedTab.amountText!.text;
-        receipt.amountNumeric = changeSelectedTab.price!.text;
-        receipt.causeOfPayment = changeSelectedTab.causeOfPayment!.text;
-        receipt.date = DateTime.now();
-        await ReceiptRepository().addNewReceipt(receipt, pdfFile!, fileName);
-        Get.find<LoadingAnimationController>().changeStatus();
-        await Future.delayed(const Duration(seconds: 1));
-        Navigator.of(context,rootNavigator: true).pop();
-      } catch (e) {
-        Navigator.of(context, rootNavigator: true).pop();
-        showDialog(
-            context: context,
-            builder: (_) => DialogLoading(
-                  content: e.toString(),
-                ));
-        // buildDialog(e,context);
       }
     }
   }
@@ -349,8 +371,8 @@ class _HomePageState extends State<HomePage>
           barrierDismissible: false,
           context: context,
           builder: (_) => LoadingWidget(
-                keyLoader: keyLoader,
-              ));
+            keyLoader: keyLoader,
+          ));
       // await Future.delayed(Duration(minutes: 1),);
       await ReceiptRepository()
           .getAllReceipts()
@@ -360,15 +382,15 @@ class _HomePageState extends State<HomePage>
           context,
           MaterialPageRoute(
               builder: (_) => LogHistory(
-                    receipts: receipts,
-                  )));
+                receipts: receipts,
+              )));
     } catch (e) {
       Navigator.of(context, rootNavigator: true).pop();
       showDialog(
         context: context,
         builder: (_) => DialogLoading(
           content:
-              e.toString() ,
+          e.toString() ,
         ),
       );
     }

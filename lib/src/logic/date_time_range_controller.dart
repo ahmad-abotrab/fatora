@@ -1,19 +1,23 @@
+import 'package:flutter/material.dart';
 import 'package:get/get.dart';
 
 class DateTimeRangeController extends GetxController {
-  var startDate = DateTime.now();
-  var endDate = DateTime.now();
+  DateTime startDate = DateTime.now();
+  DateTime endDate = DateTime.now();
+  DateTimeRange? dateTimeRange;
 
   @override
   void onInit() {
     startDate = DateTime.now();
     endDate = DateTime.now();
+    dateTimeRange = DateTimeRange(start: startDate, end: endDate);
     super.onInit();
   }
 
   changedDateRange(startValue, endValue) {
     startDate = startValue;
     endDate = endValue;
+    dateTimeRange = DateTimeRange(start: startDate, end: endDate);
     update();
   }
 

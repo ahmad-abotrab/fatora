@@ -24,7 +24,7 @@ class FieldData extends StatelessWidget {
           if (isNumber) {
             final isDigitsOnly = int.tryParse(value!);
             return isDigitsOnly == null
-                ? 'Input needs to be digits only'
+                ? 'لا يسمح إلا بادخال أرقام في هذا الحقل'
                 : null;
           } else {
             if (value == null || value.isEmpty) {

@@ -1,30 +1,17 @@
 import 'package:fatora/src/data/model/receipt_model.dart';
-import 'package:fatora/src/data/repository/receipt_repository.dart';
 import 'package:get/get.dart';
 
 class LogController extends GetxController {
-  List<Receipt>? receipts = [];
-  var isLoading = false;
-  var whatIsFail = '';
+  List<Receipt>? receipts;
 
-
-  fetchAllReceipt() async {
-    try {
-      await ReceiptRepository()
-          .getAllReceipts()
-          .then((value) => receipts = value);
-      if (receipts!.isEmpty) {
-        whatIsFail = 'لا يوجد بيانات في قاعدة البيانات';
-      }
-    } catch (e) {
-      throw 'لا يوجد اتصال بالسيرفر';
-    }
-    update();
+  @override
+  void onInit() {
+    receipts = [];
+    super.onInit();
   }
 
-  initializeList() async {
-    receipts = await ReceiptRepository().getAllReceipts();
-
+  updateReceiptsList(List<Receipt> receipt) {
+    receipts = receipt;
     update();
   }
 }
