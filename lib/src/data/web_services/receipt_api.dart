@@ -1,6 +1,7 @@
 import 'dart:io';
 
 import 'package:dio/dio.dart';
+import 'package:fatora/src/data/model/temp.dart';
 
 import '../../Constant/url_api.dart';
 import '../../logic/exception.dart';
@@ -24,31 +25,27 @@ class ReceiptApi {
       final response = await dio?.get(url);
 
       return response!.data;
-    } on DioError catch (errorDio) {
-      throw DioExceptions.fromDioError(errorDio);
+    } on DioError catch (dioError) {
+      throw DioExceptions.fromDioError(dioError);
     }
   }
 
   Future<dynamic> addNewReceipt(
-
       receiptObject, File receiptFile, fileName) async {
-
     var urlAddNewReceipt = URLApi.addNewReceipt;
     try {
       final responseAddReceipt =
           await dio?.post(urlAddNewReceipt, data: receiptObject);
-      
 
       if (responseAddReceipt!.data == "success") {
         try {
           return await store(receiptFile, fileName);
-        } on DioError catch (errorDio) {
-          throw DioExceptions.fromDioError(errorDio);
+        } on DioError catch (dioError) {
+          throw DioExceptions.fromDioError(dioError);
         }
       }
-    } on DioError catch (errorDio) {
-      print(errorDio.toString());
-      throw DioExceptions.fromDioError(errorDio);
+    } on DioError catch (dioError) {
+      throw DioExceptions.fromDioError(dioError);
     }
   }
 
@@ -61,19 +58,34 @@ class ReceiptApi {
     try {
       await dio?.post(urlUploadFile, data: formData);
       return "success";
-    } on DioError catch (errorDio) {
-      throw DioExceptions.fromDioError(errorDio);
+    } on DioError catch (dioError) {
+      throw DioExceptions.fromDioError(dioError);
+    }
+  }
+
+  Future<dynamic> getReceiptsBetweenRangeDate(
+      DateTime startDate, DateTime endDate) async {
+    try {
+      print(endDate.toString());
+      Temp temp = Temp(startDate: startDate, endDate: endDate);
+      final response = await dio?.post(
+        URLApi.getReceiptsBetweenRangeDate,
+        data: temp.toJson(),
+      );
+
+       return response!.data;
+    } on DioError catch (dioError) {
+      throw DioExceptions.fromDioError(dioError);
     }
   }
 
   Future<dynamic> getLastId() async {
-   
     var url = URLApi.getLastId;
     try {
       final response = await dio?.get(url);
       return response;
-    } on DioError catch (errorDio) {
-      throw DioExceptions.fromDioError(errorDio);
+    } on DioError catch (dioError) {
+      throw DioExceptions.fromDioError(dioError);
     }
   }
 }

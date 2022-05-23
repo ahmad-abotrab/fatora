@@ -1,5 +1,6 @@
 import 'dart:io';
 import 'dart:typed_data';
+import 'package:fatora/src/logic/log_controller.dart';
 import 'package:flutter/gestures.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
@@ -36,6 +37,7 @@ class _HomePageState extends State<HomePage>
   Color? selectedTabColor;
   var keyForm = GlobalKey<FormState>();
   late GlobalKey<State> keyLoader = GlobalKey<State>();
+  var controllerLogHistory = Get.put<LogController>(LogController());
 
   @override
   void initState() {
@@ -43,6 +45,7 @@ class _HomePageState extends State<HomePage>
     setState(() {});
     keyForm = GlobalKey<FormState>();
     keyLoader = GlobalKey<State>();
+    controllerLogHistory = Get.put<LogController>(LogController());
     tabController = TabController(length: 2, vsync: this, initialIndex: 0)
       ..addListener(
         () {
@@ -57,6 +60,7 @@ class _HomePageState extends State<HomePage>
     if (!mounted) return;
     setState(() {});
     keyForm = GlobalKey<FormState>();
+    controllerLogHistory = Get.put<LogController>(LogController());
     keyLoader = GlobalKey<State>();
 
     tabController = TabController(length: 2, vsync: this, initialIndex: 0)
@@ -373,16 +377,16 @@ class _HomePageState extends State<HomePage>
           builder: (_) => LoadingWidget(
             keyLoader: keyLoader,
           ));
-      // await Future.delayed(Duration(minutes: 1),);
+
       await ReceiptRepository()
           .getAllReceipts()
-          .then((value) => receipts = value);
+          .then((value) => controllerLogHistory.updateReceiptsList(value));
       Navigator.of(context, rootNavigator: true).pop();
       Navigator.push(
           context,
           MaterialPageRoute(
               builder: (_) => LogHistory(
-                receipts: receipts,
+
               )));
     } catch (e) {
       Navigator.of(context, rootNavigator: true).pop();

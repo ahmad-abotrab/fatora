@@ -17,7 +17,7 @@ class DioExceptions implements Exception {
 
       case DioErrorType.response:
         return handleError(
-            dioError.response!.statusCode!, dioError.response!.data);
+            dioError.response!.statusCode!, dioError.response!.data.toString());
 
       case DioErrorType.sendTimeout:
         return "تجاوز في الوقت المسموح لارسال البيانات";
@@ -34,7 +34,7 @@ class DioExceptions implements Exception {
       case 404:
         return error["message"];
       case 500:
-        return 'هناك مشكلة في السيرفر';
+        return 'إن المشكلة في السيرفر';
       default:
         return 'المشكلة غير معرفة يرجى مراجعة الشركة المصنعة';
     }

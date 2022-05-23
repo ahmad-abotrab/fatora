@@ -14,7 +14,7 @@ class DateTimeRangeController extends GetxController {
     super.onInit();
   }
 
-  changedDateRange(startValue, endValue) {
+  changedDateRange(startValue, endValue) async{
     startDate = startValue;
     endDate = endValue;
     dateTimeRange = DateTimeRange(start: startDate, end: endDate);
