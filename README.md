@@ -1,16 +1,13 @@
 # fatora
 
-A new Flutter project.
+Mobile Application you can make your Receipts 
 
 ## Getting Started
-
-This project is a starting point for a Flutter application.
-
-A few resources to get you started if this is your first Flutter project:
-
-- [Lab: Write your first Flutter app](https://flutter.dev/docs/get-started/codelab)
-- [Cookbook: Useful Flutter samples](https://flutter.dev/docs/cookbook)
-
-For help getting started with Flutter, view our
-[online documentation](https://flutter.dev/docs), which offers tutorials,
-samples, guidance on mobile development, and a full API reference.
+# How to work this application?
+ - install composer on your server (macOs : brew install composer)
+ - install php
+ - go to {backend_fatora} folder and open terminal on it and Run ( php artisan serve --host=0.0.0.0 --port=8080)
+ - go to apple icon - system preferance - network - and save ip 
+ - then go to flutter project -> fatora -> lib -> src -> constant -> url_api.dart 
+ - then update ip on base url
+ - run flutter app 
