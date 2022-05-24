@@ -1,11 +1,17 @@
 import 'dart:io';
 import 'dart:typed_data';
-import 'package:fatora/src/logic/log_controller.dart';
+
+import '/src/logic/data_for_payment.dart';
+import '/src/logic/form_validation.dart';
+import '/src/logic/log_controller.dart';
+import '/src/logic/signature_image.dart';
 import 'package:flutter/gestures.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
+import 'package:font_awesome_flutter/font_awesome_flutter.dart';
 import 'package:get/get.dart';
 import 'package:intl/intl.dart';
+import 'package:share_plus/share_plus.dart';
 
 import '/src/Constant/color_app.dart';
 import '/src/logic/loading_animation_controller.dart';
@@ -15,6 +21,7 @@ import '../../Constant/route_screen.dart';
 import '../../data/model/receipt_model.dart';
 import '../../data/repository/receipt_repository.dart';
 import '../../data/web_services/api_pdf.dart';
+import '../../data/web_services/pdf_opened.dart';
 import '../../logic/data_for_catch.dart';
 import 'catch_page.dart';
 import 'log_history.dart';
@@ -29,13 +36,15 @@ class HomePage extends StatefulWidget {
 
 class _HomePageState extends State<HomePage>
     with SingleTickerProviderStateMixin {
-  var changeSelectedTab = Get.put(DataForCatch(), permanent: true);
+  var formPaymentCon = Get.put(DataForPayment(), permanent: true);
+  var formCatchCon = Get.put(DataForCatch(), permanent: true);
+  var signatureCon = Get.put(SignaturePageController(), permanent: true);
+
   List<Receipt> receipts = [];
 
   TabController? tabController;
   bool? isSelected;
   Color? selectedTabColor;
-  var keyForm = GlobalKey<FormState>();
   late GlobalKey<State> keyLoader = GlobalKey<State>();
   var controllerLogHistory = Get.put<LogController>(LogController());
 
@@ -43,13 +52,12 @@ class _HomePageState extends State<HomePage>
   void initState() {
     if (!mounted) return;
     setState(() {});
-    keyForm = GlobalKey<FormState>();
     keyLoader = GlobalKey<State>();
     controllerLogHistory = Get.put<LogController>(LogController());
     tabController = TabController(length: 2, vsync: this, initialIndex: 0)
       ..addListener(
         () {
-          changeSelectedTab.changeSelectedTab(tabController!.index);
+          signatureCon.updateSelectedIndex(tabController!.index);
         },
       );
     super.initState();
@@ -59,14 +67,13 @@ class _HomePageState extends State<HomePage>
   void didUpdateWidget(covariant HomePage oldWidget) {
     if (!mounted) return;
     setState(() {});
-    keyForm = GlobalKey<FormState>();
     controllerLogHistory = Get.put<LogController>(LogController());
     keyLoader = GlobalKey<State>();
 
     tabController = TabController(length: 2, vsync: this, initialIndex: 0)
       ..addListener(
         () {
-          changeSelectedTab.changeSelectedTab(tabController!.index);
+          signatureCon.updateSelectedIndex(tabController!.index);
         },
       );
     super.didUpdateWidget(oldWidget);
@@ -93,26 +100,28 @@ class _HomePageState extends State<HomePage>
                 controller: tabController!,
                 dragStartBehavior: DragStartBehavior.start,
                 children: [
-                  CatchPage(keyForm: keyForm),
-                  PaymentPage(keyForm: keyForm),
+                  CatchPage(),
+                  PaymentPage(),
                 ],
               ),
             ),
-            GetBuilder<DataForCatch>(builder: (controller) {
-              return Padding(
-                padding: EdgeInsets.only(
-                  // top: MediaQuery.of(context).size.height * 0.1,
-                  bottom: MediaQuery.of(context).size.height * 0.035,
-                  left: MediaQuery.of(context).size.width * 0.43,
-                ),
-                child: tabController!.index == 0
-                    ? controller.fileNameSignature == ''
-                        ? addSignature()
-                        : loadImageFromInternalPath(
-                            controller.fileNameSignature)
-                    : loadSignatureFromAssetFile('assets/images/signature.png'),
-              );
-            })
+            GetBuilder<SignaturePageController>(
+                init: SignaturePageController(),
+                builder: (controller) {
+                  return Padding(
+                    padding: EdgeInsets.only(
+                      bottom: MediaQuery.of(context).size.height * 0.035,
+                      left: MediaQuery.of(context).size.width * 0.43,
+                    ),
+                    child: controller.selectedIndex == 0
+                        ? controller.fileNameSignature == ''
+                            ? addSignature()
+                            : loadImageFromInternalPath(
+                        controller.fileNameSignature)
+                        : loadSignatureFromAssetFile(
+                            'assets/images/signature.png'),
+                  );
+                })
           ],
         ),
         floatingActionButton: FloatingActionButton(
@@ -185,39 +194,33 @@ class _HomePageState extends State<HomePage>
 
   onPressedFloatingButton() async {
     String fileName = '';
-    List<String> data = [];
+
     File? pdfFile;
     int id = 0;
-    if (Get.find<DataForCatch>().fileNameSignature == '') {
-      showDialog(
-          context: context,
-          builder: (_) => AlertDialog(
-                shape: RoundedRectangleBorder(
-                    borderRadius: BorderRadius.circular(22)),
-                // titlePadding: EdgeInsets.only(bottom: MediaQuery.of(context).size.width*0.01,),
-                title: Row(children: [
-                  const Icon(
-                    Icons.warning,
-                    color: Colors.amberAccent,
-                  ),
-                  SizedBox(
-                    width: MediaQuery.of(context).size.width * 0.05,
-                  ),
-                  const Text('تحذير'),
-                ]),
-                content: const Text('الرجاء إدخال التوقيع'),
-                actions: [
-                  FlatButton(
-                      onPressed: () {
-                        Navigator.pop(context);
-                      },
-                      child: const Text('رجوع'))
-                ],
-              ));
+    if (Get.find<SignaturePageController>().fileNameSignature == '') {
+      dontHaveSignature();
     } else {
-      if (keyForm.currentState!.validate()) {
+      bool firstCondition = (signatureCon.selectedIndex == 0 &&
+          Get.find<FormValidation>().formCatch.currentState!.validate());
+      bool secondCondition = (signatureCon.selectedIndex == 1 &&
+          Get.find<FormValidation>().formPayment.currentState!.validate());
+      if (firstCondition || secondCondition) {
         GlobalKey<State> keyLoader1 = GlobalKey<State>();
         try {
+          Receipt receipt = Receipt();
+          if(tabController!.index == 0){
+            receipt.whoIsTake = formCatchCon.whoIsTake!.text;
+            receipt.amountText =formCatchCon.amountText!.text;
+            receipt.amountNumeric =  formCatchCon.price!.text.toString();
+            receipt.causeOfPayment = formCatchCon.causeOfPayment!.text;
+            receipt.date = DateTime.now();
+          }else{
+            receipt.whoIsTake =  formPaymentCon.whoIsTake!.text;
+            receipt.amountText =formPaymentCon.amountText!.text;
+            receipt.amountNumeric =  formPaymentCon.price!.text.toString();
+            receipt.causeOfPayment = formPaymentCon.causeOfPayment!.text;
+            receipt.date = DateTime.now();
+          }
           showDialog(
               barrierDismissible: false,
               context: context,
@@ -231,26 +234,49 @@ class _HomePageState extends State<HomePage>
           String imageSignature = 'assets/images/signature.png';
           if (tabController!.index == 0) {
             fileName = 'catch{$id}.pdf';
-
-            pdfFile = await abstractTaskInSubmissionProcess(
-                fileName, data, Get.find<DataForCatch>().fileNameSignature, id);
+            pdfFile = await abstractTaskInSubmissionProcess(fileName, receipt,
+                Get.find<SignaturePageController>().fileNameSignature, id);
           } else {
             fileName = 'payment{$id}.pdf';
             pdfFile = await abstractTaskInSubmissionProcess(
-                fileName, data, imageSignature, id);
+                fileName, receipt, imageSignature, id);
           }
 
-          Receipt receipt = Receipt();
-
-          receipt.whoIsTake = changeSelectedTab.whoIsTake!.text;
-          receipt.amountText = changeSelectedTab.amountText!.text;
-          receipt.amountNumeric = changeSelectedTab.price!.text;
-          receipt.causeOfPayment = changeSelectedTab.causeOfPayment!.text;
-          receipt.date = DateTime.now();
           await ReceiptRepository().addNewReceipt(receipt, pdfFile!, fileName);
           Get.find<LoadingAnimationController>().changeStatus();
           await Future.delayed(const Duration(seconds: 1));
           Navigator.of(context, rootNavigator: true).pop();
+
+          showDialog(
+              context: context,
+              builder: (_) {
+                return AlertDialog(
+                  shape: RoundedRectangleBorder(
+                      borderRadius: BorderRadius.circular(20)),
+                  title: const Text('هل تريد ؟ '),
+                  content: const Text(
+                    'إرسال الملف حالاً عبد الواتس اب\nعرض ملف الإيصال\nلاشيء.. لكن سيتم حفظ الملف في الـذاكدة المؤقتة لحين إرسالها عبر الواتس آب\n',
+                    maxLines: 3,
+                  ),
+                  actions: [
+                    IconButton(
+                        onPressed: () => whatsAppProcess(pdfFile!.path),
+                        icon: const FaIcon(FontAwesomeIcons.whatsapp,
+                            color: Colors.green)),
+                    IconButton(
+                        onPressed: () {
+                          PDFOpened.openFile(pdfFile!);
+                        },
+                        icon: const FaIcon(FontAwesomeIcons.filePdf,
+                            color: Colors.red)),
+                    TextButton(
+                        onPressed: () {
+                          Navigator.pop(context);
+                        },
+                        child: const Text('رجوع')),
+                  ],
+                );
+              });
         } catch (e) {
           Navigator.of(context, rootNavigator: true).pop();
           showDialog(
@@ -264,11 +290,56 @@ class _HomePageState extends State<HomePage>
     }
   }
 
+  whatsAppProcess(file) async {
+    try {
+      print('');
+      await Share.shareFiles([file], text: "هـذا إيصال الدفع الخاص بك");
+    } catch (e) {
+      showDialog(
+          context: context,
+          builder: (_) {
+            return AlertDialog(
+              shape: RoundedRectangleBorder(
+                  borderRadius: BorderRadius.circular(20)),
+              title: const Text('يوجد خطأ'),
+              content: const Text(' لايمكن فتح الواتس اب لان '),
+              actions: [
+                TextButton(onPressed: () {}, child: const Text('رجوع'))
+              ],
+            );
+          });
+    }
+  }
+
+  Future dontHaveSignature() async {
+    return showDialog(
+        context: context,
+        builder: (_) => AlertDialog(
+              shape: RoundedRectangleBorder(
+                  borderRadius: BorderRadius.circular(22)),
+              // titlePadding: EdgeInsets.only(bottom: MediaQuery.of(context).size.width*0.01,),
+              title: Row(children: [
+                const Icon(
+                  Icons.warning,
+                  color: Colors.amberAccent,
+                ),
+                SizedBox(
+                  width: MediaQuery.of(context).size.width * 0.05,
+                ),
+                const Text('تحذير'),
+              ]),
+              content: const Text('الرجاء إدخال التوقيع'),
+              actions: [
+                FlatButton(
+                    onPressed: () {
+                      Navigator.pop(context);
+                    },
+                    child: const Text('رجوع'))
+              ],
+            ));
+  }
+
   abstractTaskInSubmissionProcess(fileName, data, imageSignature, id) async {
-    data.add(changeSelectedTab.whoIsTake!.text);
-    data.add(changeSelectedTab.price!.text.toString());
-    data.add(changeSelectedTab.amountText!.text);
-    data.add(changeSelectedTab.causeOfPayment!.text);
 
     final DateTime now = DateTime.now();
     final DateFormat formatter = DateFormat('yyyy-MM-dd-hh:mm');
@@ -298,7 +369,12 @@ class _HomePageState extends State<HomePage>
         IconButton(
           // splashRadius: ,
           onPressed: () {
-            changeSelectedTab.reinitialize();
+            if (tabController!.index == 0) {
+              formCatchCon.reinitialize();
+            } else {
+              formPaymentCon.reinitialize();
+            }
+            signatureCon.reinitialize();
           },
           icon: const Icon(Icons.cleaning_services_rounded),
           tooltip: 'تهيئة',
@@ -323,7 +399,7 @@ class _HomePageState extends State<HomePage>
         indicatorWeight: 2,
         labelColor: ColorApp.primaryColor,
         automaticIndicatorColorAdjustment: false,
-        tabs: buildTabs(changeSelectedTab.selectedTabIndex, context),
+        tabs: buildTabs(tabController!.index, context),
       ),
     );
   }
@@ -338,9 +414,7 @@ class _HomePageState extends State<HomePage>
           child: Text(
             'وصل قبض',
             style: TextStyle(
-              color: changeSelectedTab.selectedTabIndex == 0
-                  ? Colors.white
-                  : Colors.white54,
+              color: index == 0 ? Colors.white : Colors.white54,
               fontFamily: 'Fourm',
               fontSize: 17,
             ),
@@ -356,9 +430,7 @@ class _HomePageState extends State<HomePage>
           child: Text(
             'وصل دفع',
             style: TextStyle(
-              color: changeSelectedTab.selectedTabIndex == 1
-                  ? Colors.white
-                  : Colors.white54,
+              color: index == 1 ? Colors.white : Colors.white54,
               fontFamily: 'Fourm',
               fontSize: 17,
             ),
@@ -375,28 +447,32 @@ class _HomePageState extends State<HomePage>
           barrierDismissible: false,
           context: context,
           builder: (_) => LoadingWidget(
-            keyLoader: keyLoader,
-          ));
+                keyLoader: keyLoader,
+              ));
 
       await ReceiptRepository()
           .getAllReceipts()
           .then((value) => controllerLogHistory.updateReceiptsList(value));
       Navigator.of(context, rootNavigator: true).pop();
-      Navigator.push(
-          context,
-          MaterialPageRoute(
-              builder: (_) => LogHistory(
-
-              )));
+      Navigator.push(context, MaterialPageRoute(builder: (_) => LogHistory()));
     } catch (e) {
       Navigator.of(context, rootNavigator: true).pop();
       showDialog(
         context: context,
         builder: (_) => DialogLoading(
-          content:
-          e.toString() ,
+          content: e.toString(),
         ),
       );
     }
   }
 }
+
+// another style for diqlog after send pdf
+//
+// Row(children: [
+// IconButton(onPressed: (){}, icon: const FaIcon(FontAwesomeIcons.whatsapp , color: Colors.green,)),
+// Expanded(child: SizedBox()),
+// IconButton(onPressed: (){}, icon: const FaIcon(FontAwesomeIcons.filePdf , )),
+// Expanded(child: SizedBox()),
+// TextButton(onPressed: (){}, child: const Text('رجوع'))
+// ],)

@@ -1,23 +1,82 @@
+import 'package:fatora/src/logic/form_validation.dart';
 import 'package:flutter/material.dart';
+import 'package:get/get.dart';
 
-import '../components/abstract_receipt.dart';
+import '../../logic/data_for_catch.dart';
+import '../components/field_data.dart';
 
 // ignore: must_be_immutable
 class CatchPage extends StatelessWidget {
   CatchPage({
     Key? key,
-    required this.keyForm,
   }) : super(key: key);
-  var keyForm = GlobalKey<FormState>();
 
   @override
   Widget build(BuildContext context) {
     return SingleChildScrollView(
       child: Column(
         children: [
-          AbstractReceipt(keyForm: keyForm),
+          GetBuilder<FormValidation>(
+              init: FormValidation(),
+              builder: (controller) {
+                return SafeArea(
+                  child: Form(
+                    key: controller.formCatch,
+                    child: SingleChildScrollView(
+                      child: GetBuilder<DataForCatch>(
+                          init: DataForCatch(),
+                          builder: (controller) {
+                            return builderInGetBuilderForm(controller, context);
+                          }),
+                    ),
+                  ),
+                );
+              }),
         ],
       ),
+    );
+  }
+
+  builderInGetBuilderForm(controller, context) {
+    return Column(
+      children: [
+        SizedBox(
+          height: MediaQuery.of(context).size.height * 0.03,
+        ),
+        FieldData(
+          isNumber: false,
+          controller: controller.whoIsTake,
+          labelText: 'قبضت من السيد ...',
+          hintText: 'قبضت من السيد ...',
+        ),
+        SizedBox(
+          height: MediaQuery.of(context).size.height * 0.03,
+        ),
+        FieldData(
+          isNumber: true,
+          controller: controller.price,
+          labelText: 'مبلغاً وقدره رقماً ...',
+          hintText: 'مبلغاً وقدره رقماً ...',
+        ),
+        SizedBox(
+          height: MediaQuery.of(context).size.height * 0.03,
+        ),
+        FieldData(
+          isNumber: false,
+          controller: controller.amountText,
+          labelText: 'مبلغاً وقدره كتابةً ...',
+          hintText: 'مبلغاً وقدره كتابةً ...',
+        ),
+        SizedBox(
+          height: MediaQuery.of(context).size.height * 0.03,
+        ),
+        FieldData(
+          isNumber: false,
+          controller: controller.causeOfPayment,
+          labelText: 'وذلك لقاء ...',
+          hintText: 'وذلك لقاء ...',
+        ),
+      ],
     );
   }
 }

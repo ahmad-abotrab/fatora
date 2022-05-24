@@ -2,14 +2,13 @@ import 'dart:io';
 import 'dart:typed_data';
 import 'dart:ui' as ui;
 
-import '/src/Constant/color_app.dart';
-import '/src/views/pages/home.dart';
 import 'package:flutter/material.dart';
 import 'package:get/get.dart';
 import 'package:path_provider/path_provider.dart';
 import 'package:syncfusion_flutter_signaturepad/signaturepad.dart';
 
-import '../../logic/data_for_catch.dart';
+import '/src/Constant/color_app.dart';
+import '../../logic/signature_image.dart';
 
 class SignaturePage extends StatefulWidget {
   const SignaturePage({Key? key}) : super(key: key);
@@ -102,10 +101,9 @@ class _SignaturePageState extends State<SignaturePage> {
         .asUint8List(bytesData.offsetInBytes, bytesData.lengthInBytes);
     final String path = (await getApplicationDocumentsDirectory()).path;
     final String fileName = "$path/signature.png";
-    Get.find<DataForCatch>().changeFileNameSignature(fileName);
+    Get.find<SignaturePageController>().changedPathToSignature(fileName);
     final File file = File(fileName);
     await file.writeAsBytes(imageBytes, flush: true);
-    Navigator.push(
-        context, MaterialPageRoute(builder: (_) => const HomePage()));
+    Navigator.pop(context);
   }
 }

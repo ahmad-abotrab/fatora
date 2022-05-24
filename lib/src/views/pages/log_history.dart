@@ -3,12 +3,12 @@ import 'package:fatora/src/logic/log_controller.dart';
 import 'package:flutter/material.dart';
 import 'package:get/get.dart';
 
-import '../components/loading_widget.dart';
 import '/src/Constant/color_app.dart';
 import '/src/views/components/empty_widget_response.dart';
 import '../../data/model/receipt_model.dart';
 import '../../data/repository/receipt_repository.dart';
 import '../components/dialog_loading.dart';
+import '../components/loading_widget.dart';
 
 // ignore: must_be_immutable
 class LogHistory extends StatelessWidget {
@@ -24,12 +24,14 @@ class LogHistory extends StatelessWidget {
     'التاريخ'
   ];
   late GlobalKey<State> keyLoader = GlobalKey<State>();
+  var dateTimeController = Get.put(DateTimeRangeController(),permanent: true);
+
   @override
   Widget build(BuildContext context) {
     keyLoader = GlobalKey<State>();
     _refresh() async {
       try {
-        await ReceiptRepository().getAllReceipts().then(
+        await ReceiptRepository().getReceiptsBetweenRangeDate(dateTimeController.startDate, dateTimeController.endDate).then(
             (value) => Get.find<LogController>().updateReceiptsList(value));
       } catch (e) {
         showDialog(
@@ -53,22 +55,29 @@ class LogHistory extends StatelessWidget {
       ),
       body: RefreshIndicator(
         onRefresh: _refresh,
-        child: SingleChildScrollView(
-          child: Get.find<LogController>().receipts!.isEmpty
+        child:  Get.find<LogController>().receipts!.isEmpty
               ? const EmptyWidgetResponse(
                   title: 'امممممم', content: 'لا يوجد بيانات')
               : GetBuilder<LogController>(
                   init: LogController(),
                   builder: (controller) {
-                    return SingleChildScrollView(
-                      scrollDirection: Axis.horizontal,
-                      child: DataTable(
-                        columns: buildColumnTable(),
-                        rows: buildRowTable(controller.receipts!),
+                    return RefreshIndicator(
+                      onRefresh: _refresh,
+                      child: SingleChildScrollView(
+                        scrollDirection: Axis.vertical,
+                        physics: const AlwaysScrollableScrollPhysics(),
+                        child: SingleChildScrollView(
+                          scrollDirection: Axis.horizontal,
+                          child: DataTable(
+                            columns: buildColumnTable(),
+                            rows: buildRowTable(controller.receipts!),
+                          ),
+                        ),
                       ),
                     );
-                  }),
-        ),
+                  },
+                ),
+
       ),
     );
   }
@@ -109,27 +118,24 @@ class LogHistory extends StatelessWidget {
     if (dateTimeRange == null) return;
     Get.find<DateTimeRangeController>()
         .changedDateRange(dateTimeRange.start, dateTimeRange.end);
-    try{
-
+    try {
       showDialog(
           barrierDismissible: false,
           context: context,
           builder: (_) => LoadingWidget(
-            keyLoader: keyLoader,
-          ));
+                keyLoader: keyLoader,
+              ));
 
       await ReceiptRepository()
           .getReceiptsBetweenRangeDate(dateTimeRange.start, dateTimeRange.end)
           .then((value) => Get.find<LogController>().updateReceiptsList(value));
       Navigator.of(context, rootNavigator: true).pop();
-
-    }catch(e){
+    } catch (e) {
       Navigator.of(context, rootNavigator: true).pop();
       showDialog(
         context: context,
         builder: (_) => DialogLoading(
-          content:
-          e.toString() ,
+          content: e.toString(),
         ),
       );
     }

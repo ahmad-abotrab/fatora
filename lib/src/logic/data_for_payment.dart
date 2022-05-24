@@ -1,14 +1,13 @@
 import 'package:flutter/material.dart';
 import 'package:get/get.dart';
 
-class DataForCatch extends GetxController {
+class DataForPayment extends GetxController {
   int selectedTabIndex = 0;
   TextEditingController? price;
   TextEditingController? amountText;
   TextEditingController? whoIsTake;
   TextEditingController? priceWithText;
   TextEditingController? causeOfPayment;
-
 
   @override
   void onInit() {
@@ -33,6 +32,7 @@ class DataForCatch extends GetxController {
     selectedTabIndex = value;
     update();
   }
+
 
   reinitialize() {
     price = TextEditingController();

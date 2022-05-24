@@ -1,5 +1,6 @@
 import 'dart:io';
 
+import '../model/receipt_model.dart';
 import '/src/data/web_services/pdf_opened.dart';
 import 'package:flutter/services.dart';
 
@@ -9,7 +10,7 @@ import 'package:pdf/widgets.dart';
 class ApiPdf {
   static TextDirection textDirection = TextDirection.rtl;
 
-  static Future<File> generate(String fileName, List<String> data,
+  static Future<File> generate(String fileName, Receipt data,
       imageSignature, id, String dataTime) async {
     var arabicFontRegular = Font.ttf(
         await rootBundle.load("assets/fonts/Tajawal/Tajawal-Regular.ttf"));
@@ -25,14 +26,14 @@ class ApiPdf {
       pageFormat: PdfPageFormat.a4,
       build: (context) => [
         SizedBox(height: 1 * PdfPageFormat.cm),
-        buildHeader(id, data[1]),
+        buildHeader(id, data.amountNumeric),
         SizedBox(height: 1 * PdfPageFormat.cm),
 
         /*   data[0] who is take money
          **  data[2] amount text
          **  data[3] cause of payment
         */
-        buildBody(data[0], data[2], data[3]),
+        buildBody(data.whoIsTake, data.amountText, data.causeOfPayment),
         SizedBox(height: 1 * PdfPageFormat.cm),
         Divider(),
         buildFooter(dataTime, signature: imageSignature),
