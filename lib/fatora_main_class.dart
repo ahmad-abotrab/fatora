@@ -1,9 +1,8 @@
-
 import 'package:flutter/material.dart';
 import 'package:get/get.dart';
 
 import 'src/Constant/color_app.dart';
-import 'src/Constant/route_screen.dart';
+import 'src/constant/route_screen.dart';
 import 'src/views/pages/home.dart';
 import 'src/views/pages/signature_page.dart';
 import 'src/views/pages/splash_screen.dart';
@@ -17,7 +16,7 @@ class Fatora extends StatelessWidget {
       title: 'شركة الأمل',
       initialRoute: '/',
       locale: const Locale('ar', 'SY'),
-      // Arabic,  Syria           country code
+// Arabic,  Syria           country code
       theme: ThemeData(
         primaryColor: ColorApp.primaryColor,
         backgroundColor: ColorApp.backgroundColor,
@@ -37,10 +36,6 @@ class Fatora extends StatelessWidget {
         GetPage(
             name: RouteScreens.signaturePage,
             page: () => const SignaturePage()),
-        // GetPage(
-        //   name: RouteScreens.logHistory,
-        //   page: () => LogHistory(),
-        // ),
       ],
     );
   }

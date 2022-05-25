@@ -14,7 +14,6 @@ class PDFOpened {
 
     final dir = await getApplicationDocumentsDirectory();
     final file = File('${dir.path}/$name');
-
     await file.writeAsBytes(bytes);
 
     return file;

@@ -1,10 +1,6 @@
 import 'dart:io';
 import 'dart:typed_data';
 
-import '/src/logic/data_for_payment.dart';
-import '/src/logic/form_validation.dart';
-import '/src/logic/log_controller.dart';
-import '/src/logic/signature_image.dart';
 import 'package:flutter/gestures.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
@@ -14,7 +10,11 @@ import 'package:intl/intl.dart';
 import 'package:share_plus/share_plus.dart';
 
 import '/src/Constant/color_app.dart';
+import '/src/logic/data_for_payment.dart';
+import '/src/logic/form_validation.dart';
 import '/src/logic/loading_animation_controller.dart';
+import '/src/logic/log_controller.dart';
+import '/src/logic/signature_image.dart';
 import '/src/views/components/dialog_loading.dart';
 import '/src/views/components/loading_widget.dart';
 import '../../Constant/route_screen.dart';
@@ -99,7 +99,7 @@ class _HomePageState extends State<HomePage>
               child: TabBarView(
                 controller: tabController!,
                 dragStartBehavior: DragStartBehavior.start,
-                children: [
+                children: const [
                   CatchPage(),
                   PaymentPage(),
                 ],
@@ -117,7 +117,7 @@ class _HomePageState extends State<HomePage>
                         ? controller.fileNameSignature == ''
                             ? addSignature()
                             : loadImageFromInternalPath(
-                        controller.fileNameSignature)
+                                controller.fileNameSignature)
                         : loadSignatureFromAssetFile(
                             'assets/images/signature.png'),
                   );
@@ -208,16 +208,16 @@ class _HomePageState extends State<HomePage>
         GlobalKey<State> keyLoader1 = GlobalKey<State>();
         try {
           Receipt receipt = Receipt();
-          if(tabController!.index == 0){
+          if (tabController!.index == 0) {
             receipt.whoIsTake = formCatchCon.whoIsTake!.text;
-            receipt.amountText =formCatchCon.amountText!.text;
-            receipt.amountNumeric =  formCatchCon.price!.text.toString();
+            receipt.amountText = formCatchCon.amountText!.text;
+            receipt.amountNumeric = formCatchCon.price!.text.toString();
             receipt.causeOfPayment = formCatchCon.causeOfPayment!.text;
             receipt.date = DateTime.now();
-          }else{
-            receipt.whoIsTake =  formPaymentCon.whoIsTake!.text;
-            receipt.amountText =formPaymentCon.amountText!.text;
-            receipt.amountNumeric =  formPaymentCon.price!.text.toString();
+          } else {
+            receipt.whoIsTake = formPaymentCon.whoIsTake!.text;
+            receipt.amountText = formPaymentCon.amountText!.text;
+            receipt.amountNumeric = formPaymentCon.price!.text.toString();
             receipt.causeOfPayment = formPaymentCon.causeOfPayment!.text;
             receipt.date = DateTime.now();
           }
@@ -241,12 +241,11 @@ class _HomePageState extends State<HomePage>
             pdfFile = await abstractTaskInSubmissionProcess(
                 fileName, receipt, imageSignature, id);
           }
-
+          // here should make store data on database
           await ReceiptRepository().addNewReceipt(receipt, pdfFile!, fileName);
           Get.find<LoadingAnimationController>().changeStatus();
           await Future.delayed(const Duration(seconds: 1));
           Navigator.of(context, rootNavigator: true).pop();
-
           showDialog(
               context: context,
               builder: (_) {
@@ -330,6 +329,7 @@ class _HomePageState extends State<HomePage>
               ]),
               content: const Text('الرجاء إدخال التوقيع'),
               actions: [
+                // ignore: deprecated_member_use
                 FlatButton(
                     onPressed: () {
                       Navigator.pop(context);
@@ -340,11 +340,9 @@ class _HomePageState extends State<HomePage>
   }
 
   abstractTaskInSubmissionProcess(fileName, data, imageSignature, id) async {
-
     final DateTime now = DateTime.now();
     final DateFormat formatter = DateFormat('yyyy-MM-dd-hh:mm');
     final String dateTime = formatter.format(now);
-
     Uint8List imagePath;
     if (tabController!.index == 1) {
       imagePath = (await rootBundle.load(imageSignature)).buffer.asUint8List();
@@ -444,11 +442,12 @@ class _HomePageState extends State<HomePage>
   loadReceiptsFormServer() async {
     try {
       showDialog(
-          barrierDismissible: false,
-          context: context,
-          builder: (_) => LoadingWidget(
-                keyLoader: keyLoader,
-              ));
+        barrierDismissible: false,
+        context: context,
+        builder: (_) => LoadingWidget(
+          keyLoader: keyLoader,
+        ),
+      );
 
       await ReceiptRepository()
           .getAllReceipts()

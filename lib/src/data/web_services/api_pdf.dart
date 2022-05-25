@@ -75,7 +75,7 @@ class ApiPdf {
               Directionality(
                 textDirection: textDirection,
                 child: Text(
-                  price + "    " + ' ل.س',
+                  price + "    " + ' ل.س' + ' فقط لاغير',
                   style: TextStyle(
                     fontSize: 23,
                     fontWeight: FontWeight.bold,
@@ -202,9 +202,9 @@ class ApiPdf {
         ),
         SizedBox(height: 0.4 * PdfPageFormat.cm),
         buildText(
-            staticText: 'مبلغاً وقدره  ',
+            staticText: 'مبلغاً وقدره فقط  ',
             dynamicText: amountText.toString(),
-            secondaryStaticText: 'فقط لاغير'),
+            secondaryStaticText: ' لاغير'),
         SizedBox(height: 0.4 * PdfPageFormat.cm),
         buildText(
           staticText: 'وذلك لقاء  ',

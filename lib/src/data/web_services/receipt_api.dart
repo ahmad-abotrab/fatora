@@ -66,7 +66,6 @@ class ReceiptApi {
   Future<dynamic> getReceiptsBetweenRangeDate(
       DateTime startDate, DateTime endDate) async {
     try {
-      print(endDate.toString());
       Temp temp = Temp(startDate: startDate, endDate: endDate);
       final response = await dio?.post(
         URLApi.getReceiptsBetweenRangeDate,

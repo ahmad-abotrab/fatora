@@ -43,7 +43,6 @@ class ReceiptRepository {
     try {
       final source = await ReceiptApi().getReceiptsBetweenRangeDate(startDate, endDate);
       var result = source.map<Receipt>((e) => Receipt.fromJson(e)).toList();
-      print(result.runtimeType);
       return result;
     }catch(dioError){
       rethrow;

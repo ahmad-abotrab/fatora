@@ -5,13 +5,16 @@ namespace App\Http\Controllers;
 use App\Models\Receipt;
 use Exception;
 use Illuminate\Http\Request;
+use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\File;
 
 class ReceiptController extends Controller
 {
     public function allReceipt()
     {
-        return Receipt::get();
+        return DB::table('receipts')
+            ->orderBy('created_at', 'desc')
+            ->get();
     }
 
     public function addReceipt(Request $request): string
@@ -73,7 +76,9 @@ class ReceiptController extends Controller
             return Receipt::whereDate('created_at', $startDate_usedToQuery)
                 ->get();
         } else {
-            return Receipt::whereBetween('created_at', [$startDate_usedToQuery, $endDate_usedToQuery])
+            return Receipt::
+            whereBetween('created_at', [$startDate_usedToQuery, $endDate_usedToQuery])
+                ->lastest()
                 ->get();
         }
     }

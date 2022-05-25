@@ -7,7 +7,7 @@ import '../components/field_data.dart';
 
 // ignore: must_be_immutable
 class CatchPage extends StatelessWidget {
-  CatchPage({
+  const CatchPage({
     Key? key,
   }) : super(key: key);
 

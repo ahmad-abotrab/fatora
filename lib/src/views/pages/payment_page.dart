@@ -7,7 +7,7 @@ import '../components/field_data.dart';
 
 // ignore: must_be_immutable
 class PaymentPage extends StatelessWidget {
-  PaymentPage({
+  const PaymentPage({
     Key? key,
   }) : super(key: key);
 

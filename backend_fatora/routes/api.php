@@ -1,8 +1,9 @@
 <?php
 
+use App\Http\Controllers\ReceiptController;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Route;
-use App\Http\Controllers\ReceiptController;
+
 /*
 |--------------------------------------------------------------------------
 | API Routes
@@ -23,6 +24,6 @@ Route::controller(ReceiptController::class)->group(function () {
     Route::post('/addReceipt', 'addReceipt');
     Route::post('/store', 'store');
     Route::get('/lastRecord', 'lastRecord');
-    Route::post('/filterByDate' , 'getBetweenDateRange');
+    Route::post('/filterByDate', 'getBetweenDateRange');
 
 });
