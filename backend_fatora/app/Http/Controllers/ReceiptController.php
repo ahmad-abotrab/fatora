@@ -18,6 +18,7 @@ class ReceiptController extends Controller
             ->get();
     }
 
+
     public function addReceipt(Request $request): string
     {
         try {
@@ -27,6 +28,7 @@ class ReceiptController extends Controller
                 'amountNumeric' => $request->input('amountNumeric'),
                 'amountText' => $request->input('amountText'),
                 'causeOfPayment' => $request->input('causeOfPayment'),
+                'receiptPdfFileName' =>$request->input('receiptPdfFileName'),
                 'date' => $request->input('date'),
             ]);
             return "success";
@@ -37,11 +39,14 @@ class ReceiptController extends Controller
 
     public function store(Request $request)
     {
+
         try {
+
             if ($request->hasFile("receipt")) {
                 $file = $request->file("receipt");
                 $fileName = $file->getClientOriginalName();
-                $file->storeAs('/Users/ahmadabotrab/Desktop/ahmad', $fileName);
+                $path = '/receipt';
+                $file->storeAs($path, $fileName);
                 return "done store";
             } else {
                 return "no i not found it";

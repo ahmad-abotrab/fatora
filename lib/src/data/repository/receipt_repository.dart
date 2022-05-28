@@ -31,6 +31,7 @@ class ReceiptRepository {
   Future<dynamic> addNewReceipt(
 
       Receipt receiptObject, File receiptFile, String fileName) async {
+
     try {
       String source = await ReceiptApi()
           .addNewReceipt(receiptObject.toJson(), receiptFile, fileName);

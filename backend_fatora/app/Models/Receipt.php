@@ -9,5 +9,5 @@ class Receipt extends Model
 {
     use HasFactory;
 //    public $timestamps = false;
-    protected $fillable = ['whoIsTake','idLocal','amountNumeric','amountText','causeOfPayment','date'];
+    protected $fillable = ['whoIsTake','idLocal','amountNumeric','amountText','causeOfPayment','date','receiptPdfFileName'];
 }

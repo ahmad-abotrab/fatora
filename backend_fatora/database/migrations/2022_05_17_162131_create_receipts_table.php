@@ -17,6 +17,7 @@ return new class extends Migration {
             $table->increments('id')->startingValue(0);
             $table->string('whoIsTake');
             $table->string('idLocal');
+            $table->string('receiptPdfFileName');
             $table->string('amountNumeric');
             $table->string('amountText');
             $table->string('causeOfPayment');

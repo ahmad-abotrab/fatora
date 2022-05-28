@@ -1,9 +1,10 @@
-import '/src/logic/date_time_range_controller.dart';
-import '/src/logic/log_controller.dart';
 import 'package:flutter/material.dart';
+import 'package:font_awesome_flutter/font_awesome_flutter.dart';
 import 'package:get/get.dart';
 
 import '/src/Constant/color_app.dart';
+import '/src/logic/date_time_range_controller.dart';
+import '/src/logic/log_controller.dart';
 import '/src/views/components/empty_widget_response.dart';
 import '../../data/model/receipt_model.dart';
 import '../../data/repository/receipt_repository.dart';
@@ -21,18 +22,22 @@ class LogHistory extends StatelessWidget {
     'القابض',
     'المبلغ',
     'السبب',
-    'التاريخ'
+    'التاريخ',
+    'المزيد',
   ];
   late GlobalKey<State> keyLoader = GlobalKey<State>();
-  var dateTimeController = Get.put(DateTimeRangeController(),permanent: true);
+  var dateTimeController = Get.put(DateTimeRangeController(), permanent: true);
 
   @override
   Widget build(BuildContext context) {
     keyLoader = GlobalKey<State>();
     _refresh() async {
       try {
-        await ReceiptRepository().getReceiptsBetweenRangeDate(dateTimeController.startDate, dateTimeController.endDate).then(
-            (value) => Get.find<LogController>().updateReceiptsList(value));
+        await ReceiptRepository()
+            .getReceiptsBetweenRangeDate(
+                dateTimeController.startDate, dateTimeController.endDate)
+            .then(
+                (value) => Get.find<LogController>().updateReceiptsList(value));
       } catch (e) {
         showDialog(
           context: context,
@@ -55,29 +60,30 @@ class LogHistory extends StatelessWidget {
       ),
       body: RefreshIndicator(
         onRefresh: _refresh,
-        child:  Get.find<LogController>().receipts!.isEmpty
-              ? const EmptyWidgetResponse(
-                  title: 'امممممم', content: 'لا يوجد بيانات')
-              : GetBuilder<LogController>(
-                  init: LogController(),
-                  builder: (controller) {
-                    return RefreshIndicator(
-                      onRefresh: _refresh,
+        child: Get.find<LogController>().receipts!.isEmpty
+            ? const EmptyWidgetResponse(
+                title: 'امممممم', content: 'لا يوجد بيانات')
+            : GetBuilder<LogController>(
+                init: LogController(),
+                builder: (controller) {
+                  return RefreshIndicator(
+                    onRefresh: _refresh,
+                    child: SingleChildScrollView(
+                      scrollDirection: Axis.vertical,
+                      physics: const AlwaysScrollableScrollPhysics(),
                       child: SingleChildScrollView(
-                        scrollDirection: Axis.vertical,
-                        physics: const AlwaysScrollableScrollPhysics(),
-                        child: SingleChildScrollView(
-                          scrollDirection: Axis.horizontal,
-                          child: DataTable(
-                            columns: buildColumnTable(),
-                            rows: buildRowTable(controller.receipts!),
-                          ),
+                        scrollDirection: Axis.horizontal,
+                        child: DataTable(
+                          // headingRowHeight: 10,
+                          dividerThickness: 5,
+                          columns: buildColumnTable(),
+                          rows: buildRowTable(controller.receipts!, context),
                         ),
                       ),
-                    );
-                  },
-                ),
-
+                    ),
+                  );
+                },
+              ),
       ),
     );
   }
@@ -166,7 +172,7 @@ class LogHistory extends StatelessWidget {
     return columns;
   }
 
-  buildRowTable(List<Receipt> receipts) {
+  buildRowTable(List<Receipt> receipts, context) {
     List<DataRow> rows = [];
     for (int i = 0; i < receipts.length; i++) {
       rows.add(
@@ -191,10 +197,51 @@ class LogHistory extends StatelessWidget {
                     receipts[i].date!.minute.toString(),
               ),
             ),
+            DataCell(popButton(context))
           ],
         ),
       );
     }
     return rows;
+  }
+
+  popButton(context) {
+    return PopupMenuButton(
+      offset: Offset.fromDirection(20.0),
+      icon: Icon(Icons.more_horiz_outlined),
+      shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(20)),
+      itemBuilder: (context) => [
+        PopupMenuItem(
+          child: TextButton(
+            onPressed: () {},
+            child: Row(
+              children: const [
+                Text(
+                  'عرض',
+                  style: TextStyle(color: Colors.black),
+                ),
+                Expanded(child: SizedBox()),
+                FaIcon(FontAwesomeIcons.filePdf, color: Colors.red),
+              ],
+            ),
+          ),
+        ),
+        PopupMenuItem(
+          child: TextButton(
+            onPressed: () {},
+            child: Row(
+              children: const [
+                Text(
+                  'ارسال الملف عبر',
+                  style: TextStyle(color: Colors.black),
+                ),
+                Expanded(child: SizedBox()),
+                FaIcon(FontAwesomeIcons.whatsapp, color: Colors.green)
+              ],
+            ),
+          ),
+        ),
+      ],
+    );
   }
 }

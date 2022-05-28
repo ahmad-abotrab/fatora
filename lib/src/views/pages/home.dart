@@ -2,11 +2,8 @@ import 'dart:io';
 import 'dart:typed_data';
 
 import 'package:connectivity_plus/connectivity_plus.dart';
+import 'package:fatora/pair.dart';
 import 'package:fatora/src/constant/constant_value.dart';
-import 'package:shared_preferences/shared_preferences.dart';
-import '/receipts_db.dart';
-import '/src/logic/connection_internet_controller.dart';
-import '/src/views/pages/payment_page.dart';
 import 'package:flutter/gestures.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
@@ -15,8 +12,11 @@ import 'package:get/get.dart';
 import 'package:internet_connection_checker/internet_connection_checker.dart';
 import 'package:intl/intl.dart';
 import 'package:share_plus/share_plus.dart';
+import 'package:shared_preferences/shared_preferences.dart';
 
+import '/receipts_db.dart';
 import '/src/Constant/color_app.dart';
+import '/src/logic/connection_internet_controller.dart';
 import '/src/logic/data_for_payment.dart';
 import '/src/logic/form_validation.dart';
 import '/src/logic/loading_animation_controller.dart';
@@ -24,6 +24,7 @@ import '/src/logic/log_controller.dart';
 import '/src/logic/signature_image.dart';
 import '/src/views/components/dialog_loading.dart';
 import '/src/views/components/loading_widget.dart';
+import '/src/views/pages/payment_page.dart';
 import '../../Constant/route_screen.dart';
 import '../../data/model/receipt_model.dart';
 import '../../data/repository/receipt_repository.dart';
@@ -58,6 +59,7 @@ class _HomePageState extends State<HomePage>
           .connectivityResult
           .toString()));
   ReceiptsDB receiptsDB = ReceiptsDB();
+
   @override
   void initState() {
     keyLoader = GlobalKey<State>();
@@ -234,18 +236,22 @@ class _HomePageState extends State<HomePage>
       if (firstCondition || secondCondition) {
         GlobalKey<State> keyLoader1 = GlobalKey<State>();
         try {
-
           loadingDialogFun(keyLoader1);
-          SharedPreferences sharedPreferences = await SharedPreferences.getInstance();
+          SharedPreferences sharedPreferences =
+              await SharedPreferences.getInstance();
           final prefer = sharedPreferences;
-          
+
           var oldCharIdLocal = await prefer.get(charIdAppLocal);
           var oldIdLocal = await prefer.get(idAppLocal);
           id = int.parse(oldIdLocal.toString()) + 1;
-          Receipt receipt = createReceiptToNextProcess(id,oldCharIdLocal);
-          pdfFile = await createPdfToNextProcess(id,oldCharIdLocal, receipt);
+          Receipt receipt = createReceiptToNextProcess(id, oldCharIdLocal);
+          Pair pair = await createPdfToNextProcess(id, oldCharIdLocal, receipt);
+          receipt.receiptPdfFileName = pair.second;
+          print(pair.first.path);
           // here should make store data on database
-          await ReceiptRepository().addNewReceipt(receipt, pdfFile!, fileName);
+
+          await ReceiptRepository()
+              .addNewReceipt(receipt, pair.first, pair.second);
           prefer.setString(idAppLocal, id.toString());
           Get.find<LoadingAnimationController>().changeStatus();
           await Future.delayed(const Duration(seconds: 1));
@@ -260,8 +266,6 @@ class _HomePageState extends State<HomePage>
             ),
           );
         }
-
-
       }
     }
   }
@@ -275,11 +279,10 @@ class _HomePageState extends State<HomePage>
         builder: (_) => LoadingWidget(keyLoader: keyLoader1));
   }
 
-  Receipt createReceiptToNextProcess(id,oldCharIDLocal) {
+  Receipt createReceiptToNextProcess(id, oldCharIDLocal) {
     Receipt receipt = Receipt();
     receipt.idLocal = id.toString() + oldCharIDLocal;
     if (tabController!.index == 0) {
-
       receipt.whoIsTake = formCatchCon.whoIsTake!.text;
       receipt.amountText = formCatchCon.amountText!.text;
       receipt.amountNumeric = formCatchCon.price!.text.toString();
@@ -296,7 +299,8 @@ class _HomePageState extends State<HomePage>
     return receipt;
   }
 
-  createPdfToNextProcess(id,oldCharId, receipt) async {
+  createPdfToNextProcess(id, oldCharId, receipt) async {
+    Pair pair = Pair();
     File pdfFile;
     String fileName;
     String imageSignature = 'assets/images/signature.png';
@@ -308,7 +312,9 @@ class _HomePageState extends State<HomePage>
       fileName = 'payment{$id}.pdf';
       pdfFile = await createPdfReceipts(fileName, receipt, imageSignature, id);
     }
-    return pdfFile;
+    pair.first = pdfFile;
+    pair.second = fileName;
+    return pair;
   }
 
   dialogWhatYouWantDoAfterUploadDataToServer(pdfFile) {
@@ -437,19 +443,7 @@ class _HomePageState extends State<HomePage>
           icon: const Icon(Icons.cleaning_services_rounded),
           tooltip: 'تهيئة',
         ),
-        IconButton(
-          onPressed: () async{
-
-          },
-          icon: const Icon(Icons.sync_outlined),
-          tooltip: 'رفع الفواتير',
-          autofocus: true,
-        ),
-        IconButton(
-          onPressed: () => loadReceiptsFormServer(),
-          icon: const Icon(Icons.history),
-          tooltip: 'السجل',
-        ),
+        moreButtonPopButton(context),
       ],
       bottom: TabBar(
         controller: tabController,
@@ -534,5 +528,44 @@ class _HomePageState extends State<HomePage>
         ),
       );
     }
+  }
+
+  moreButtonPopButton(context) {
+    return PopupMenuButton(
+      tooltip: 'المزيد',
+      shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(20)),
+      itemBuilder: (context) => [
+        PopupMenuItem(
+          child: TextButton(
+            onPressed: () async {},
+            child: Row(
+              children: const [
+                Icon(Icons.cloud_upload, color: Colors.blue),
+                Expanded(child: SizedBox()),
+                Text(
+                  'رفع الفواتير',
+                  style: TextStyle(color: Colors.black),
+                ),
+              ],
+            ),
+          ),
+        ),
+        PopupMenuItem(
+          child: TextButton(
+            onPressed: () => loadReceiptsFormServer(),
+            child: Row(
+              children: const [
+                Icon(Icons.history, color: Colors.blue),
+                Expanded(child: SizedBox()),
+                Text(
+                  'السجل',
+                  style: TextStyle(color: Colors.black),
+                )
+              ],
+            ),
+          ),
+        ),
+      ],
+    );
   }
 }
