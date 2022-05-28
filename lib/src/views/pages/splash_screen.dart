@@ -1,79 +1,69 @@
-import 'dart:async';
+import 'package:flutter/material.dart';
+import 'package:get/get.dart';
+import 'package:shared_preferences/shared_preferences.dart';
 
 import '/src/Constant/color_app.dart';
 import '/src/Constant/path_images.dart';
-import 'package:flutter/material.dart';
-import 'package:flutter_spinkit/flutter_spinkit.dart';
+import '/src/constant/route_screen.dart';
+import '/src/logic/internet_state.dart';
 
-import '../../Constant/route_screen.dart';
-
-class SplashScreen extends StatefulWidget {
+class SplashScreen extends GetView<LocalIdController> {
   const SplashScreen({Key? key}) : super(key: key);
 
   @override
-  State<SplashScreen> createState() => _SplashScreenState();
-}
-
-class _SplashScreenState extends State<SplashScreen>
-    with SingleTickerProviderStateMixin {
-  late AnimationController animationController;
-  Duration duration = const Duration(milliseconds: 1);
-
-  @override
-  void initState() {
-    if (!mounted) return;
-    setState(() {});
-    super.initState();
-    animationController = AnimationController(
-      vsync: this, // the SingleTickerProviderStateMixin
-      duration: duration,
-      animationBehavior: AnimationBehavior.preserve,
-    );
-  }
-
-  @override
-  void didUpdateWidget(SplashScreen oldWidget) {
-    if (!mounted) return;
-    setState(() {});
-    super.didUpdateWidget(oldWidget);
-    animationController.duration = duration;
-  }
-
-  @override
-  void dispose() {
-    animationController.dispose();
-    super.dispose();
-  }
-
-  checkAvailableUser() {
-    Navigator.pushReplacementNamed(context, RouteScreens.home);
-  }
-
-  @override
   Widget build(BuildContext context) {
-    Timer(
-      const Duration(milliseconds: 1),
-      checkAvailableUser,
-    );
+    Get.lazyPut(() => LocalIdController());
     Size size = MediaQuery.of(context).size;
     return Scaffold(
       body: SingleChildScrollView(
         child: Column(
           children: [
             logoImageBuilder(size),
-            SizedBox(height: size.height * .12),
-            loadingSplash(),
+            const SizedBox(
+              height: 20,
+            ),
+            Container(
+              child: controller.obx((state) {
+                return FlatButton(
+                    onPressed: () async {
+
+                      SharedPreferences sharedPreferences =
+                          await SharedPreferences.getInstance();
+                      final shared = sharedPreferences;
+                      await shared.setString('idReceiptForEachEmployee',
+                          state!.idReceiptForEachEmployee!);
+                      await shared.setString('charReceiptForEachEmployee',
+                          state.charReceiptForEachEmployee!);
+                      print(state.charReceiptForEachEmployee!);
+                      Navigator.pushReplacementNamed(
+                          context, RouteScreens.home);
+                    },
+                    child: const Text('الذهاب للصفحة الرئيسية'));
+              },
+                  onLoading: const CircularProgressIndicator(),
+                  onError: (error) => Column(
+                        children: [
+                          Text(error.toString()),
+                          const SizedBox(height: 10,),
+                          const Text('الرجاء اضغط لاعادة التحميل'),
+                          const SizedBox(
+                            height: 20,
+                          ),
+                          IconButton(
+                            onPressed: () async {
+                              await Get.find<LocalIdController>().fetchId();
+                            },
+                            icon: const Icon(
+                              Icons.refresh,
+                              color: ColorApp.primaryColor,
+                            ),
+                          ),
+                        ],
+                      )),
+            ),
           ],
         ),
       ),
-    );
-  }
-
-  loadingSplash() {
-    return SpinKitCircle(
-      color: ColorApp.primaryColor,
-      size: 40.0,
-      controller: animationController,
     );
   }
 

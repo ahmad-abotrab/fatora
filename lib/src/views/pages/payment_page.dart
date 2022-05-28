@@ -1,5 +1,5 @@
-import 'package:fatora/src/logic/data_for_payment.dart';
-import 'package:fatora/src/logic/form_validation.dart';
+import '/src/logic/data_for_payment.dart';
+import '/src/logic/form_validation.dart';
 import 'package:flutter/material.dart';
 import 'package:get/get.dart';
 

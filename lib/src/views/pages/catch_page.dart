@@ -1,4 +1,4 @@
-import 'package:fatora/src/logic/form_validation.dart';
+import '/src/logic/form_validation.dart';
 import 'package:flutter/material.dart';
 import 'package:get/get.dart';
 

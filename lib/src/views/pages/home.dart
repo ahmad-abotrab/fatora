@@ -1,11 +1,18 @@
 import 'dart:io';
 import 'dart:typed_data';
 
+import 'package:connectivity_plus/connectivity_plus.dart';
+import 'package:fatora/src/constant/constant_value.dart';
+import 'package:shared_preferences/shared_preferences.dart';
+import '/receipts_db.dart';
+import '/src/logic/connection_internet_controller.dart';
+import '/src/views/pages/payment_page.dart';
 import 'package:flutter/gestures.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:font_awesome_flutter/font_awesome_flutter.dart';
 import 'package:get/get.dart';
+import 'package:internet_connection_checker/internet_connection_checker.dart';
 import 'package:intl/intl.dart';
 import 'package:share_plus/share_plus.dart';
 
@@ -25,7 +32,6 @@ import '../../data/web_services/pdf_opened.dart';
 import '../../logic/data_for_catch.dart';
 import 'catch_page.dart';
 import 'log_history.dart';
-import 'payment_page.dart';
 
 class HomePage extends StatefulWidget {
   const HomePage({Key? key}) : super(key: key);
@@ -39,19 +45,21 @@ class _HomePageState extends State<HomePage>
   var formPaymentCon = Get.put(DataForPayment(), permanent: true);
   var formCatchCon = Get.put(DataForCatch(), permanent: true);
   var signatureCon = Get.put(SignaturePageController(), permanent: true);
-
+  var connectInternetStatus =
+      Get.put(ConnectionInternetController(), permanent: true);
   List<Receipt> receipts = [];
-
   TabController? tabController;
   bool? isSelected;
   Color? selectedTabColor;
   late GlobalKey<State> keyLoader = GlobalKey<State>();
   var controllerLogHistory = Get.put<LogController>(LogController());
-
+  final snackbar = SnackBar(
+      content: Text(Get.find<ConnectionInternetController>()
+          .connectivityResult
+          .toString()));
+  ReceiptsDB receiptsDB = ReceiptsDB();
   @override
   void initState() {
-    if (!mounted) return;
-    setState(() {});
     keyLoader = GlobalKey<State>();
     controllerLogHistory = Get.put<LogController>(LogController());
     tabController = TabController(length: 2, vsync: this, initialIndex: 0)
@@ -60,13 +68,21 @@ class _HomePageState extends State<HomePage>
           signatureCon.updateSelectedIndex(tabController!.index);
         },
       );
+    InternetConnectionChecker().onStatusChange.listen((status) {
+      bool result = status == InternetConnectionStatus.connected;
+      if (result) {
+        Connectivity().onConnectivityChanged.listen((connectivityResultValue) {
+          connectInternetStatus.changeValues(true, connectivityResultValue);
+        });
+      } else {
+        connectInternetStatus.changeValues(false, ConnectivityResult.none);
+      }
+    });
     super.initState();
   }
 
   @override
   void didUpdateWidget(covariant HomePage oldWidget) {
-    if (!mounted) return;
-    setState(() {});
     controllerLogHistory = Get.put<LogController>(LogController());
     keyLoader = GlobalKey<State>();
 
@@ -76,6 +92,16 @@ class _HomePageState extends State<HomePage>
           signatureCon.updateSelectedIndex(tabController!.index);
         },
       );
+    InternetConnectionChecker().onStatusChange.listen((status) {
+      bool result = status == InternetConnectionStatus.connected;
+      if (result) {
+        Connectivity().onConnectivityChanged.listen((connectivityResultValue) {
+          connectInternetStatus.changeValues(true, connectivityResultValue);
+        });
+      } else {
+        connectInternetStatus.changeValues(false, ConnectivityResult.none);
+      }
+    });
     super.didUpdateWidget(oldWidget);
   }
 
@@ -194,102 +220,133 @@ class _HomePageState extends State<HomePage>
 
   onPressedFloatingButton() async {
     String fileName = '';
-
     File? pdfFile;
     int id = 0;
     if (Get.find<SignaturePageController>().fileNameSignature == '') {
       dontHaveSignature();
     } else {
+      //condition to complete process
       bool firstCondition = (signatureCon.selectedIndex == 0 &&
           Get.find<FormValidation>().formCatch.currentState!.validate());
       bool secondCondition = (signatureCon.selectedIndex == 1 &&
           Get.find<FormValidation>().formPayment.currentState!.validate());
+      //----------
       if (firstCondition || secondCondition) {
         GlobalKey<State> keyLoader1 = GlobalKey<State>();
         try {
-          Receipt receipt = Receipt();
-          if (tabController!.index == 0) {
-            receipt.whoIsTake = formCatchCon.whoIsTake!.text;
-            receipt.amountText = formCatchCon.amountText!.text;
-            receipt.amountNumeric = formCatchCon.price!.text.toString();
-            receipt.causeOfPayment = formCatchCon.causeOfPayment!.text;
-            receipt.date = DateTime.now();
-          } else {
-            receipt.whoIsTake = formPaymentCon.whoIsTake!.text;
-            receipt.amountText = formPaymentCon.amountText!.text;
-            receipt.amountNumeric = formPaymentCon.price!.text.toString();
-            receipt.causeOfPayment = formPaymentCon.causeOfPayment!.text;
-            receipt.date = DateTime.now();
-          }
-          showDialog(
-              barrierDismissible: false,
-              context: context,
-              builder: (_) => LoadingWidget(keyLoader: keyLoader1));
-          var oldReceipt = await ReceiptRepository().getLastId();
-          if (oldReceipt == null) {
-            id = 0;
-          } else {
-            id = int.parse(oldReceipt.id!) + 1;
-          }
-          String imageSignature = 'assets/images/signature.png';
-          if (tabController!.index == 0) {
-            fileName = 'catch{$id}.pdf';
-            pdfFile = await abstractTaskInSubmissionProcess(fileName, receipt,
-                Get.find<SignaturePageController>().fileNameSignature, id);
-          } else {
-            fileName = 'payment{$id}.pdf';
-            pdfFile = await abstractTaskInSubmissionProcess(
-                fileName, receipt, imageSignature, id);
-          }
+
+          loadingDialogFun(keyLoader1);
+          SharedPreferences sharedPreferences = await SharedPreferences.getInstance();
+          final prefer = sharedPreferences;
+          
+          var oldCharIdLocal = await prefer.get(charIdAppLocal);
+          var oldIdLocal = await prefer.get(idAppLocal);
+          id = int.parse(oldIdLocal.toString()) + 1;
+          Receipt receipt = createReceiptToNextProcess(id,oldCharIdLocal);
+          pdfFile = await createPdfToNextProcess(id,oldCharIdLocal, receipt);
           // here should make store data on database
           await ReceiptRepository().addNewReceipt(receipt, pdfFile!, fileName);
+          prefer.setString(idAppLocal, id.toString());
           Get.find<LoadingAnimationController>().changeStatus();
           await Future.delayed(const Duration(seconds: 1));
           Navigator.of(context, rootNavigator: true).pop();
-          showDialog(
-              context: context,
-              builder: (_) {
-                return AlertDialog(
-                  shape: RoundedRectangleBorder(
-                      borderRadius: BorderRadius.circular(20)),
-                  title: const Text('هل تريد ؟ '),
-                  content: const Text(
-                    'إرسال الملف حالاً عبد الواتس اب\nعرض ملف الإيصال\nلاشيء.. لكن سيتم حفظ الملف في الـذاكدة المؤقتة لحين إرسالها عبر الواتس آب\n',
-                    maxLines: 3,
-                  ),
-                  actions: [
-                    IconButton(
-                        onPressed: () => whatsAppProcess(pdfFile!.path),
-                        icon: const FaIcon(FontAwesomeIcons.whatsapp,
-                            color: Colors.green)),
-                    IconButton(
-                        onPressed: () {
-                          PDFOpened.openFile(pdfFile!);
-                        },
-                        icon: const FaIcon(FontAwesomeIcons.filePdf,
-                            color: Colors.red)),
-                    TextButton(
-                        onPressed: () {
-                          Navigator.pop(context);
-                        },
-                        child: const Text('رجوع')),
-                  ],
-                );
-              });
+          await showDialogWhatYouWantDoAfterUploadDataToServer(pdfFile);
         } catch (e) {
           Navigator.of(context, rootNavigator: true).pop();
           showDialog(
-              context: context,
-              builder: (_) => DialogLoading(
-                    content: e.toString(),
-                  ));
-          // buildDialog(e,context);
+            context: context,
+            builder: (_) => WarningDialog(
+              content: e.toString(),
+            ),
+          );
         }
+
+
       }
     }
   }
 
-  whatsAppProcess(file) async {
+  ifMobileConnectWithInternetByWifi() {}
+
+  Future loadingDialogFun(keyLoader1) async {
+    showDialog(
+        barrierDismissible: false,
+        context: context,
+        builder: (_) => LoadingWidget(keyLoader: keyLoader1));
+  }
+
+  Receipt createReceiptToNextProcess(id,oldCharIDLocal) {
+    Receipt receipt = Receipt();
+    receipt.idLocal = id.toString() + oldCharIDLocal;
+    if (tabController!.index == 0) {
+
+      receipt.whoIsTake = formCatchCon.whoIsTake!.text;
+      receipt.amountText = formCatchCon.amountText!.text;
+      receipt.amountNumeric = formCatchCon.price!.text.toString();
+      receipt.causeOfPayment = formCatchCon.causeOfPayment!.text;
+      receipt.date = DateTime.now();
+    } else {
+      receipt.whoIsTake = formPaymentCon.whoIsTake!.text;
+      receipt.amountText = formPaymentCon.amountText!.text;
+      receipt.amountNumeric = formPaymentCon.price!.text.toString();
+      receipt.causeOfPayment = formPaymentCon.causeOfPayment!.text;
+      receipt.date = DateTime.now();
+    }
+
+    return receipt;
+  }
+
+  createPdfToNextProcess(id,oldCharId, receipt) async {
+    File pdfFile;
+    String fileName;
+    String imageSignature = 'assets/images/signature.png';
+    if (tabController!.index == 0) {
+      fileName = 'catch{$id}.pdf';
+      pdfFile = await createPdfReceipts(fileName, receipt,
+          Get.find<SignaturePageController>().fileNameSignature, id);
+    } else {
+      fileName = 'payment{$id}.pdf';
+      pdfFile = await createPdfReceipts(fileName, receipt, imageSignature, id);
+    }
+    return pdfFile;
+  }
+
+  dialogWhatYouWantDoAfterUploadDataToServer(pdfFile) {
+    return AlertDialog(
+      shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(20)),
+      title: const Text('هل تريد ؟ '),
+      content: const Text(
+        'إرسال الملف حالاً عبد الواتس اب\nعرض ملف الإيصال\nلاشيء.. لكن سيتم حفظ الملف في الـذاكدة المؤقتة لحين إرسالها عبر الواتس آب\n',
+        maxLines: 3,
+      ),
+      actions: [
+        IconButton(
+            onPressed: () => sendReceiptPdfByWhatsApp(pdfFile!.path),
+            icon: const FaIcon(FontAwesomeIcons.whatsapp, color: Colors.green)),
+        IconButton(
+            onPressed: () {
+              PDFOpened.openFile(pdfFile!);
+            },
+            icon: const FaIcon(FontAwesomeIcons.filePdf, color: Colors.red)),
+        TextButton(
+            onPressed: () {
+              Navigator.pop(context);
+            },
+            child: const Text('رجوع')),
+      ],
+    );
+  }
+
+  Future showDialogWhatYouWantDoAfterUploadDataToServer(pdfFile) async {
+    showDialog(
+      context: context,
+      builder: (_) {
+        return dialogWhatYouWantDoAfterUploadDataToServer(pdfFile);
+      },
+    );
+  }
+
+  sendReceiptPdfByWhatsApp(file) async {
     try {
       print('');
       await Share.shareFiles([file], text: "هـذا إيصال الدفع الخاص بك");
@@ -312,38 +369,40 @@ class _HomePageState extends State<HomePage>
 
   Future dontHaveSignature() async {
     return showDialog(
-        context: context,
-        builder: (_) => AlertDialog(
-              shape: RoundedRectangleBorder(
-                  borderRadius: BorderRadius.circular(22)),
-              // titlePadding: EdgeInsets.only(bottom: MediaQuery.of(context).size.width*0.01,),
-              title: Row(children: [
-                const Icon(
-                  Icons.warning,
-                  color: Colors.amberAccent,
-                ),
-                SizedBox(
-                  width: MediaQuery.of(context).size.width * 0.05,
-                ),
-                const Text('تحذير'),
-              ]),
-              content: const Text('الرجاء إدخال التوقيع'),
-              actions: [
-                // ignore: deprecated_member_use
-                FlatButton(
-                    onPressed: () {
-                      Navigator.pop(context);
-                    },
-                    child: const Text('رجوع'))
-              ],
-            ));
+      context: context,
+      builder: (_) => AlertDialog(
+        shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(22)),
+        // titlePadding: EdgeInsets.only(bottom: MediaQuery.of(context).size.width*0.01,),
+        title: Row(children: [
+          const Icon(
+            Icons.warning,
+            color: Colors.amberAccent,
+          ),
+          SizedBox(
+            width: MediaQuery.of(context).size.width * 0.05,
+          ),
+          const Text('تحذير'),
+        ]),
+        content: const Text('الرجاء إدخال التوقيع'),
+        actions: [
+          // ignore: deprecated_member_use
+          FlatButton(
+              onPressed: () {
+                Navigator.pop(context);
+              },
+              child: const Text('رجوع'))
+        ],
+      ),
+    );
   }
 
-  abstractTaskInSubmissionProcess(fileName, data, imageSignature, id) async {
+  createPdfReceipts(fileName, data, imageSignature, id) async {
     final DateTime now = DateTime.now();
     final DateFormat formatter = DateFormat('yyyy-MM-dd-hh:mm');
     final String dateTime = formatter.format(now);
     Uint8List imagePath;
+
+    //Here this condition to check what is signature which i load
     if (tabController!.index == 1) {
       imagePath = (await rootBundle.load(imageSignature)).buffer.asUint8List();
     } else {
@@ -351,6 +410,7 @@ class _HomePageState extends State<HomePage>
       var bytes = await file.readAsBytes();
       imagePath = bytes.buffer.asUint8List();
     }
+
     return await ApiPdf.generate(fileName, data, imagePath, id, dateTime);
   }
 
@@ -378,7 +438,9 @@ class _HomePageState extends State<HomePage>
           tooltip: 'تهيئة',
         ),
         IconButton(
-          onPressed: () {},
+          onPressed: () async{
+
+          },
           icon: const Icon(Icons.sync_outlined),
           tooltip: 'رفع الفواتير',
           autofocus: true,
@@ -439,8 +501,10 @@ class _HomePageState extends State<HomePage>
     return tabs;
   }
 
+  // get receipts form server to open log history
   loadReceiptsFormServer() async {
     try {
+      // Loading widget
       showDialog(
         barrierDismissible: false,
         context: context,
@@ -449,29 +513,26 @@ class _HomePageState extends State<HomePage>
         ),
       );
 
+      // connect with api to get data
       await ReceiptRepository()
           .getAllReceipts()
           .then((value) => controllerLogHistory.updateReceiptsList(value));
+
+      // close loading dialog
       Navigator.of(context, rootNavigator: true).pop();
+
+      //go to log history
       Navigator.push(context, MaterialPageRoute(builder: (_) => LogHistory()));
     } catch (e) {
+      //close loading
       Navigator.of(context, rootNavigator: true).pop();
+      //error widget
       showDialog(
         context: context,
-        builder: (_) => DialogLoading(
+        builder: (_) => WarningDialog(
           content: e.toString(),
         ),
       );
     }
   }
 }
-
-// another style for diqlog after send pdf
-//
-// Row(children: [
-// IconButton(onPressed: (){}, icon: const FaIcon(FontAwesomeIcons.whatsapp , color: Colors.green,)),
-// Expanded(child: SizedBox()),
-// IconButton(onPressed: (){}, icon: const FaIcon(FontAwesomeIcons.filePdf , )),
-// Expanded(child: SizedBox()),
-// TextButton(onPressed: (){}, child: const Text('رجوع'))
-// ],)

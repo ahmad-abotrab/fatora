@@ -1,14 +1,16 @@
 import 'package:flutter/material.dart';
 import 'package:get/get.dart';
-
 import 'src/Constant/color_app.dart';
 import 'src/constant/route_screen.dart';
+import 'src/views/pages/check_if_it_is_once_time_to_open_app.dart';
 import 'src/views/pages/home.dart';
 import 'src/views/pages/signature_page.dart';
 import 'src/views/pages/splash_screen.dart';
 
 class Fatora extends StatelessWidget {
-  const Fatora({Key? key}) : super(key: key);
+  const Fatora({
+    Key? key,
+  }) : super(key: key);
 
   @override
   Widget build(BuildContext context) {
@@ -16,7 +18,6 @@ class Fatora extends StatelessWidget {
       title: 'شركة الأمل',
       initialRoute: '/',
       locale: const Locale('ar', 'SY'),
-// Arabic,  Syria           country code
       theme: ThemeData(
         primaryColor: ColorApp.primaryColor,
         backgroundColor: ColorApp.backgroundColor,
@@ -26,7 +27,11 @@ class Fatora extends StatelessWidget {
       debugShowCheckedModeBanner: false,
       getPages: [
         GetPage(
-          name: RouteScreens.splachScreen,
+          name: RouteScreens.checkIfItOnceTimeOpenApp,
+          page: () => const CheckIfItIsOnceTimeToOpenApp(),
+        ),
+        GetPage(
+          name: RouteScreens.splashScreen,
           page: () => const SplashScreen(),
         ),
         GetPage(
@@ -34,8 +39,9 @@ class Fatora extends StatelessWidget {
           page: () => const HomePage(),
         ),
         GetPage(
-            name: RouteScreens.signaturePage,
-            page: () => const SignaturePage()),
+          name: RouteScreens.signaturePage,
+          page: () => const SignaturePage(),
+        ),
       ],
     );
   }

@@ -1,9 +1,22 @@
 import 'dart:io';
+
+import '/src/data/model/local_id_for_receipt.dart';
+
 import '../model/receipt_model.dart';
 import '../web_services/receipt_api.dart';
 
 class ReceiptRepository {
   ReceiptApi receiptApi = ReceiptApi();
+
+  Future<dynamic> addNewCharIdForThisApp() async {
+    try {
+      final source = await receiptApi.addNewCharIdForThisApp();
+      var result = LocalIdForReceipt.fromJson(source);
+      return result;
+    } catch (error) {
+      rethrow;
+    }
+  }
 
   Future<dynamic> getAllReceipts() async {
     try {
@@ -16,9 +29,10 @@ class ReceiptRepository {
   }
 
   Future<dynamic> addNewReceipt(
+
       Receipt receiptObject, File receiptFile, String fileName) async {
     try {
-      final source = await ReceiptApi()
+      String source = await ReceiptApi()
           .addNewReceipt(receiptObject.toJson(), receiptFile, fileName);
       return source;
     } catch (error) {
@@ -38,13 +52,15 @@ class ReceiptRepository {
       rethrow;
     }
   }
-  Future<dynamic> getReceiptsBetweenRangeDate(DateTime startDate,
-      DateTime endDate) async {
+
+  Future<dynamic> getReceiptsBetweenRangeDate(
+      DateTime startDate, DateTime endDate) async {
     try {
-      final source = await ReceiptApi().getReceiptsBetweenRangeDate(startDate, endDate);
+      final source =
+          await ReceiptApi().getReceiptsBetweenRangeDate(startDate, endDate);
       var result = source.map<Receipt>((e) => Receipt.fromJson(e)).toList();
       return result;
-    }catch(dioError){
+    } catch (dioError) {
       rethrow;
     }
   }

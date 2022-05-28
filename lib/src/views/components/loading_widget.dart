@@ -1,4 +1,4 @@
-import 'package:fatora/src/logic/loading_animation_controller.dart';
+import '/src/logic/loading_animation_controller.dart';
 import 'package:flutter/material.dart';
 import 'package:get/get.dart';
 

@@ -16,6 +16,7 @@ return new class extends Migration {
         Schema::create('receipts', function (Blueprint $table) {
             $table->increments('id')->startingValue(0);
             $table->string('whoIsTake');
+            $table->string('idLocal');
             $table->string('amountNumeric');
             $table->string('amountText');
             $table->string('causeOfPayment');

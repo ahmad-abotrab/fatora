@@ -1,4 +1,4 @@
-import 'package:fatora/src/data/model/receipt_model.dart';
+import '/src/data/model/receipt_model.dart';
 import 'package:get/get.dart';
 
 class LogController extends GetxController {

@@ -24,6 +24,10 @@ Route::controller(ReceiptController::class)->group(function () {
     Route::post('/addReceipt', 'addReceipt');
     Route::post('/store', 'store');
     Route::get('/lastRecord', 'lastRecord');
-    Route::post('/filterByDate', 'getBetweenDateRange');
+    Route::post('/filterByDate', 'filterByDate');
+    Route::get('/getLocalCharID' , 'getLocalCharID');
+    Route::put('/updateIdNumberForEmployee' , 'updateIdNumberForEmployee');
+    Route::get('/allLocalIdChar','allLocalIdChar');
+
 
 });

@@ -4,8 +4,8 @@ import '../../Constant/color_app.dart';
 import 'empty_widget_response.dart';
 
 // ignore: must_be_immutable
-class DialogLoading extends StatelessWidget {
-  DialogLoading({Key? key, required this.content}) : super(key: key);
+class WarningDialog extends StatelessWidget {
+  WarningDialog({Key? key, required this.content}) : super(key: key);
   String content;
 
   @override

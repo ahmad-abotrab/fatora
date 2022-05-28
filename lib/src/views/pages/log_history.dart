@@ -1,5 +1,5 @@
-import 'package:fatora/src/logic/date_time_range_controller.dart';
-import 'package:fatora/src/logic/log_controller.dart';
+import '/src/logic/date_time_range_controller.dart';
+import '/src/logic/log_controller.dart';
 import 'package:flutter/material.dart';
 import 'package:get/get.dart';
 
@@ -36,7 +36,7 @@ class LogHistory extends StatelessWidget {
       } catch (e) {
         showDialog(
           context: context,
-          builder: (_) => DialogLoading(
+          builder: (_) => WarningDialog(
             content: e.toString(),
           ),
         );
@@ -134,7 +134,7 @@ class LogHistory extends StatelessWidget {
       Navigator.of(context, rootNavigator: true).pop();
       showDialog(
         context: context,
-        builder: (_) => DialogLoading(
+        builder: (_) => WarningDialog(
           content: e.toString(),
         ),
       );
@@ -172,7 +172,7 @@ class LogHistory extends StatelessWidget {
       rows.add(
         DataRow(
           cells: [
-            DataCell(Text(receipts[i].id.toString())),
+            DataCell(Text(receipts[i].idLocal.toString())),
             DataCell(Text(receipts[i].whoIsTake ?? "لايوجد")),
             DataCell(Text(receipts[i].amountNumeric.toString() == 'null'
                 ? "لايوجد"

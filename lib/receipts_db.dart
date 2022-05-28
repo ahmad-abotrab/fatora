@@ -16,7 +16,7 @@ class ReceiptsDB {
 
   initialDB() async {
     String path = await getDatabasesPath();
-    String pathWithName = join(path, 'receiptsDB.db');
+    String pathWithName = join(path, 'ReceiptsDB.db');
     Database myDatabase = await openDatabase(pathWithName,
         onCreate: _onCreate, version: _version, onUpgrade: _onUpgrade);
     return myDatabase;
@@ -34,6 +34,16 @@ class ReceiptsDB {
           statusSend_Server INTEGER NOT NULL
         )
     ''';
+    await db.execute(sql);
+    sql = '''
+        CREATE TABLE "receipts" (
+          "id" INTEGER  NOT NULL PRIMARY KEY AUTOINCREMENT,
+          "whoIsTake" TEXT NOT NULL,
+          "amountText" TEXT NOT NULL,
+          "amountNumeric" TEXT NOT NULL,
+          "causeOfPayment" TEXT NOT NULL,
+          "date" TEXT NOT NULL,
+        )''';
     await db.execute(sql);
   }
 
