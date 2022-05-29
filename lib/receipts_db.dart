@@ -27,23 +27,28 @@ class ReceiptsDB {
    */
   _onCreate(Database db, int version) async {
     String sql = '''
-        CREATE TABLE "receiptStatus" (
-          "id" INTEGER  NOT NULL PRIMARY KEY AUTOINCREMENT,
-          "pathDB" TEXT NOT NULL,
+        CREATE TABLE receiptStatus (
+          id INTEGER  NOT NULL PRIMARY KEY AUTOINCREMENT,
+          idCharLocal TEXT NOT NULL,
+          idLocal INTEGER NOT NULL,
+          pathDB TEXT NOT NULL,
           statusSend_WhatsApp INTEGER NOT NULL,
           statusSend_Server INTEGER NOT NULL
-        )
+        );
     ''';
     await db.execute(sql);
     sql = '''
-        CREATE TABLE "receipts" (
-          "id" INTEGER  NOT NULL PRIMARY KEY AUTOINCREMENT,
-          "whoIsTake" TEXT NOT NULL,
-          "amountText" TEXT NOT NULL,
-          "amountNumeric" TEXT NOT NULL,
-          "causeOfPayment" TEXT NOT NULL,
-          "date" TEXT NOT NULL,
-        )''';
+        CREATE TABLE receipts(
+          id INTEGER PRIMARY KEY AUTOINCREMENT,
+          idLocal TEXT NOT NULL,
+          whoIsTake TEXT NOT NULL,
+          amountText TEXT NOT NULL,
+          amountNumeric TEXT NOT NULL,
+          causeOfPayment TEXT NOT NULL,
+          receiptPdfFileName TEXT NOT NULL,
+          date TEXT NOT NULL
+        );
+        ''';
     await db.execute(sql);
   }
 
@@ -65,18 +70,18 @@ class ReceiptsDB {
     * if query is success return number of raw added
     * if query is fail return 0
    */
-  insertData(String sql) async {
+  insertData(String sql,data) async {
     Database? myDatabase = await db;
-    int response = await myDatabase!.rawInsert(sql);
+    int response = await myDatabase!.rawInsert(sql,data);
     return response;
   }
 
   /*
     * if query is success return 1
   */
-  updateData(String sql) async {
+  updateData(String sql,data) async {
     Database? myDatabase = await db;
-    int response = await myDatabase!.rawUpdate(sql);
+    int response = await myDatabase!.rawUpdate(sql,data);
     return response;
   }
 
@@ -87,5 +92,11 @@ class ReceiptsDB {
     Database? myDatabase = await db;
     int response = await myDatabase!.rawDelete(sql);
     return response;
+  }
+
+  deleteDatabaseInMyApp()async{
+    String path = await getDatabasesPath();
+    String pathWithName = join(path, 'ReceiptsDB.db');
+    deleteDatabase(pathWithName);
   }
 }

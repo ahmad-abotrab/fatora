@@ -2,7 +2,7 @@
 
 namespace App\Http\Controllers;
 
-use App\Models\idReceipt;
+use App\Models\IdReceipt;
 use App\Models\Receipt;
 use Exception;
 use Illuminate\Http\Request;
@@ -28,7 +28,7 @@ class ReceiptController extends Controller
                 'amountNumeric' => $request->input('amountNumeric'),
                 'amountText' => $request->input('amountText'),
                 'causeOfPayment' => $request->input('causeOfPayment'),
-                'receiptPdfFileName' =>$request->input('receiptPdfFileName'),
+                'receiptPdfFileName' => $request->input('receiptPdfFileName'),
                 'date' => $request->input('date'),
             ]);
             return "success";
@@ -39,9 +39,7 @@ class ReceiptController extends Controller
 
     public function store(Request $request)
     {
-
         try {
-
             if ($request->hasFile("receipt")) {
                 $file = $request->file("receipt");
                 $fileName = $file->getClientOriginalName();
@@ -64,10 +62,9 @@ class ReceiptController extends Controller
     public function printPath()
     {
         if (!File::exists("/Users/ahmadabotrab/Desktop/ahmad")) {
-            File::makeDirectory("/Users/ahmadabotrab/Desktop/ahmad");
-            echo "created";
+            return false;
         } else {
-            echo "find";
+            return true;
         }
     }
 
@@ -101,7 +98,7 @@ class ReceiptController extends Controller
         try {
             DB::table('id_receipts')
                 ->where(
-                    'charReceiptForEachEmployee' , $request->input('charReceiptForEachEmployee'))
+                    'charReceiptForEachEmployee', $request->input('charReceiptForEachEmployee'))
                 ->update(
                     ['idReceiptForEachEmployee' => $request->input('idReceiptForEachEmployee')]);
             return "success";
@@ -120,21 +117,21 @@ class ReceiptController extends Controller
             ->first();
         if ($result == null) {
             $anotherIdChar = 'A';
-            $anotherId = '1';
+            $anotherId = '0';
         } else {
             $anotherIdChar = $this->incrementChar($result->charReceiptForEachEmployee);
-            $anotherId = '1';
+            $anotherId = '0';
         }
 
-//        try {
-//            IdReceipt::create([
-//                'charReceiptForEachEmployee' => $anotherIdChar,
-//                'idReceiptForEachEmployee' => $anotherId,
-//            ]);
-            return array('charReceiptForEachEmployee' => $anotherIdChar, "idReceiptForEachEmployee" => $anotherId);
-//        } catch (Exception $exception) {
-//            return "fail cause " . $exception->getMessage();
-//        }
+        try {
+            IdReceipt::create([
+                'charReceiptForEachEmployee' => $anotherIdChar,
+                'idReceiptForEachEmployee' => $anotherId,
+            ]);
+        return array('charReceiptForEachEmployee' => $anotherIdChar, "idReceiptForEachEmployee" => $anotherId);
+        } catch (Exception $exception) {
+            return "fail cause " . $exception->getMessage();
+        }
     }
 
     public function allLocalIdChar()
@@ -148,4 +145,19 @@ class ReceiptController extends Controller
         $letterAscii++;
         return chr($letterAscii);
     }
+
+    public function checkIfDirIsThere(Request $request)
+    {
+        $filename = $request->input('fileName');
+        $path = storage_path('app/receipt/' . $filename);
+        return response()->file($path);
+    }
+
+    public function updateLocalNumId(Request $request)
+    {
+        DB::table('id_receipts')
+            ->where('charReceiptForEachEmployee', $request->input('charReceiptForEachEmployee'))
+            ->update(['idReceiptForEachEmployee' => $request->input('idReceiptForEachEmployee')]);
+    }
+
 }

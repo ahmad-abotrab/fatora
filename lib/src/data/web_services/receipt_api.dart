@@ -2,6 +2,7 @@ import 'dart:io';
 
 import 'package:dio/dio.dart';
 import 'package:fatora/src/data/model/temp.dart';
+import 'package:http/http.dart' as http;
 
 import '../../Constant/url_api.dart';
 import '../../logic/exception.dart';
@@ -17,6 +18,15 @@ class ReceiptApi {
 
   ReceiptApi() {
     dio = Dio(options);
+  }
+
+  Future<dynamic> updateLocalNumId(localID) async{
+    try {
+      final response = await dio?.put('api/updateLocalNumId',data:localID);
+      return response!.data;
+    } on DioError catch (dioError) {
+      throw DioExceptions.fromDioError(dioError);
+    }
   }
 
   Future<dynamic> addNewCharIdForThisApp() async {
@@ -36,6 +46,19 @@ class ReceiptApi {
       return response!.data;
     } on DioError catch (dioError) {
       throw DioExceptions.fromDioError(dioError);
+    }
+  }
+
+  Future<dynamic> uploadReceipt(fileName) async {
+    try {
+      var response = await http.post(
+        Uri.parse(URLApi.baseUrl + '/api/checkIfDirIsThere'),
+        body: {"fileName": fileName},
+      );
+
+      return response.bodyBytes;
+    } on DioError catch (error) {
+      throw DioExceptions.fromDioError(error);
     }
   }
 

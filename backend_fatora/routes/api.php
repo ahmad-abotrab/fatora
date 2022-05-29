@@ -28,6 +28,8 @@ Route::controller(ReceiptController::class)->group(function () {
     Route::get('/getLocalCharID' , 'getLocalCharID');
     Route::put('/updateIdNumberForEmployee' , 'updateIdNumberForEmployee');
     Route::get('/allLocalIdChar','allLocalIdChar');
+    Route::post('/checkIfDirIsThere' , 'checkIfDirIsThere');
+    Route::put('/updateLocalNumId' , 'updateLocalNumId');
 
 
 });

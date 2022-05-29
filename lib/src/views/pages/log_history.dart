@@ -1,6 +1,13 @@
+import 'dart:async';
+import 'dart:io';
+
+import 'package:fatora/receipts_db.dart';
+import 'package:fatora/src/data/web_services/pdf_opened.dart';
 import 'package:flutter/material.dart';
 import 'package:font_awesome_flutter/font_awesome_flutter.dart';
 import 'package:get/get.dart';
+import 'package:path_provider/path_provider.dart';
+import 'package:share_plus/share_plus.dart';
 
 import '/src/Constant/color_app.dart';
 import '/src/logic/date_time_range_controller.dart';
@@ -27,6 +34,7 @@ class LogHistory extends StatelessWidget {
   ];
   late GlobalKey<State> keyLoader = GlobalKey<State>();
   var dateTimeController = Get.put(DateTimeRangeController(), permanent: true);
+  ReceiptsDB receiptDB = ReceiptsDB();
 
   @override
   Widget build(BuildContext context) {
@@ -197,7 +205,7 @@ class LogHistory extends StatelessWidget {
                     receipts[i].date!.minute.toString(),
               ),
             ),
-            DataCell(popButton(context))
+            DataCell(popButton(context, receipts[i]))
           ],
         ),
       );
@@ -205,43 +213,97 @@ class LogHistory extends StatelessWidget {
     return rows;
   }
 
-  popButton(context) {
+  popButton(context, Receipt receipt) {
     return PopupMenuButton(
       offset: Offset.fromDirection(20.0),
       icon: Icon(Icons.more_horiz_outlined),
       shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(20)),
       itemBuilder: (context) => [
         PopupMenuItem(
-          child: TextButton(
-            onPressed: () {},
-            child: Row(
-              children: const [
-                Text(
-                  'عرض',
-                  style: TextStyle(color: Colors.black),
-                ),
-                Expanded(child: SizedBox()),
-                FaIcon(FontAwesomeIcons.filePdf, color: Colors.red),
-              ],
-            ),
+          onTap: () async {
+            var pathFile = (await getApplicationDocumentsDirectory()).path;
+            var fullPath = pathFile + '/' + receipt.receiptPdfFileName!;
+            var fileIsExists = await File(fullPath).exists();
+            if (fileIsExists) {
+              File file = File(fullPath);
+              await PDFOpened.openFile(file);
+            } else {
+              //download from server
+            }
+          },
+          child: Row(
+            children: const [
+              Text(
+                'عرض',
+                style: TextStyle(color: Colors.black),
+              ),
+              Expanded(child: SizedBox()),
+              FaIcon(FontAwesomeIcons.filePdf, color: Colors.red),
+            ],
           ),
         ),
         PopupMenuItem(
-          child: TextButton(
-            onPressed: () {},
-            child: Row(
-              children: const [
-                Text(
-                  'ارسال الملف عبر',
-                  style: TextStyle(color: Colors.black),
-                ),
-                Expanded(child: SizedBox()),
-                FaIcon(FontAwesomeIcons.whatsapp, color: Colors.green)
-              ],
-            ),
+          onTap: () async {
+            var pathFile = (await getApplicationDocumentsDirectory()).path;
+            var fullPath = pathFile + '/' + receipt.receiptPdfFileName!;
+            var fileIsExists = await File(fullPath).exists();
+            if (fileIsExists) {
+              File file = File(fullPath);
+              sendReceiptPdfByWhatsApp(file, receipt.idLocal, context);
+            }
+          },
+          child: Row(
+            children: const [
+              Text(
+                'ارسال الملف عبر',
+                style: TextStyle(color: Colors.black),
+              ),
+              Expanded(child: SizedBox()),
+              FaIcon(FontAwesomeIcons.whatsapp, color: Colors.green)
+            ],
           ),
         ),
       ],
     );
+  }
+
+  sendReceiptPdfByWhatsApp(file, id, context) async {
+    try {
+      print('');
+      await Share.shareFiles([file], text: "هـذا إيصال الدفع الخاص بك");
+      String sql = '''
+                  UPDATE receiptStatus
+                  SET statusSend_WhatsApp = ?,
+                  WHERE idLocal = ?;
+                  ''';
+      List data = [1, id];
+      await receiptDB.updateData(sql, data);
+    } catch (e) {
+      String sql = '''
+                  UPDATE receiptStatus
+                  SET statusSend_WhatsApp = ?
+                  WHERE idLocal = ?;
+                  ''';
+      List data = [0, id];
+      await receiptDB.updateData(sql, data);
+      showDialog(
+        context: context,
+        builder: (_) {
+          return AlertDialog(
+            shape:
+                RoundedRectangleBorder(borderRadius: BorderRadius.circular(20)),
+            title: const Text('يوجد خطأ'),
+            content: const Text(' لايمكن فتح الواتس اب لان '),
+            actions: [
+              TextButton(
+                  onPressed: () {
+                    Navigator.pop(context);
+                  },
+                  child: const Text('رجوع'))
+            ],
+          );
+        },
+      );
+    }
   }
 }

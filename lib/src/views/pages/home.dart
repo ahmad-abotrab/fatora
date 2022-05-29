@@ -3,7 +3,8 @@ import 'dart:typed_data';
 
 import 'package:connectivity_plus/connectivity_plus.dart';
 import 'package:fatora/pair.dart';
-import 'package:fatora/src/constant/constant_value.dart';
+import 'package:fatora/src/data/model/local_id_for_receipt.dart';
+import 'package:fatora/src/views/pages/list_receipt_not_sent_by_whats.dart';
 import 'package:flutter/gestures.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
@@ -16,6 +17,7 @@ import 'package:shared_preferences/shared_preferences.dart';
 
 import '/receipts_db.dart';
 import '/src/Constant/color_app.dart';
+import '/src/constant/constant_value.dart';
 import '/src/logic/connection_internet_controller.dart';
 import '/src/logic/data_for_payment.dart';
 import '/src/logic/form_validation.dart';
@@ -221,8 +223,8 @@ class _HomePageState extends State<HomePage>
   }
 
   onPressedFloatingButton() async {
-    String fileName = '';
     File? pdfFile;
+    bool checkIfUploadDataToServer = false;
     int id = 0;
     if (Get.find<SignaturePageController>().fileNameSignature == '') {
       dontHaveSignature();
@@ -235,29 +237,79 @@ class _HomePageState extends State<HomePage>
       //----------
       if (firstCondition || secondCondition) {
         GlobalKey<State> keyLoader1 = GlobalKey<State>();
+        Receipt? receipt;
         try {
           loadingDialogFun(keyLoader1);
           SharedPreferences sharedPreferences =
               await SharedPreferences.getInstance();
           final prefer = sharedPreferences;
 
-          var oldCharIdLocal = await prefer.get(charIdAppLocal);
-          var oldIdLocal = await prefer.get(idAppLocal);
+          var oldCharIdLocal = prefer.get(charIdAppLocal);
+          var oldIdLocal = prefer.get(idAppLocal);
           id = int.parse(oldIdLocal.toString()) + 1;
-          Receipt receipt = createReceiptToNextProcess(id, oldCharIdLocal);
-          Pair pair = await createPdfToNextProcess(id, oldCharIdLocal, receipt);
+          receipt = createReceiptToNextProcess(id, oldCharIdLocal);
+          Pair pair = await createPdfToNextProcess(receipt);
           receipt.receiptPdfFileName = pair.second;
-          print(pair.first.path);
+          String sql = """
+              INSERT INTO receipts
+              (idLocal,whoIsTake,amountText,amountNumeric,causeOfPayment,date,receiptPdfFileName)
+              VALUES (?,?,?,?,?,?,?);
+           """;
+
+          List data = [
+            receipt.idLocal,
+            receipt.whoIsTake,
+            receipt.amountText,
+            receipt.amountNumeric,
+            receipt.causeOfPayment,
+            receipt.date!.toIso8601String(),
+            receipt.receiptPdfFileName
+          ];
+
+          await receiptsDB.insertData(sql, data);
+
+          sql = '''
+              INSERT INTO receiptStatus
+              (pathDB,idCharLocal,idLocal,statusSend_WhatsApp,statusSend_Server)
+              VALUES (?,?,?,?,?);
+          ''';
+          data = [pair.first.path, oldCharIdLocal, receipt.idLocal, 0, 0];
+          await receiptsDB.insertData(sql, data);
+
           // here should make store data on database
 
           await ReceiptRepository()
               .addNewReceipt(receipt, pair.first, pair.second);
-          prefer.setString(idAppLocal, id.toString());
+          LocalIdForReceipt localID = LocalIdForReceipt(charReceiptForEachEmployee: oldCharIdLocal.toString(),idReceiptForEachEmployee: id.toString());
+          await ReceiptRepository().updateLocalNumId(localID);
+          // 'UPDATE Test SET receiptStatus statusSend_Server = ?  WHERE idLocal = ?'
+          sql = '''
+                  UPDATE receiptStatus
+                  SET statusSend_Server = ?
+                  WHERE idLocal = ?
+                ''';
+          data = [1, receipt.idLocal];
+          await receiptsDB.updateData(sql, data);
+
+          // await prefer.setString(idAppLocal, id.toString());
+
           Get.find<LoadingAnimationController>().changeStatus();
           await Future.delayed(const Duration(seconds: 1));
           Navigator.of(context, rootNavigator: true).pop();
-          await showDialogWhatYouWantDoAfterUploadDataToServer(pdfFile);
+          await showDialogWhatYouWantDoAfterUploadDataToServer(
+              pair.first, receipt.idLocal);
         } catch (e) {
+          if (receipt != null) {
+            String sql = '''
+                  UPDATE receiptStatus
+                  SET statusSend_Server = ?,
+                  statusSend_WhatsApp = ?
+                  WHERE idLocal = ?
+                ''';
+            List data = [0, 0, receipt.idLocal];
+            await receiptsDB.updateData(sql, data);
+          }
+
           Navigator.of(context, rootNavigator: true).pop();
           showDialog(
             context: context,
@@ -299,25 +351,25 @@ class _HomePageState extends State<HomePage>
     return receipt;
   }
 
-  createPdfToNextProcess(id, oldCharId, receipt) async {
+  createPdfToNextProcess(receipt) async {
     Pair pair = Pair();
     File pdfFile;
     String fileName;
     String imageSignature = 'assets/images/signature.png';
     if (tabController!.index == 0) {
-      fileName = 'catch{$id}.pdf';
+      fileName = 'catch${receipt.idLocal}.pdf';
       pdfFile = await createPdfReceipts(fileName, receipt,
-          Get.find<SignaturePageController>().fileNameSignature, id);
+          Get.find<SignaturePageController>().fileNameSignature, receipt.idLocal);
     } else {
-      fileName = 'payment{$id}.pdf';
-      pdfFile = await createPdfReceipts(fileName, receipt, imageSignature, id);
+      fileName = 'payment${receipt.idLocal}.pdf';
+      pdfFile = await createPdfReceipts(fileName, receipt, imageSignature, receipt.idLocal);
     }
     pair.first = pdfFile;
     pair.second = fileName;
     return pair;
   }
 
-  dialogWhatYouWantDoAfterUploadDataToServer(pdfFile) {
+  dialogWhatYouWantDoAfterUploadDataToServer(pdfFile, id) {
     return AlertDialog(
       shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(20)),
       title: const Text('هل تريد ؟ '),
@@ -327,7 +379,7 @@ class _HomePageState extends State<HomePage>
       ),
       actions: [
         IconButton(
-            onPressed: () => sendReceiptPdfByWhatsApp(pdfFile!.path),
+            onPressed: () => sendReceiptPdfByWhatsApp(pdfFile!.path, id),
             icon: const FaIcon(FontAwesomeIcons.whatsapp, color: Colors.green)),
         IconButton(
             onPressed: () {
@@ -343,33 +395,46 @@ class _HomePageState extends State<HomePage>
     );
   }
 
-  Future showDialogWhatYouWantDoAfterUploadDataToServer(pdfFile) async {
+  Future showDialogWhatYouWantDoAfterUploadDataToServer(pdfFile, id) async {
     showDialog(
       context: context,
       builder: (_) {
-        return dialogWhatYouWantDoAfterUploadDataToServer(pdfFile);
+        return dialogWhatYouWantDoAfterUploadDataToServer(pdfFile, id);
       },
     );
   }
 
-  sendReceiptPdfByWhatsApp(file) async {
+  sendReceiptPdfByWhatsApp(file, id) async {
     try {
       print('');
       await Share.shareFiles([file], text: "هـذا إيصال الدفع الخاص بك");
+      String sql = '''
+                  UPDATE receiptStatus
+                  SET statusSend_WhatsApp = ?,
+                  WHERE idLocal = ?;
+                  ''';
+      List data = [1, id];
+      await receiptsDB.updateData(sql, data);
     } catch (e) {
+      String sql = '''
+                  UPDATE receiptStatus
+                  SET statusSend_WhatsApp = ?
+                  WHERE idLocal = ?;
+                  ''';
+      List data = [0, id];
+      await receiptsDB.updateData(sql, data);
       showDialog(
-          context: context,
-          builder: (_) {
-            return AlertDialog(
-              shape: RoundedRectangleBorder(
-                  borderRadius: BorderRadius.circular(20)),
-              title: const Text('يوجد خطأ'),
-              content: const Text(' لايمكن فتح الواتس اب لان '),
-              actions: [
-                TextButton(onPressed: () {}, child: const Text('رجوع'))
-              ],
-            );
-          });
+        context: context,
+        builder: (_) {
+          return AlertDialog(
+            shape:
+                RoundedRectangleBorder(borderRadius: BorderRadius.circular(20)),
+            title: const Text('يوجد خطأ'),
+            content: const Text(' لايمكن فتح الواتس اب لان '),
+            actions: [TextButton(onPressed: () {Navigator.pop(context);}, child: const Text('رجوع'))],
+          );
+        },
+      );
     }
   }
 
@@ -431,8 +496,8 @@ class _HomePageState extends State<HomePage>
       ),
       actions: [
         IconButton(
-          // splashRadius: ,
           onPressed: () {
+            // receiptsDB.deleteDatabaseInMyApp();
             if (tabController!.index == 0) {
               formCatchCon.reinitialize();
             } else {
@@ -559,6 +624,31 @@ class _HomePageState extends State<HomePage>
                 Expanded(child: SizedBox()),
                 Text(
                   'السجل',
+                  style: TextStyle(color: Colors.black),
+                )
+              ],
+            ),
+          ),
+        ),
+        PopupMenuItem(
+          child: TextButton(
+            onPressed: () {
+              Navigator.push(
+                context,
+                MaterialPageRoute(
+                  builder: (_) => ListReceiptNotSentByWhatsUp(),
+                ),
+              );
+            },
+            child: Row(
+              children: const [
+                Icon(
+                  Icons.whatsapp,
+                  color: Colors.green,
+                ),
+                Expanded(child: SizedBox()),
+                Text(
+                  'لم يًرسل',
                   style: TextStyle(color: Colors.black),
                 )
               ],
