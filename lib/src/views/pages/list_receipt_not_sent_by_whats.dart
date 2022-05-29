@@ -2,7 +2,9 @@ import 'dart:io';
 
 import 'package:fatora/receipts_db.dart';
 import 'package:fatora/src/constant/color_app.dart';
+import 'package:fatora/src/data/web_services/pdf_opened.dart';
 import 'package:flutter/material.dart';
+import 'package:font_awesome_flutter/font_awesome_flutter.dart';
 import 'package:share_plus/share_plus.dart';
 
 import '../components/empty_widget_response.dart';
@@ -14,7 +16,7 @@ class ListReceiptNotSentByWhatsUp extends StatelessWidget {
 
   Future<List<Map>> getReceiptNotSend() async {
     List<Map> receiptsNotSend = [];
-    // String sql = 'select * from receipts';
+    // String sql = 'select * from receiptStatus';
     String sql = '''
         SELECT r.whoIsTake, t.pathDB, r.idLocal
         FROM receipts r
@@ -59,6 +61,12 @@ class ListReceiptNotSentByWhatsUp extends StatelessWidget {
                         icon: const Icon(Icons.send),
                       ),
                       title: Text(snapShot.data![index]['whoIsTake']),
+                      trailing: IconButton(onPressed: ()async{
+                        bool fileIsExists = await File(snapShot.data![index]['pathDB']).exists();
+                        if(fileIsExists){
+                          await PDFOpened.openFile(File(snapShot.data![index]['pathDB']));
+                        }
+                      },icon: const FaIcon(FontAwesomeIcons.filePdf, color: Colors.red),),
                     );
                   },
                   separatorBuilder: (BuildContext context, int index) {

@@ -25,11 +25,12 @@ Route::controller(ReceiptController::class)->group(function () {
     Route::post('/store', 'store');
     Route::get('/lastRecord', 'lastRecord');
     Route::post('/filterByDate', 'filterByDate');
-    Route::get('/getLocalCharID' , 'getLocalCharID');
+    Route::get('/createNewLocalCharID' , 'createNewLocalCharID');
     Route::put('/updateIdNumberForEmployee' , 'updateIdNumberForEmployee');
     Route::get('/allLocalIdChar','allLocalIdChar');
     Route::post('/checkIfDirIsThere' , 'checkIfDirIsThere');
     Route::put('/updateLocalNumId' , 'updateLocalNumId');
+    Route::post('/addLocalIdToServer','addLocalIdToServer');
 
 
 });

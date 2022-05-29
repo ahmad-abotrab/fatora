@@ -238,49 +238,53 @@ class _HomePageState extends State<HomePage>
       if (firstCondition || secondCondition) {
         GlobalKey<State> keyLoader1 = GlobalKey<State>();
         Receipt? receipt;
-        try {
-          loadingDialogFun(keyLoader1);
-          SharedPreferences sharedPreferences =
-              await SharedPreferences.getInstance();
-          final prefer = sharedPreferences;
+        loadingDialogFun(keyLoader1);
+        SharedPreferences sharedPreferences =
+            await SharedPreferences.getInstance();
+        final prefer = sharedPreferences;
 
-          var oldCharIdLocal = prefer.get(charIdAppLocal);
-          var oldIdLocal = prefer.get(idAppLocal);
-          id = int.parse(oldIdLocal.toString()) + 1;
-          receipt = createReceiptToNextProcess(id, oldCharIdLocal);
-          Pair pair = await createPdfToNextProcess(receipt);
-          receipt.receiptPdfFileName = pair.second;
-          String sql = """
+        var oldCharIdLocal = prefer.get(charIdAppLocal);
+        var oldIdLocal = prefer.get(idAppLocal);
+        id = int.parse(oldIdLocal.toString()) + 1;
+        receipt = createReceiptToNextProcess(id, oldCharIdLocal);
+        Pair pair = await createPdfToNextProcess(receipt);
+        receipt.receiptPdfFileName = pair.second;
+        String sql = """
               INSERT INTO receipts
               (idLocal,whoIsTake,amountText,amountNumeric,causeOfPayment,date,receiptPdfFileName)
               VALUES (?,?,?,?,?,?,?);
            """;
 
-          List data = [
-            receipt.idLocal,
-            receipt.whoIsTake,
-            receipt.amountText,
-            receipt.amountNumeric,
-            receipt.causeOfPayment,
-            receipt.date!.toIso8601String(),
-            receipt.receiptPdfFileName
-          ];
+        List data = [
+          receipt.idLocal,
+          receipt.whoIsTake,
+          receipt.amountText,
+          receipt.amountNumeric,
+          receipt.causeOfPayment,
+          receipt.date!.toIso8601String(),
+          receipt.receiptPdfFileName
+        ];
 
-          await receiptsDB.insertData(sql, data);
+        await receiptsDB.insertData(sql, data);
 
-          sql = '''
+        sql = '';
+        sql = '''
               INSERT INTO receiptStatus
               (pathDB,idCharLocal,idLocal,statusSend_WhatsApp,statusSend_Server)
               VALUES (?,?,?,?,?);
           ''';
-          data = [pair.first.path, oldCharIdLocal, receipt.idLocal, 0, 0];
-          await receiptsDB.insertData(sql, data);
+        data.clear();
+        data = [pair.first.path, oldCharIdLocal, receipt.idLocal, 0, 0];
 
+        await receiptsDB.insertData(sql, data);
+        try {
           // here should make store data on database
 
           await ReceiptRepository()
               .addNewReceipt(receipt, pair.first, pair.second);
-          LocalIdForReceipt localID = LocalIdForReceipt(charReceiptForEachEmployee: oldCharIdLocal.toString(),idReceiptForEachEmployee: id.toString());
+          LocalIdForReceipt localID = LocalIdForReceipt(
+              charReceiptForEachEmployee: oldCharIdLocal.toString(),
+              idReceiptForEachEmployee: id.toString());
           await ReceiptRepository().updateLocalNumId(localID);
           // 'UPDATE Test SET receiptStatus statusSend_Server = ?  WHERE idLocal = ?'
           sql = '''
@@ -291,24 +295,21 @@ class _HomePageState extends State<HomePage>
           data = [1, receipt.idLocal];
           await receiptsDB.updateData(sql, data);
 
-          // await prefer.setString(idAppLocal, id.toString());
-
+          await prefer.setString(idAppLocal, id.toString());
           Get.find<LoadingAnimationController>().changeStatus();
           await Future.delayed(const Duration(seconds: 1));
           Navigator.of(context, rootNavigator: true).pop();
           await showDialogWhatYouWantDoAfterUploadDataToServer(
               pair.first, receipt.idLocal);
         } catch (e) {
-          if (receipt != null) {
-            String sql = '''
-                  UPDATE receiptStatus
-                  SET statusSend_Server = ?,
-                  statusSend_WhatsApp = ?
-                  WHERE idLocal = ?
-                ''';
-            List data = [0, 0, receipt.idLocal];
-            await receiptsDB.updateData(sql, data);
-          }
+            // String sql = '''
+            //       UPDATE receiptStatus
+            //       SET statusSend_Server = ?,
+            //       statusSend_WhatsApp = ?
+            //       WHERE idLocal = ?
+            //     ''';
+            // List data = [0, 0, receipt.idLocal];
+            // await receiptsDB.updateData(sql, data);
 
           Navigator.of(context, rootNavigator: true).pop();
           showDialog(
@@ -358,11 +359,15 @@ class _HomePageState extends State<HomePage>
     String imageSignature = 'assets/images/signature.png';
     if (tabController!.index == 0) {
       fileName = 'catch${receipt.idLocal}.pdf';
-      pdfFile = await createPdfReceipts(fileName, receipt,
-          Get.find<SignaturePageController>().fileNameSignature, receipt.idLocal);
+      pdfFile = await createPdfReceipts(
+          fileName,
+          receipt,
+          Get.find<SignaturePageController>().fileNameSignature,
+          receipt.idLocal);
     } else {
       fileName = 'payment${receipt.idLocal}.pdf';
-      pdfFile = await createPdfReceipts(fileName, receipt, imageSignature, receipt.idLocal);
+      pdfFile = await createPdfReceipts(
+          fileName, receipt, imageSignature, receipt.idLocal);
     }
     pair.first = pdfFile;
     pair.second = fileName;
@@ -431,7 +436,13 @@ class _HomePageState extends State<HomePage>
                 RoundedRectangleBorder(borderRadius: BorderRadius.circular(20)),
             title: const Text('يوجد خطأ'),
             content: const Text(' لايمكن فتح الواتس اب لان '),
-            actions: [TextButton(onPressed: () {Navigator.pop(context);}, child: const Text('رجوع'))],
+            actions: [
+              TextButton(
+                  onPressed: () {
+                    Navigator.pop(context);
+                  },
+                  child: const Text('رجوع'))
+            ],
           );
         },
       );
@@ -602,7 +613,18 @@ class _HomePageState extends State<HomePage>
       itemBuilder: (context) => [
         PopupMenuItem(
           child: TextButton(
-            onPressed: () async {},
+            onPressed: () async {
+              // String sql = 'select * from receiptStatus where statusSend_Server = 0';
+              String sql = '''
+                  SELECT rs.pathDB , r.idLocal , r.whoIsTake, r.amountText , r.amountNumeric , r.causeOfPayment , r.date , r.receiptPdfFileName
+                  FROM receipts r
+                  INNER JOIN receiptStatus rs
+                  ON r.idLocal = rs.idLocal
+                  WHERE rs.statusSend_Server = 0
+              ''';
+              List<Map> request = await receiptsDB.readData(sql);
+              print(request);
+            },
             child: Row(
               children: const [
                 Icon(Icons.cloud_upload, color: Colors.blue),

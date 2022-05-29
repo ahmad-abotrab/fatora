@@ -10,8 +10,6 @@ class ReceiptRepository {
   ReceiptApi receiptApi = ReceiptApi();
 
   Future<dynamic> updateLocalNumId(LocalIdForReceipt localID) async{
-    print(localID.charReceiptForEachEmployee);
-    print(localID.idReceiptForEachEmployee);
     try {
       final response = receiptApi.updateLocalNumId(localID.toJson());
       return response;
@@ -20,9 +18,18 @@ class ReceiptRepository {
     }
   }
 
-  Future<dynamic> addNewCharIdForThisApp() async {
+  Future <dynamic> addLocalIdToServer(LocalIdForReceipt localId)async{
+    try{
+      final response = await receiptApi.addLocalIdToServer(localId.toJson());
+      return response;
+    } on DioError catch (dioError) {
+      rethrow;
+    }
+  }
+
+  Future<dynamic> createNewLocalCharID() async {
     try {
-      final source = await receiptApi.addNewCharIdForThisApp();
+      final source = await receiptApi.createNewLocalCharID();
       var result = LocalIdForReceipt.fromJson(source);
       return result;
     } catch (error) {

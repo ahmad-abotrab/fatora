@@ -1,3 +1,4 @@
+import 'package:fatora/src/data/repository/receipt_repository.dart';
 import 'package:flutter/material.dart';
 import 'package:get/get.dart';
 import 'package:shared_preferences/shared_preferences.dart';
@@ -23,22 +24,28 @@ class SplashScreen extends GetView<LocalIdController> {
               height: 20,
             ),
             Container(
+              decoration: BoxDecoration(borderRadius: BorderRadius.circular(20)),
               child: controller.obx((state) {
-                return FlatButton(
+                return TextButton(
+                  autofocus: true,
                     onPressed: () async {
 
                       SharedPreferences sharedPreferences =
                           await SharedPreferences.getInstance();
+
                       final shared = sharedPreferences;
+
                       await shared.setString('idReceiptForEachEmployee',
                           state!.idReceiptForEachEmployee!);
+
                       await shared.setString('charReceiptForEachEmployee',
                           state.charReceiptForEachEmployee!);
-                      print(state.charReceiptForEachEmployee!);
+
+                    await ReceiptRepository().addLocalIdToServer(state);
                       Navigator.pushReplacementNamed(
                           context, RouteScreens.home);
                     },
-                    child: const Text('الذهاب للصفحة الرئيسية'));
+                    child: const Text('الذهاب للصفحة الرئيسية',style: TextStyle(fontWeight: FontWeight.bold),));
               },
                   onLoading: const CircularProgressIndicator(),
                   onError: (error) => Column(

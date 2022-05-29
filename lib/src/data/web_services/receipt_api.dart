@@ -23,15 +23,24 @@ class ReceiptApi {
   Future<dynamic> updateLocalNumId(localID) async{
     try {
       final response = await dio?.put('api/updateLocalNumId',data:localID);
+      return response;
+    } on DioError catch (dioError) {
+      throw DioExceptions.fromDioError(dioError);
+    }
+  }
+
+  Future <dynamic> addLocalIdToServer(localId)async{
+    try{
+      final response = await dio?.post('api/addLocalIdToServer' , data:localId);
       return response!.data;
     } on DioError catch (dioError) {
       throw DioExceptions.fromDioError(dioError);
     }
   }
 
-  Future<dynamic> addNewCharIdForThisApp() async {
+  Future<dynamic> createNewLocalCharID() async {
     try {
-      final response = await dio?.get('api/getLocalCharID');
+      final response = await dio?.get('api/createNewLocalCharID');
       return response!.data;
     } on DioError catch (dioError) {
       throw DioExceptions.fromDioError(dioError);

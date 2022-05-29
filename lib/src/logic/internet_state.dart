@@ -21,7 +21,7 @@ class LocalIdController extends GetxController
       change(null, status: RxStatus.loading());
       localIdForReceipt = LocalIdForReceipt();
 
-      ReceiptRepository().addNewCharIdForThisApp().then((value) {
+      ReceiptRepository().createNewLocalCharID().then((value) {
 
         localIdForReceipt = LocalIdForReceipt();
         localIdForReceipt = value;

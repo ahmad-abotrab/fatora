@@ -107,7 +107,7 @@ class ReceiptController extends Controller
         }
     }
 
-    public function getLocalCharID()
+    public function createNewLocalCharID()
     {
         $anotherIdChar = '';
         $anotherId = '';
@@ -122,16 +122,7 @@ class ReceiptController extends Controller
             $anotherIdChar = $this->incrementChar($result->charReceiptForEachEmployee);
             $anotherId = '0';
         }
-
-        try {
-            IdReceipt::create([
-                'charReceiptForEachEmployee' => $anotherIdChar,
-                'idReceiptForEachEmployee' => $anotherId,
-            ]);
         return array('charReceiptForEachEmployee' => $anotherIdChar, "idReceiptForEachEmployee" => $anotherId);
-        } catch (Exception $exception) {
-            return "fail cause " . $exception->getMessage();
-        }
     }
 
     public function allLocalIdChar()
@@ -158,6 +149,20 @@ class ReceiptController extends Controller
         DB::table('id_receipts')
             ->where('charReceiptForEachEmployee', $request->input('charReceiptForEachEmployee'))
             ->update(['idReceiptForEachEmployee' => $request->input('idReceiptForEachEmployee')]);
+    }
+    public function  addLocalIdToServer(Request $request)
+    {
+        $IdChar = $request->input('charReceiptForEachEmployee');
+        $IdNum = $request->input('idReceiptForEachEmployee');
+        try {
+            IdReceipt::create([
+                'charReceiptForEachEmployee' => $IdChar,
+                'idReceiptForEachEmployee' => $IdNum,
+            ]);
+            return "done";
+        }catch (Exception $exception){
+            return $exception;
+        }
     }
 
 }
