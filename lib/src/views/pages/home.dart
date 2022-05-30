@@ -245,14 +245,15 @@ class _HomePageState extends State<HomePage>
 
         var oldCharIdLocal = prefer.get(charIdAppLocal);
         var oldIdLocal = prefer.get(idAppLocal);
+        print("first");
         id = int.parse(oldIdLocal.toString()) + 1;
         receipt = createReceiptToNextProcess(id, oldCharIdLocal);
         Pair pair = await createPdfToNextProcess(receipt);
         receipt.receiptPdfFileName = pair.second;
         String sql = """
               INSERT INTO receipts
-              (idLocal,whoIsTake,amountText,amountNumeric,causeOfPayment,date,receiptPdfFileName)
-              VALUES (?,?,?,?,?,?,?);
+              (idLocal,whoIsTake,amountText,amountNumeric,causeOfPayment,date,receiptPdfFileName،statusSend_WhatsApp)
+              VALUES (?,?,?,?,?,?,?,?);
            """;
 
         List data = [
@@ -262,7 +263,8 @@ class _HomePageState extends State<HomePage>
           receipt.amountNumeric,
           receipt.causeOfPayment,
           receipt.date!.toIso8601String(),
-          receipt.receiptPdfFileName
+          receipt.receiptPdfFileName,
+          receipt.statusSend_WhatsApp,
         ];
 
         await receiptsDB.insertData(sql, data);
@@ -277,15 +279,23 @@ class _HomePageState extends State<HomePage>
         data = [pair.first.path, oldCharIdLocal, receipt.idLocal, 0, 0];
 
         await receiptsDB.insertData(sql, data);
+        print("first");
+
+        List<Map> d = await receiptsDB.readData('select * from receipts where id = 2');
+        print(d);
         try {
           // here should make store data on database
 
           await ReceiptRepository()
               .addNewReceipt(receipt, pair.first, pair.second);
+          print("first");
+
           LocalIdForReceipt localID = LocalIdForReceipt(
               charReceiptForEachEmployee: oldCharIdLocal.toString(),
               idReceiptForEachEmployee: id.toString());
+          print("first");
           await ReceiptRepository().updateLocalNumId(localID);
+          print("first");
           // 'UPDATE Test SET receiptStatus statusSend_Server = ?  WHERE idLocal = ?'
           sql = '''
                   UPDATE receiptStatus
@@ -302,15 +312,6 @@ class _HomePageState extends State<HomePage>
           await showDialogWhatYouWantDoAfterUploadDataToServer(
               pair.first, receipt.idLocal);
         } catch (e) {
-            // String sql = '''
-            //       UPDATE receiptStatus
-            //       SET statusSend_Server = ?,
-            //       statusSend_WhatsApp = ?
-            //       WHERE idLocal = ?
-            //     ''';
-            // List data = [0, 0, receipt.idLocal];
-            // await receiptsDB.updateData(sql, data);
-
           Navigator.of(context, rootNavigator: true).pop();
           showDialog(
             context: context,
@@ -340,14 +341,15 @@ class _HomePageState extends State<HomePage>
       receipt.amountText = formCatchCon.amountText!.text;
       receipt.amountNumeric = formCatchCon.price!.text.toString();
       receipt.causeOfPayment = formCatchCon.causeOfPayment!.text;
-      receipt.date = DateTime.now();
     } else {
       receipt.whoIsTake = formPaymentCon.whoIsTake!.text;
       receipt.amountText = formPaymentCon.amountText!.text;
       receipt.amountNumeric = formPaymentCon.price!.text.toString();
       receipt.causeOfPayment = formPaymentCon.causeOfPayment!.text;
-      receipt.date = DateTime.now();
+
     }
+    receipt.date = DateTime.now();
+    receipt.statusSend_WhatsApp = 0;
 
     return receipt;
   }
@@ -410,24 +412,13 @@ class _HomePageState extends State<HomePage>
   }
 
   sendReceiptPdfByWhatsApp(file, id) async {
+    bool shared = false;
     try {
-      print('');
       await Share.shareFiles([file], text: "هـذا إيصال الدفع الخاص بك");
-      String sql = '''
-                  UPDATE receiptStatus
-                  SET statusSend_WhatsApp = ?,
-                  WHERE idLocal = ?;
-                  ''';
-      List data = [1, id];
-      await receiptsDB.updateData(sql, data);
+
+      shared = true;
     } catch (e) {
-      String sql = '''
-                  UPDATE receiptStatus
-                  SET statusSend_WhatsApp = ?
-                  WHERE idLocal = ?;
-                  ''';
-      List data = [0, id];
-      await receiptsDB.updateData(sql, data);
+
       showDialog(
         context: context,
         builder: (_) {
@@ -446,6 +437,24 @@ class _HomePageState extends State<HomePage>
           );
         },
       );
+    }
+    if (shared) {
+      String sql = '''
+                  UPDATE receiptStatus
+                  SET statusSend_WhatsApp = ?
+                  WHERE idLocal = ?;
+                  ''';
+      List data = [1, id];
+      await receiptsDB.updateData(sql, data);
+
+    } else {
+      String sql = '''
+                  UPDATE receiptStatus
+                  SET statusSend_WhatsApp = ?
+                  WHERE idLocal = ?;
+                  ''';
+      List data = [0, id];
+      await receiptsDB.updateData(sql, data);
     }
   }
 
@@ -508,7 +517,7 @@ class _HomePageState extends State<HomePage>
       actions: [
         IconButton(
           onPressed: () {
-            // receiptsDB.deleteDatabaseInMyApp();
+
             if (tabController!.index == 0) {
               formCatchCon.reinitialize();
             } else {
@@ -614,16 +623,49 @@ class _HomePageState extends State<HomePage>
         PopupMenuItem(
           child: TextButton(
             onPressed: () async {
-              // String sql = 'select * from receiptStatus where statusSend_Server = 0';
-              String sql = '''
-                  SELECT rs.pathDB , r.idLocal , r.whoIsTake, r.amountText , r.amountNumeric , r.causeOfPayment , r.date , r.receiptPdfFileName
-                  FROM receipts r
-                  INNER JOIN receiptStatus rs
-                  ON r.idLocal = rs.idLocal
-                  WHERE rs.statusSend_Server = 0
-              ''';
-              List<Map> request = await receiptsDB.readData(sql);
-              print(request);
+              Navigator.pop(context);
+              List<Map> d =  await receiptNotUploadToServer();
+              print(d);
+              // try {
+              //   List<Map> request = await receiptNotUploadToServer();
+              //   if (request.isEmpty) {
+              //     showDialog(
+              //         context: context,
+              //         builder: (_) =>
+              //             AlertDialog(
+              //               shape: RoundedRectangleBorder(
+              //                   borderRadius: BorderRadius.circular(20)),
+              //               title: const Text('تنبيه'),
+              //               content: const Text('لا يوجد فواتير لم يتم رفعها'),
+              //               actions: [
+              //                 TextButton(
+              //                     onPressed: () {
+              //                       Navigator.pop(context);
+              //                     },
+              //                     child: const Text('رجوع'))
+              //               ],
+              //             ));
+              //   } else {
+              //     dialogToShowHowMuchReceiptsNotUploading(request);
+              //   }
+              // }catch(e){
+              //   showDialog(
+              //       context: context,
+              //       builder: (_) =>
+              //           AlertDialog(
+              //             shape: RoundedRectangleBorder(
+              //                 borderRadius: BorderRadius.circular(20)),
+              //             title: const Text('تنبيه'),
+              //             content: const Text('لا يوجد بيانات'),
+              //             actions: [
+              //               TextButton(
+              //                   onPressed: () {
+              //                     Navigator.pop(context);
+              //                   },
+              //                   child: const Text('رجوع'))
+              //             ],
+              //           ));
+              // }
             },
             child: Row(
               children: const [
@@ -678,6 +720,127 @@ class _HomePageState extends State<HomePage>
           ),
         ),
       ],
+    );
+  }
+
+  uploadReceiptToServer(List<Map> request) async {
+    Navigator.pop(context);
+    loadingDialogFun(keyLoader);
+
+    for (int i = 0; i < request.length; i++) {
+      Receipt receiptObject = Receipt(
+        idLocal: request[i]['idLocal'],
+        whoIsTake: request[i]['whoIsTake'],
+        amountText: request[i]['amountText'],
+        amountNumeric: request[i]['amountNumeric'],
+        causeOfPayment: request[i]['causeOfPayment'],
+        date: request[i]['date'],
+        receiptPdfFileName: request[i]['receiptPdfFileName'],
+      );
+      File receiptFile = File(request[i]['pathDB']);
+      await ReceiptRepository().addNewReceipt(
+          receiptObject, receiptFile, receiptObject.receiptPdfFileName!);
+      await ReceiptRepository().updateStatusOfSendReceiptToWhatsApp(receiptObject.idLocal, 1);
+      String sql = ''' 
+          UPLOAD receiptStatus
+          SET statusSend_Server = ?
+          WHERE idLocal = ?
+      ''';
+      List data = [1, request[i]['idLocal']];
+      await receiptsDB.updateData(sql, data);
+    }
+    Navigator.of(context, rootNavigator: true).pop();
+  }
+
+  receiptNotUploadToServer() async {
+    String sql = '''
+                  SELECT rs.pathDB , r.idLocal , r.whoIsTake, r.amountText , r.amountNumeric , r.causeOfPayment , r.date , r.receiptPdfFileName , r.statusSend_WhatsApp
+                  FROM receipts r
+                  INNER JOIN receiptStatus rs
+                  ON r.idLocal = rs.idLocal
+                  WHERE rs.statusSend_Server = 0
+              ''';
+    List<Map> request = await receiptsDB.readData(sql);
+    return request;
+  }
+
+  // onPressedUploadToServer() {
+  //   return PopupMenuButton(
+  //     child: Row(
+  //       children: const [
+  //         Icon(Icons.cloud_upload, color: Colors.blue),
+  //         Expanded(child: SizedBox()),
+  //         Text(
+  //           'رفع الفواتير',
+  //           style: TextStyle(color: Colors.black),
+  //         ),
+  //       ],
+  //     ),
+  //     shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(20)),
+  //     itemBuilder: (context) {
+  //       return [
+  //         PopupMenuItem(
+  //           child: TextButton(
+  //             onPressed: () async {
+  //               List<Map> request = await receiptNotUploadToServer();
+  //             },
+  //             child: Row(
+  //               children: const [
+  //                 FaIcon(FontAwesomeIcons.upload),
+  //                 Expanded(child: SizedBox()),
+  //                 Text(
+  //                   'رفع مباشر',
+  //                   style: TextStyle(color: Colors.black),
+  //                 )
+  //               ],
+  //             ),
+  //           ),
+  //         ),
+  //         PopupMenuItem(
+  //           child: TextButton(
+  //             onPressed: () async {
+  //               List<Map> request = await receiptNotUploadToServer();
+  //               dialogToShowHowMuchReceiptsNotUploading(request);
+  //             },
+  //             child: Row(
+  //               children: const [
+  //                 Icon(Icons.details),
+  //                 Expanded(child: SizedBox()),
+  //                 Text(
+  //                   'عدد الفواتير التي لم ترفع',
+  //                   style: TextStyle(color: Colors.black),
+  //                 )
+  //               ],
+  //             ),
+  //           ),
+  //         ),
+  //       ];
+  //     },
+  //   );
+  // }
+
+  dialogToShowHowMuchReceiptsNotUploading(List<Map> request) async {
+    showDialog(
+      context: context,
+      builder: (_) => AlertDialog(
+        shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(20)),
+        content: Column(
+          children: [
+            const Text('عدد الفواتير الغير مرفوعة على السيرفر'),
+            Text(request.length.toString())
+          ],
+        ),
+        actions: [
+          TextButton(
+              onPressed: () {
+                Navigator.pop(context);
+              },
+              child: const Text('رجوع')),
+          TextButton(
+              onPressed: uploadReceiptToServer(request),
+              child: const Text('رفع')),
+        ],
+      ),
     );
   }
 }

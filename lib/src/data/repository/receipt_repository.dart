@@ -1,6 +1,7 @@
 import 'dart:io';
 
 import 'package:dio/dio.dart';
+import 'package:flutter/foundation.dart';
 import 'package:path_provider/path_provider.dart';
 import '/src/data/model/local_id_for_receipt.dart';
 import '../model/receipt_model.dart';
@@ -18,6 +19,22 @@ class ReceiptRepository {
     }
   }
 
+  Future <dynamic> getLocalIdExits(charId)async{
+    try {
+      final response = await receiptApi.getLocalIdExits(charId);
+      try{
+        var source = LocalIdForReceipt.fromJson(response);
+        print('dfsa');
+        return source;
+      }catch(e){
+        print('lllll');
+        return LocalIdForReceipt();
+      }
+    } on DioError catch (dioError) {
+      rethrow;
+    }
+  }
+
   Future <dynamic> addLocalIdToServer(LocalIdForReceipt localId)async{
     try{
       final response = await receiptApi.addLocalIdToServer(localId.toJson());
@@ -26,6 +43,16 @@ class ReceiptRepository {
       rethrow;
     }
   }
+
+  Future<dynamic> updateStatusOfSendReceiptToWhatsApp(idLocal, status) async {
+    try {
+      final response = await receiptApi.updateStatusOfSendReceiptToWhatsApp(idLocal, status);
+      return response;
+    } on DioError catch (dioError) {
+      rethrow;
+    }
+  }
+
 
   Future<dynamic> createNewLocalCharID() async {
     try {
@@ -47,13 +74,13 @@ class ReceiptRepository {
     }
   }
 
-  Future<dynamic> uploadReceipt(fileName)async{
+  Future<dynamic> downloadReceipt(fileName)async{
     try{
-
-      var source = await ReceiptApi().uploadReceipt(fileName);
+      var source = await ReceiptApi().downloadReceipt(fileName);
       var dir = (await getTemporaryDirectory()).path;
       File file = File(dir + '/' + fileName);
-      File newFile = await file.writeAsBytes(source);
+      var bytes = await consolidateHttpClientResponseBytes(source);
+      File newFile = await file.writeAsBytes(bytes);
       return newFile;
     } catch(error){
       rethrow ;
@@ -65,6 +92,7 @@ class ReceiptRepository {
       Receipt receiptObject, File receiptFile, String fileName) async {
 
     try {
+      print("secind " + receiptObject.statusSend_WhatsApp.toString());
       String source = await ReceiptApi()
           .addNewReceipt(receiptObject.toJson(), receiptFile, fileName);
       return source;

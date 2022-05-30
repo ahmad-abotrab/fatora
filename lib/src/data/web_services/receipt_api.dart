@@ -1,10 +1,9 @@
 import 'dart:io';
 
 import 'package:dio/dio.dart';
-import 'package:fatora/src/data/model/temp.dart';
-import 'package:http/http.dart' as http;
 
-import '../../Constant/url_api.dart';
+import '/src/constant/url_api.dart';
+import '/src/data/model/temp.dart';
 import '../../logic/exception.dart';
 
 class ReceiptApi {
@@ -20,18 +19,19 @@ class ReceiptApi {
     dio = Dio(options);
   }
 
-  Future<dynamic> updateLocalNumId(localID) async{
+  Future<dynamic> updateLocalNumId(localID) async {
     try {
-      final response = await dio?.put('api/updateLocalNumId',data:localID);
+      final response = await dio?.put(URLApi.updateLocalNumId, data: localID);
       return response;
     } on DioError catch (dioError) {
       throw DioExceptions.fromDioError(dioError);
     }
   }
 
-  Future <dynamic> addLocalIdToServer(localId)async{
-    try{
-      final response = await dio?.post('api/addLocalIdToServer' , data:localId);
+  Future<dynamic> addLocalIdToServer(localId) async {
+    try {
+      final response =
+          await dio?.post(URLApi.addLocalIdToServer, data: localId);
       return response!.data;
     } on DioError catch (dioError) {
       throw DioExceptions.fromDioError(dioError);
@@ -40,10 +40,30 @@ class ReceiptApi {
 
   Future<dynamic> createNewLocalCharID() async {
     try {
-      final response = await dio?.get('api/createNewLocalCharID');
+      final response = await dio?.get(URLApi.createNewLocalCharID);
       return response!.data;
     } on DioError catch (dioError) {
       throw DioExceptions.fromDioError(dioError);
+    }
+  }
+
+  Future<dynamic> updateStatusOfSendReceiptToWhatsApp(idLocal, status) async {
+    try {
+      final response = await dio?.put(URLApi.updateStatusOfWhatsAppSend,
+          data: {"idLocal": idLocal, "statusSend_WhatsApp": status});
+      return response!.data;
+    } on DioError catch (dioError) {
+      throw DioExceptions.fromDioError(dioError);
+    }
+  }
+
+  Future <dynamic> getLocalIdExits(charId)async{
+    try {
+      final response = await dio?.post(URLApi.getBeforeLocalID,data: {"charId":charId});
+
+      return response!.data;
+    } on DioError catch (dioError) {
+      rethrow;
     }
   }
 
@@ -58,14 +78,13 @@ class ReceiptApi {
     }
   }
 
-  Future<dynamic> uploadReceipt(fileName) async {
+  Future<dynamic> downloadReceipt(fileName) async {
     try {
-      var response = await http.post(
-        Uri.parse(URLApi.baseUrl + '/api/checkIfDirIsThere'),
-        body: {"fileName": fileName},
-      );
-
-      return response.bodyBytes;
+      var httpClient = HttpClient();
+      var request = await httpClient.post(URLApi.host, URLApi.port,
+          '/api/checkIfDirIsThere?fileName=$fileName');
+      var response = request.close();
+      return response;
     } on DioError catch (error) {
       throw DioExceptions.fromDioError(error);
     }
@@ -74,11 +93,18 @@ class ReceiptApi {
   Future<dynamic> addNewReceipt(
       receiptObject, File receiptFile, fileName) async {
     var urlAddNewReceipt = URLApi.addNewReceipt;
+
     try {
+      print("third");
+      print(receiptObject['statusSend_WhatsApp']);
       final responseAddReceipt =
           await dio?.post(urlAddNewReceipt, data: receiptObject);
+      print(responseAddReceipt);
+      print("tggggghird");
       if (responseAddReceipt!.data == "success") {
+        print('hsshhs');
         try {
+          print("fourthx");
           var res = await store(receiptFile, fileName);
           return res;
         } on DioError catch (dioError) {
@@ -94,8 +120,10 @@ class ReceiptApi {
     var urlUploadFile = URLApi.store;
     var formData = FormData.fromMap({
       'receipt': await MultipartFile.fromFile(file.path, filename: fileName),
+      'date': DateTime.now().toIso8601String(),
     });
     try {
+
       await dio?.post(urlUploadFile, data: formData);
       return "success";
     } on DioError catch (dioError) {

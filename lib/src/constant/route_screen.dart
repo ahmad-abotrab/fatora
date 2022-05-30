@@ -1,5 +1,6 @@
 class RouteScreens {
   static const String splashScreen = '/splash';
+  static const String beforeSplashScreen = '/before';
   static const String checkIfItOnceTimeOpenApp = '/';
   static const String home = '/home';
   static const String login = '/login';

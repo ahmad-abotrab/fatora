@@ -1,3 +1,4 @@
+import 'package:fatora/src/views/pages/before_splash.dart';
 import 'package:flutter/material.dart';
 import 'package:get/get.dart';
 import 'src/Constant/color_app.dart';
@@ -41,6 +42,10 @@ class Fatora extends StatelessWidget {
         GetPage(
           name: RouteScreens.signaturePage,
           page: () => const SignaturePage(),
+        ),
+        GetPage(
+          name: RouteScreens.beforeSplashScreen,
+          page: () =>  BeforeSplash(),
         ),
       ],
     );

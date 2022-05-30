@@ -22,16 +22,39 @@ class ReceiptController extends Controller
     public function addReceipt(Request $request): string
     {
         try {
-            Receipt::create([
-                'whoIsTake' => $request->input('whoIsTake'),
-                'idLocal' => $request->input('idLocal'),
-                'amountNumeric' => $request->input('amountNumeric'),
-                'amountText' => $request->input('amountText'),
-                'causeOfPayment' => $request->input('causeOfPayment'),
-                'receiptPdfFileName' => $request->input('receiptPdfFileName'),
-                'date' => $request->input('date'),
-            ]);
-            return "success";
+            Receipt::create(
+                [
+                    'whoIsTake' => $request->input('whoIsTake'),
+                    'idLocal' => $request->input('idLocal'),
+                    'amountNumeric' => $request->input('amountNumeric'),
+                    'amountText' => $request->input('amountText'),
+                    'causeOfPayment' => $request->input('causeOfPayment'),
+                    'receiptPdfFileName' => $request->input('receiptPdfFileName'),
+                    'statusSend_WhatsApp' => $request->input('statusSend_WhatsApp'),
+                    'date' => $request->input('date'),
+                ]
+            );
+            $charId = substr($request->input('idLocal'), -1);
+            $idNum = substr($request->input('idLocal'), 0);
+            $result = DB::table('id_receipts')
+                ->where('charReceiptForEachEmployee', $charId)
+                ->get();
+
+            if ($result->isEmpty()) {
+                $idAndCharToMakeLocalId = $this->createNewLocalCharID();
+//
+                try {
+                    IdReceipt::create([
+                        "idReceiptForEachEmployee" => $idAndCharToMakeLocalId['idReceiptForEachEmployee'],
+                        "charReceiptForEachEmployee" => $idAndCharToMakeLocalId['charReceiptForEachEmployee'],
+                    ]);
+                    return "success";
+                } catch (Exception $exception) {
+                    return $exception;
+                }
+            } else {
+                return "success";
+            }
         } catch (Exception $e) {
             return "fail cause " . $e->getMessage();
         }
@@ -40,11 +63,17 @@ class ReceiptController extends Controller
     public function store(Request $request)
     {
         try {
+            $date = $request->input('date');
+            $year = date('Y');
+            $month = date('m');
+            $day = date('d');
             if ($request->hasFile("receipt")) {
                 $file = $request->file("receipt");
                 $fileName = $file->getClientOriginalName();
-                $path = '/receipt';
+                $path = '/receipt/' . $year . '/' . $month . '/' . $day;
+                $tempPath = '/receipt/temp';
                 $file->storeAs($path, $fileName);
+                $file->storeAs($tempPath, $fileName);
                 return "done store";
             } else {
                 return "no i not found it";
@@ -112,17 +141,17 @@ class ReceiptController extends Controller
         $anotherIdChar = '';
         $anotherId = '';
         $result = DB::table('id_receipts')
-            ->select('charReceiptForEachEmployee')
-            ->latest()
+            ->orderBy('charReceiptForEachEmployee', 'desc')
             ->first();
-        if ($result == null) {
+
+        if (!$result) {
             $anotherIdChar = 'A';
             $anotherId = '0';
         } else {
             $anotherIdChar = $this->incrementChar($result->charReceiptForEachEmployee);
             $anotherId = '0';
         }
-        return array('charReceiptForEachEmployee' => $anotherIdChar, "idReceiptForEachEmployee" => $anotherId);
+        return array('charReceiptForEachEmployee' => $anotherIdChar, "idReceiptForEachEmployee" => $anotherId, "statusSend_WhatsApp" => 0);
     }
 
     public function allLocalIdChar()
@@ -140,7 +169,7 @@ class ReceiptController extends Controller
     public function checkIfDirIsThere(Request $request)
     {
         $filename = $request->input('fileName');
-        $path = storage_path('app/receipt/' . $filename);
+        $path = storage_path('app/receipt/temp' . $filename);
         return response()->file($path);
     }
 
@@ -150,19 +179,31 @@ class ReceiptController extends Controller
             ->where('charReceiptForEachEmployee', $request->input('charReceiptForEachEmployee'))
             ->update(['idReceiptForEachEmployee' => $request->input('idReceiptForEachEmployee')]);
     }
-    public function  addLocalIdToServer(Request $request)
+
+    public function addLocalIdToServer(Request $request)
     {
-        $IdChar = $request->input('charReceiptForEachEmployee');
-        $IdNum = $request->input('idReceiptForEachEmployee');
         try {
-            IdReceipt::create([
-                'charReceiptForEachEmployee' => $IdChar,
-                'idReceiptForEachEmployee' => $IdNum,
-            ]);
+            $input = $request->all();
+            IdReceipt::create($input);
             return "done";
-        }catch (Exception $exception){
+        } catch (Exception $exception) {
             return $exception;
         }
+    }
+
+    public function updateStatusOfWhatsAppSend(Request $request)
+    {
+        DB::table('receipts')
+            ->where('idLocal', $request->input('idLocal'))
+            ->update(['statusSend_WhatsApp' => $request->input('statusSend_WhatsApp')]);
+    }
+
+    public function getBeforeLocalID(Request $request)
+    {
+       $result =   DB::table('id_receipts')
+            ->where('charReceiptForEachEmployee',$request->input('charId'))
+            ->get();
+       return array("charReceiptForEachEmployee"=>$result[0]->charReceiptForEachEmployee , "idReceiptForEachEmployee"=>$result[0]->idReceiptForEachEmployee);
     }
 
 }

@@ -6,5 +6,12 @@ class URLApi {
   static String addNewReceipt = 'api/addReceipt';
   static String getLastId = 'api/lastRecord';
   static String getReceiptsBetweenRangeDate = 'api/filterByDate';
+  static String  createNewLocalCharID= 'api/createNewLocalCharID';
+  static String addLocalIdToServer= 'api/addLocalIdToServer';
+  static String  updateLocalNumId = 'api/updateLocalNumId';
+  static String updateStatusOfWhatsAppSend = 'api/updateStatusOfWhatsAppSend';
+  static String getBeforeLocalID = 'api/getBeforeLocalID';
+  static const String host= '192.168.0.119';
+  static int port = 8080;
 
 }

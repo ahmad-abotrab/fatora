@@ -22,6 +22,7 @@ return new class extends Migration {
             $table->string('amountText');
             $table->string('causeOfPayment');
             $table->dateTime('date');
+            $table->integer('statusSend_WhatsApp');
             $table->timestamps();
         });
     }

@@ -1,3 +1,4 @@
+import 'package:fatora/src/views/pages/create_or_get_local_id.dart';
 import 'package:fatora/src/views/pages/home.dart';
 import 'package:fatora/src/views/pages/splash_screen.dart';
 import 'package:flutter/material.dart';
@@ -26,7 +27,7 @@ class _CheckIfItIsOnceTimeToOpenAppState extends State<CheckIfItIsOnceTimeToOpen
       return const Center(child: CircularProgressIndicator(),);
     }else{
       if(idApp == null){
-        return const SplashScreen();
+        return const CreateOrGetLocalId();
 
       }else{
         return const HomePage();

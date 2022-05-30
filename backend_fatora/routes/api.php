@@ -31,6 +31,8 @@ Route::controller(ReceiptController::class)->group(function () {
     Route::post('/checkIfDirIsThere' , 'checkIfDirIsThere');
     Route::put('/updateLocalNumId' , 'updateLocalNumId');
     Route::post('/addLocalIdToServer','addLocalIdToServer');
+    Route::post('/getBeforeLocalID','getBeforeLocalID');
+    Route::put('/updateStatusOfWhatsAppSend' , 'updateStatusOfWhatsAppSend');
 
 
 });

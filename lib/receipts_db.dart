@@ -30,7 +30,7 @@ class ReceiptsDB {
         CREATE TABLE receiptStatus (
           id INTEGER  NOT NULL PRIMARY KEY AUTOINCREMENT,
           idCharLocal TEXT NOT NULL,
-          idLocal INTEGER NOT NULL,
+          idLocal TEXT NOT NULL,
           pathDB TEXT NOT NULL,
           statusSend_WhatsApp INTEGER NOT NULL,
           statusSend_Server INTEGER NOT NULL
@@ -46,6 +46,7 @@ class ReceiptsDB {
           amountNumeric TEXT NOT NULL,
           causeOfPayment TEXT NOT NULL,
           receiptPdfFileName TEXT NOT NULL,
+          statusSend_WhatsApp INTEGER NOT NULL,
           date TEXT NOT NULL
         );
         ''';

@@ -19,11 +19,16 @@ import '../components/dialog_loading.dart';
 import '../components/loading_widget.dart';
 
 // ignore: must_be_immutable
-class LogHistory extends StatelessWidget {
+class LogHistory extends StatefulWidget {
   LogHistory({
     Key? key,
   }) : super(key: key);
 
+  @override
+  State<LogHistory> createState() => _LogHistoryState();
+}
+
+class _LogHistoryState extends State<LogHistory> {
   final List<String> tableName = [
     'رقم',
     'القابض',
@@ -32,8 +37,11 @@ class LogHistory extends StatelessWidget {
     'التاريخ',
     'المزيد',
   ];
+
   late GlobalKey<State> keyLoader = GlobalKey<State>();
+
   var dateTimeController = Get.put(DateTimeRangeController(), permanent: true);
+
   ReceiptsDB receiptDB = ReceiptsDB();
 
   @override
@@ -85,7 +93,7 @@ class LogHistory extends StatelessWidget {
                           // headingRowHeight: 10,
                           dividerThickness: 5,
                           columns: buildColumnTable(),
-                          rows: buildRowTable(controller.receipts!, context),
+                          rows: buildRowTable(controller.receipts!),
                         ),
                       ),
                     ),
@@ -180,7 +188,7 @@ class LogHistory extends StatelessWidget {
     return columns;
   }
 
-  buildRowTable(List<Receipt> receipts, context) {
+  buildRowTable(List<Receipt> receipts) {
     List<DataRow> rows = [];
     for (int i = 0; i < receipts.length; i++) {
       rows.add(
@@ -205,7 +213,7 @@ class LogHistory extends StatelessWidget {
                     receipts[i].date!.minute.toString(),
               ),
             ),
-            DataCell(popButton(context, receipts[i]))
+            DataCell(popButton(receipts[i]))
           ],
         ),
       );
@@ -213,10 +221,10 @@ class LogHistory extends StatelessWidget {
     return rows;
   }
 
-  popButton(context, Receipt receipt) {
+  popButton(Receipt receipt) {
     return PopupMenuButton(
       offset: Offset.fromDirection(20.0),
-      icon: Icon(Icons.more_horiz_outlined),
+      icon: const Icon(Icons.more_horiz_outlined),
       shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(20)),
       itemBuilder: (context) => [
         PopupMenuItem(
@@ -228,7 +236,9 @@ class LogHistory extends StatelessWidget {
               File file = File(fullPath);
               await PDFOpened.openFile(file);
             } else {
-              //download from server
+              File file = await ReceiptRepository()
+                  .downloadReceipt(receipt.receiptPdfFileName!);
+              await PDFOpened.openFile(file);
             }
           },
           child: Row(
@@ -249,7 +259,12 @@ class LogHistory extends StatelessWidget {
             var fileIsExists = await File(fullPath).exists();
             if (fileIsExists) {
               File file = File(fullPath);
-              sendReceiptPdfByWhatsApp(file, receipt.idLocal, context);
+              sendReceiptPdfByWhatsApp(file, receipt.idLocal);
+            } else {
+
+              File file = await ReceiptRepository()
+                  .downloadReceipt(receipt.receiptPdfFileName!);
+              sendReceiptPdfByWhatsApp(file, receipt.idLocal);
             }
           },
           child: Row(
@@ -267,25 +282,12 @@ class LogHistory extends StatelessWidget {
     );
   }
 
-  sendReceiptPdfByWhatsApp(file, id, context) async {
+  sendReceiptPdfByWhatsApp(file, id) async {
+    bool shared = false;
     try {
-      print('');
-      await Share.shareFiles([file], text: "هـذا إيصال الدفع الخاص بك");
-      String sql = '''
-                  UPDATE receiptStatus
-                  SET statusSend_WhatsApp = ?,
-                  WHERE idLocal = ?;
-                  ''';
-      List data = [1, id];
-      await receiptDB.updateData(sql, data);
+      await Share.shareFiles([file.path], text: "هـذا إيصال الدفع الخاص بك");
+      shared = true;
     } catch (e) {
-      String sql = '''
-                  UPDATE receiptStatus
-                  SET statusSend_WhatsApp = ?
-                  WHERE idLocal = ?;
-                  ''';
-      List data = [0, id];
-      await receiptDB.updateData(sql, data);
       showDialog(
         context: context,
         builder: (_) {
@@ -304,6 +306,23 @@ class LogHistory extends StatelessWidget {
           );
         },
       );
+    }
+    if (shared) {
+      String sql = '''
+                  UPDATE receiptStatus
+                  SET statusSend_WhatsApp = ?
+                  WHERE idLocal = ?;
+                  ''';
+      List data = [1, id];
+      await receiptDB.updateData(sql, data);
+    } else {
+      String sql = '''
+                  UPDATE receiptStatus
+                  SET statusSend_WhatsApp = ?
+                  WHERE idLocal = ?;
+                  ''';
+      List data = [0, id];
+      await receiptDB.updateData(sql, data);
     }
   }
 }
