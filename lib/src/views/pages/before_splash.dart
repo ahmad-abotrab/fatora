@@ -74,8 +74,6 @@ class _BeforeSplashState extends State<BeforeSplash> {
                             await shared.setString('charReceiptForEachEmployee',
                                 localIdForReceipt.charReceiptForEachEmployee!);
 
-                            await ReceiptRepository()
-                                .addLocalIdToServer(localIdForReceipt);
                             Navigator.pushReplacementNamed(
                                 context, RouteScreens.home);
                           }

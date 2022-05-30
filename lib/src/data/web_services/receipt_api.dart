@@ -60,7 +60,6 @@ class ReceiptApi {
   Future <dynamic> getLocalIdExits(charId)async{
     try {
       final response = await dio?.post(URLApi.getBeforeLocalID,data: {"charId":charId});
-
       return response!.data;
     } on DioError catch (dioError) {
       rethrow;

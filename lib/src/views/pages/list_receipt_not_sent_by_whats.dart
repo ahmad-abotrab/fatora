@@ -6,7 +6,6 @@ import 'package:fatora/src/data/repository/receipt_repository.dart';
 import 'package:fatora/src/data/web_services/pdf_opened.dart';
 import 'package:flutter/material.dart';
 import 'package:font_awesome_flutter/font_awesome_flutter.dart';
-import 'package:internet_connection_checker/internet_connection_checker.dart';
 import 'package:share_plus/share_plus.dart';
 
 import '../components/empty_widget_response.dart';
@@ -16,22 +15,23 @@ class ListReceiptNotSentByWhatsUp extends StatelessWidget {
   ListReceiptNotSentByWhatsUp({Key? key}) : super(key: key);
   ReceiptsDB receiptsDB = ReceiptsDB();
 
-  Future<List<Map>> _getReceiptNotSend() async {
-    List<Map> receiptsNotSend = [];
+  Future<List<Map<dynamic, dynamic>>> getReceiptNotSend() async {
+    List<Map<dynamic, dynamic>> receipts = [];
+
     String sql = '''
         SELECT r.whoIsTake, t.pathDB, r.idLocal , r.receiptPdfFileName
         FROM receipts r
         INNER JOIN receiptStatus t
         ON r.idLocal = t.idLocal
-        WHERE statusSend_WhatsApp = 0
+        WHERE t.statusSend_WhatsApp = 0
     ''';
-    receiptsNotSend = await receiptsDB.readData(sql);
-    bool result = await InternetConnectionChecker().hasConnection;
-    if (result) {
-
+    try {
+      receipts = await receiptsDB.readData(sql);
+      return receipts;
+    } catch (e) {
+      print(e.toString());
+      return [];
     }
-    else {}
-    return receiptsNotSend;
   }
 
   @override
@@ -43,19 +43,21 @@ class ListReceiptNotSentByWhatsUp extends StatelessWidget {
           child: Text('الفواتير التي لم ترسل عبر الواتس'),
         ),
       ),
-      body: SingleChildScrollView(
-        child: RefreshIndicator(
-          onRefresh: _getReceiptNotSend,
-          child: FutureBuilder<List<Map>>(
-            future: _getReceiptNotSend(),
-            builder: (context, AsyncSnapshot<List<Map>> snapShot) {
+      body: RefreshIndicator(
+        edgeOffset: 40,
+        onRefresh: getReceiptNotSend,
+        child: SingleChildScrollView(
+          child: FutureBuilder<List<Map<dynamic, dynamic>>>(
+            future: getReceiptNotSend(),
+            builder:
+                (context, AsyncSnapshot<List<Map<dynamic, dynamic>>> snapShot) {
               if (snapShot.hasData) {
                 if (snapShot.data!.isEmpty) {
                   return const EmptyWidgetResponse(
                       title: 'تحذير', content: 'لا يوجد بيانات');
                 } else {
                   return ListView.separated(
-                    physics: const AlwaysScrollableScrollPhysics(),
+                    physics: const ScrollPhysics(),
                     itemCount: snapShot.data!.length,
                     shrinkWrap: true,
                     itemBuilder: (context, index) {
@@ -98,7 +100,7 @@ class ListReceiptNotSentByWhatsUp extends StatelessWidget {
                   );
                 }
               } else {
-                return const Center(child:  CircularProgressIndicator());
+                return const Center(child: CircularProgressIndicator());
               }
             },
           ),
@@ -111,7 +113,6 @@ class ListReceiptNotSentByWhatsUp extends StatelessWidget {
     bool shared = false;
     try {
       await Share.shareFiles([file.path], text: "هـذا إيصال الدفع الخاص بك");
-
       shared = true;
     } catch (e) {
       showDialog(

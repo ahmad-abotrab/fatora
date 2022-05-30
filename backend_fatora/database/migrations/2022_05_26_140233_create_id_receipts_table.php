@@ -16,7 +16,7 @@ return new class extends Migration
         Schema::create('id_receipts', function (Blueprint $table) {
             $table->id();
             $table->string('idReceiptForEachEmployee');
-            $table->string('charReceiptForEachEmployee');
+            $table->string('charReceiptForEachEmployee')->unique();
             $table->timestamps();
         });
     }

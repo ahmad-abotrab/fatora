@@ -200,10 +200,15 @@ class ReceiptController extends Controller
 
     public function getBeforeLocalID(Request $request)
     {
-       $result =   DB::table('id_receipts')
-            ->where('charReceiptForEachEmployee',$request->input('charId'))
+
+        $result= DB::table('id_receipts')
+            ->where('charReceiptForEachEmployee', $request->input('charId'))
             ->get();
-       return array("charReceiptForEachEmployee"=>$result[0]->charReceiptForEachEmployee , "idReceiptForEachEmployee"=>$result[0]->idReceiptForEachEmployee);
+        if ($result->isEmpty()) {
+            return 'not found';
+        } else {
+            return array("charReceiptForEachEmployee" => $result[0]->charReceiptForEachEmployee, "idReceiptForEachEmployee" => $result[0]->idReceiptForEachEmployee);
+        }
     }
 
 }
