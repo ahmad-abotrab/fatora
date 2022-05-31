@@ -150,7 +150,7 @@ class _HomePageState extends State<HomePage>
                             : loadImageFromInternalPath(
                                 controller.fileNameSignature)
                         : loadSignatureFromAssetFile(
-                            'assets/images/signature.png'),
+                            'assets/images/signature.jpg'),
                   );
                 })
           ],

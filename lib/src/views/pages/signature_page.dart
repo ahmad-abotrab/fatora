@@ -100,7 +100,7 @@ class _SignaturePageState extends State<SignaturePage> {
     final Uint8List imageBytes = bytesData!.buffer
         .asUint8List(bytesData.offsetInBytes, bytesData.lengthInBytes);
     final String path = (await getApplicationDocumentsDirectory()).path;
-    final String fileName = "$path/signature.png";
+    final String fileName = "$path/signature.jpg";
     Get.find<SignaturePageController>().changedPathToSignature(fileName);
     final File file = File(fileName);
     await file.writeAsBytes(imageBytes, flush: true);
