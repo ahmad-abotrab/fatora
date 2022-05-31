@@ -243,7 +243,6 @@ class _HomePageState extends State<HomePage>
 
       } else {
         if(controllerValidation.formPayment.currentState!.validate()) {
-          print("dfdfjjjkjdlfjdsajfkl");
           await makeSubmitReceiptToServer(1);
         }
       }
@@ -449,7 +448,7 @@ class _HomePageState extends State<HomePage>
     Pair pair = Pair();
     File pdfFile;
     String fileName;
-    String imageSignature = 'assets/images/signature.png';
+    String imageSignature = 'assets/images/signature.jpg';
     if (tabController!.index == 0) {
       fileName = 'catch${receipt.idLocal}.pdf';
       pdfFile = await createPdfReceipts(
@@ -613,7 +612,6 @@ class _HomePageState extends State<HomePage>
   }
 
   createPdfReceipts(fileName, data, imageSignature, id,type) async {
-    print(type);
     final DateTime now = DateTime.now();
     final DateFormat formatter = DateFormat('yyyy-MM-dd-hh:mm');
     final String dateTime = formatter.format(now);
@@ -824,7 +822,7 @@ class _HomePageState extends State<HomePage>
               Navigator.push(
                 context,
                 MaterialPageRoute(
-                  builder: (_) => ListReceiptNotSentByWhatsUp(),
+                  builder: (_) => const ListReceiptNotSentByWhatsUp(),
                 ),
               );
             },

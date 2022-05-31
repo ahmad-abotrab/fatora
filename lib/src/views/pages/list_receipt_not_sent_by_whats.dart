@@ -14,7 +14,7 @@ import '../components/empty_widget_response.dart';
 
 // ignore: must_be_immutable
 class ListReceiptNotSentByWhatsUp extends StatefulWidget {
-  ListReceiptNotSentByWhatsUp({Key? key}) : super(key: key);
+  const ListReceiptNotSentByWhatsUp({Key? key}) : super(key: key);
 
   @override
   State<ListReceiptNotSentByWhatsUp> createState() =>
@@ -56,7 +56,7 @@ class _ListReceiptNotSentByWhatsUpState
         ),
         actions: [
           IconButton(
-            icon: Icon(Icons.refresh),
+            icon: const Icon(Icons.refresh),
             onPressed: _getReceiptNotSend,
           )
         ],
