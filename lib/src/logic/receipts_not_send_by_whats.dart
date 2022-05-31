@@ -2,26 +2,20 @@
 import '/src/data/model/local_id_for_receipt.dart';
 import 'package:get/get.dart';
 
-class ReceiptsNotSendByWhats extends GetxController
-    with StateMixin<LocalIdForReceipt> {
-  LocalIdForReceipt? localIdForReceipt;
+class ReceiptsNotSendByWhats extends GetxController {
 
+  List<Map<dynamic, dynamic>> receipts = [];
 
   @override
   void onReady() {
-    fetchId();
+    receipts = [];
     super.onReady();
 
   }
 
-  fetchId() async {
-    try {
-      change(null, status: RxStatus.loading());
-
-      change(localIdForReceipt, status: RxStatus.success());
-    } catch (exception) {
-
-      change(null, status: RxStatus.error(exception.toString()));
-    }
+  setdata(value)  {
+    receipts = value;
+    update();
   }
+
 }

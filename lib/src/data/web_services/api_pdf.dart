@@ -11,7 +11,8 @@ class ApiPdf {
   static TextDirection textDirection = TextDirection.rtl;
 
   static Future<File> generate(String fileName, Receipt data, imageSignature,
-      id, String dataTime) async {
+      id, String dataTime,type) async {
+    print(type);
     var arabicFontRegular = Font.ttf(
         await rootBundle.load("assets/fonts/Tajawal/Tajawal-Regular.ttf"));
     var arabicFontBold = Font.ttf(
@@ -26,7 +27,7 @@ class ApiPdf {
       pageFormat: PdfPageFormat.a4,
       build: (context) => [
         SizedBox(height: 1 * PdfPageFormat.cm),
-        buildHeader(id, data.amountNumeric),
+        buildHeader(id, data.amountNumeric, type),
         SizedBox(height: 1 * PdfPageFormat.cm),
 
         /*   data[0] who is take money
@@ -47,6 +48,7 @@ class ApiPdf {
   static buildHeader(
     id,
     price,
+      type
   ) =>
       Column(
         crossAxisAlignment: CrossAxisAlignment.end,
@@ -57,7 +59,7 @@ class ApiPdf {
               Directionality(
                 textDirection: textDirection,
                 child: Text(
-                  'وصل قبض',
+                  type == 0  ? 'وصل قبض' : 'وصل دفع',
                   style: TextStyle(
                     fontWeight: FontWeight.bold,
                     fontSize: 30,

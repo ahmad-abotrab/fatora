@@ -56,6 +56,7 @@ class _HomePageState extends State<HomePage>
   Color? selectedTabColor;
   late GlobalKey<State> keyLoader = GlobalKey<State>();
   var controllerLogHistory = Get.put<LogController>(LogController());
+  var controllerValidation = Get.put(FormValidation(),permanent: true);
   final snackbar = SnackBar(
       content: Text(Get.find<ConnectionInternetController>()
           .connectivityResult
@@ -223,181 +224,195 @@ class _HomePageState extends State<HomePage>
   }
 
   onPressedFloatingButton() async {
-    int id = 0;
-    if (Get.find<SignaturePageController>().fileNameSignature == '') {
-      dontHaveSignature();
-    } else {
-      //condition to complete process
-      bool firstCondition = (signatureCon.selectedIndex == 0 &&
-          Get.find<FormValidation>().formCatch.currentState!.validate());
-      bool secondCondition = (signatureCon.selectedIndex == 1 &&
-          Get.find<FormValidation>().formPayment.currentState!.validate());
-      //----------
-      if (firstCondition || secondCondition) {
-        GlobalKey<State> keyLoader1 = GlobalKey<State>();
-        Receipt? receipt;
-        loadingDialogFun(keyLoader1);
-        SharedPreferences sharedPreferences =
-            await SharedPreferences.getInstance();
-        final prefer = sharedPreferences;
 
-        var oldCharIdLocal = prefer.get(charIdAppLocal);
-        var oldIdLocal = prefer.get(idAppLocal);
-        id = int.parse(oldIdLocal.toString()) + 1;
-        receipt = createReceiptToNextProcess(id, oldCharIdLocal);
-        Pair pair = await createPdfToNextProcess(receipt);
-        receipt.receiptPdfFileName = pair.second;
-        String sql = """
+    //condition to complete process
+    // bool firstCondition = (signatureCon.selectedIndex == 0 &&
+    //     controllerValidation.formCatch.currentState!.validate());
+    // bool secondCondition = (signatureCon.selectedIndex == 1 &&
+    //     controllerValidation.formPayment.currentState!.validate());
+    //----------
+
+      if (tabController!.index == 0) {
+        if(controllerValidation.formCatch.currentState!.validate()){
+          if (Get.find<SignaturePageController>().fileNameSignature == '') {
+            dontHaveSignature();
+          } else {
+            await makeSubmitReceiptToServer(0);
+          }
+        }
+
+      } else {
+        if(controllerValidation.formPayment.currentState!.validate()) {
+          print("dfdfjjjkjdlfjdsajfkl");
+          await makeSubmitReceiptToServer(1);
+        }
+      }
+
+  }
+
+  makeSubmitReceiptToServer(type) async {
+    int id = 0;
+    GlobalKey<State> keyLoader1 = GlobalKey<State>();
+    Receipt? receipt;
+    loadingDialogFun(keyLoader1);
+    SharedPreferences sharedPreferences = await SharedPreferences.getInstance();
+    final prefer = sharedPreferences;
+
+    var oldCharIdLocal = prefer.get(charIdAppLocal);
+    var oldIdLocal = prefer.get(idAppLocal);
+    id = int.parse(oldIdLocal.toString()) + 1;
+    receipt = createReceiptToNextProcess(id, oldCharIdLocal);
+    Pair pair = await createPdfToNextProcess(receipt,type);
+    receipt.receiptPdfFileName = pair.second;
+    String sql = """
               INSERT INTO receipts
               (idLocal,whoIsTake,amountText,amountNumeric,causeOfPayment,date,receiptPdfFileName)
               VALUES (?,?,?,?,?,?,?);
            """;
 
-        List data = [
-          receipt.idLocal,
-          receipt.whoIsTake,
-          receipt.amountText,
-          receipt.amountNumeric,
-          receipt.causeOfPayment,
-          receipt.date!.toIso8601String(),
-          receipt.receiptPdfFileName,
-        ];
+    List data = [
+      receipt.idLocal,
+      receipt.whoIsTake,
+      receipt.amountText,
+      receipt.amountNumeric,
+      receipt.causeOfPayment,
+      receipt.date!.toIso8601String(),
+      receipt.receiptPdfFileName,
+    ];
 
-        try {
-          await receiptsDB.insertData(sql, data);
-        } catch (e) {
-          showDialog(
-              context: context,
-              builder: (_) => AlertDialog(
-                    shape: RoundedRectangleBorder(
-                        borderRadius: BorderRadius.circular(20)),
-                    title: const Text('تنبيه'),
-                    content: Text(e.toString()),
-                    actions: [
-                      TextButton(
-                          onPressed: () {
-                            Navigator.of(context);
-                          },
-                          child: const Text('رجوع'))
-                    ],
-                  ));
-        }
+    try {
+      await receiptsDB.insertData(sql, data);
+    } catch (e) {
+      showDialog(
+          context: context,
+          builder: (_) => AlertDialog(
+                shape: RoundedRectangleBorder(
+                    borderRadius: BorderRadius.circular(20)),
+                title: const Text('تنبيه'),
+                content: Text(e.toString()),
+                actions: [
+                  TextButton(
+                      onPressed: () {
+                        Navigator.of(context);
+                      },
+                      child: const Text('رجوع'))
+                ],
+              ));
+    }
 
-        sql = '';
-        sql = '''
+    sql = '';
+    sql = '''
               INSERT INTO receiptStatus
               (pathDB,idCharLocal,idLocal)
               VALUES (?,?,?);
           ''';
-        data.clear();
-        data = [pair.first.path, oldCharIdLocal, receipt.idLocal];
+    data.clear();
+    data = [pair.first.path, oldCharIdLocal, receipt.idLocal];
 
-        try {
-          await receiptsDB.insertData(sql, data);
-        } catch (e) {
-          showDialog(
-              context: context,
-              builder: (_) => AlertDialog(
-                    shape: RoundedRectangleBorder(
-                        borderRadius: BorderRadius.circular(20)),
-                    title: const Text('تنبيه'),
-                    content: Text(e.toString()),
-                    actions: [
-                      TextButton(
-                          onPressed: () {
-                            Navigator.of(context);
-                          },
-                          child: const Text('رجوع'))
-                    ],
-                  ));
-        }
+    try {
+      await receiptsDB.insertData(sql, data);
+    } catch (e) {
+      showDialog(
+          context: context,
+          builder: (_) => AlertDialog(
+                shape: RoundedRectangleBorder(
+                    borderRadius: BorderRadius.circular(20)),
+                title: const Text('تنبيه'),
+                content: Text(e.toString()),
+                actions: [
+                  TextButton(
+                      onPressed: () {
+                        Navigator.of(context);
+                      },
+                      child: const Text('رجوع'))
+                ],
+              ));
+    }
 
-        var hasInternet = await InternetConnectionChecker().hasConnection;
-        if (hasInternet) {
-          try {
-            // here should make store data on database
+    var hasInternet = await InternetConnectionChecker().hasConnection;
+    if (hasInternet) {
+      try {
+        // here should make store data on database
 
-            await ReceiptRepository()
-                .addNewReceipt(receipt, pair.first, pair.second);
+        await ReceiptRepository()
+            .addNewReceipt(receipt, pair.first, pair.second);
 
-            LocalIdForReceipt localID = LocalIdForReceipt(
-                charReceiptForEachEmployee: oldCharIdLocal.toString(),
-                idReceiptForEachEmployee: id.toString());
+        LocalIdForReceipt localID = LocalIdForReceipt(
+            charReceiptForEachEmployee: oldCharIdLocal.toString(),
+            idReceiptForEachEmployee: id.toString());
 
-            await ReceiptRepository().updateLocalNumId(localID);
+        await ReceiptRepository().updateLocalNumId(localID);
 
-            sql = '''
+        sql = '''
                   UPDATE receiptStatus
                   SET statusSend_Server = ? ,
                   statusSend_WhatsApp = ?
                   WHERE idLocal = ?
                 ''';
-            data = [1, 0, receipt.idLocal];
-            await receiptsDB.updateData(sql, data);
+        data = [1, 0, receipt.idLocal];
+        await receiptsDB.updateData(sql, data);
 
-            await prefer.setString(idAppLocal, id.toString());
-            Get.find<LoadingAnimationController>().changeStatus();
-            await Future.delayed(const Duration(seconds: 1));
-            Navigator.of(context, rootNavigator: true).pop();
-            await showDialogWhatYouWantDoAfterUploadDataToServer(
-                pair.first, receipt.idLocal);
-          } catch (e) {
-            Navigator.of(context, rootNavigator: true).pop();
-            showDialog(
-              context: context,
-              builder: (_) => WarningDialog(
-                content: e.toString(),
-              ),
-            );
-          }
-        } else {
-          sql = '''
+        await prefer.setString(idAppLocal, id.toString());
+        Get.find<LoadingAnimationController>().changeStatus();
+        await Future.delayed(const Duration(seconds: 1));
+        Navigator.of(context, rootNavigator: true).pop();
+        await showDialogWhatYouWantDoAfterUploadDataToServer(
+            pair.first, receipt.idLocal);
+      } catch (e) {
+        Navigator.of(context, rootNavigator: true).pop();
+        showDialog(
+          context: context,
+          builder: (_) => WarningDialog(
+            content: e.toString(),
+          ),
+        );
+      }
+    } else {
+      sql = '''
                   UPDATE receiptStatus
                   SET statusSend_Server = ?
                   WHERE idLocal = ?
                 ''';
-          data = [0, receipt.idLocal];
-          Navigator.of(context, rootNavigator: true).pop();
-          try {
-            await receiptsDB.updateData(sql, data);
-          } catch (e) {
-            showDialog(
-                context: context,
-                builder: (_) => AlertDialog(
-                      shape: RoundedRectangleBorder(
-                          borderRadius: BorderRadius.circular(20)),
-                      title: const Text('تنبيه'),
-                      content: Text(e.toString()),
-                      actions: [
-                        TextButton(
-                            onPressed: () {
-                              Navigator.of(context);
-                            },
-                            child: const Text('رجوع'))
-                      ],
-                    ));
-          }
-
-          await prefer.setString(idAppLocal, id.toString());
-          showDialog(
-              context: context,
-              builder: (_) => AlertDialog(
-                    shape: RoundedRectangleBorder(
-                      borderRadius: BorderRadius.circular(20),
-                    ),
-                    title: const Text('تنبيه'),
-                    content: const Text(
-                        'لا يوجد اتصال بالانترنت ، لن يتم رفع الفاتورة وبيانتها على السيرفر، تم حفظهم على الجهاز بشكل مؤقت الرجاء رفعها بأقرب وقت ممكن'),
-                    actions: [
-                      TextButton(
-                          onPressed: () {
-                            Navigator.pop(context);
-                          },
-                          child: const Text('رجوع'))
-                    ],
-                  ));
-        }
+      data = [0, receipt.idLocal];
+      Navigator.of(context, rootNavigator: true).pop();
+      try {
+        await receiptsDB.updateData(sql, data);
+      } catch (e) {
+        showDialog(
+            context: context,
+            builder: (_) => AlertDialog(
+                  shape: RoundedRectangleBorder(
+                      borderRadius: BorderRadius.circular(20)),
+                  title: const Text('تنبيه'),
+                  content: Text(e.toString()),
+                  actions: [
+                    TextButton(
+                        onPressed: () {
+                          Navigator.of(context);
+                        },
+                        child: const Text('رجوع'))
+                  ],
+                ));
       }
+
+      await prefer.setString(idAppLocal, id.toString());
+      showDialog(
+          context: context,
+          builder: (_) => AlertDialog(
+                shape: RoundedRectangleBorder(
+                  borderRadius: BorderRadius.circular(20),
+                ),
+                title: const Text('تنبيه'),
+                content: const Text(
+                    'لا يوجد اتصال بالانترنت ، لن يتم رفع الفاتورة وبيانتها على السيرفر، تم حفظهم على الجهاز بشكل مؤقت الرجاء رفعها بأقرب وقت ممكن'),
+                actions: [
+                  TextButton(
+                      onPressed: () {
+                        Navigator.pop(context);
+                      },
+                      child: const Text('رجوع'))
+                ],
+              ));
     }
   }
 
@@ -430,7 +445,7 @@ class _HomePageState extends State<HomePage>
     return receipt;
   }
 
-  createPdfToNextProcess(receipt) async {
+  createPdfToNextProcess(receipt,type) async {
     Pair pair = Pair();
     File pdfFile;
     String fileName;
@@ -441,11 +456,11 @@ class _HomePageState extends State<HomePage>
           fileName,
           receipt,
           Get.find<SignaturePageController>().fileNameSignature,
-          receipt.idLocal);
+          receipt.idLocal,type);
     } else {
       fileName = 'payment${receipt.idLocal}.pdf';
       pdfFile = await createPdfReceipts(
-          fileName, receipt, imageSignature, receipt.idLocal);
+          fileName, receipt, imageSignature, receipt.idLocal,type);
     }
     pair.first = pdfFile;
     pair.second = fileName;
@@ -597,7 +612,8 @@ class _HomePageState extends State<HomePage>
     );
   }
 
-  createPdfReceipts(fileName, data, imageSignature, id) async {
+  createPdfReceipts(fileName, data, imageSignature, id,type) async {
+    print(type);
     final DateTime now = DateTime.now();
     final DateFormat formatter = DateFormat('yyyy-MM-dd-hh:mm');
     final String dateTime = formatter.format(now);
@@ -612,7 +628,7 @@ class _HomePageState extends State<HomePage>
       imagePath = bytes.buffer.asUint8List();
     }
 
-    return await ApiPdf.generate(fileName, data, imagePath, id, dateTime);
+    return await ApiPdf.generate(fileName, data, imagePath, id, dateTime,type);
   }
 
   AppBar appBar(BuildContext context) {

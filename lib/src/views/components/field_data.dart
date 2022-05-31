@@ -28,7 +28,7 @@ class FieldData extends StatelessWidget {
                 : null;
           } else {
             if (value == null || value.isEmpty) {
-              return 'Please enter some text';
+              return 'لا يمكن ترك هذا الحقل فارغاً';
             }
             return null;
           }
