@@ -225,13 +225,6 @@ class _HomePageState extends State<HomePage>
 
   onPressedFloatingButton() async {
 
-    //condition to complete process
-    // bool firstCondition = (signatureCon.selectedIndex == 0 &&
-    //     controllerValidation.formCatch.currentState!.validate());
-    // bool secondCondition = (signatureCon.selectedIndex == 1 &&
-    //     controllerValidation.formPayment.currentState!.validate());
-    //----------
-
       if (tabController!.index == 0) {
         if(controllerValidation.formCatch.currentState!.validate()){
           if (Get.find<SignaturePageController>().fileNameSignature == '') {
@@ -323,7 +316,12 @@ class _HomePageState extends State<HomePage>
                       onPressed: () {
                         Navigator.of(context);
                       },
-                      child: const Text('رجوع'))
+                      child: const Text('رجوع')),
+                  TextButton(
+                      onPressed: () {
+                        PDFOpened.openFile(pair.first);
+                      },
+                      child: const Text('عرض ال pdf')),
                 ],
               ));
     }
@@ -409,7 +407,10 @@ class _HomePageState extends State<HomePage>
                       onPressed: () {
                         Navigator.pop(context);
                       },
-                      child: const Text('رجوع'))
+                      child: const Text('رجوع')),
+                  TextButton(onPressed: (){
+                    PDFOpened.openFile(pair.first);
+                  }, child: const Text('عرض ال pdf'))
                 ],
               ));
     }
