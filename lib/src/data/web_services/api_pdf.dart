@@ -54,7 +54,7 @@ class ApiPdf {
         crossAxisAlignment: CrossAxisAlignment.end,
         children: [
           Row(
-            mainAxisAlignment: MainAxisAlignment.end,
+            mainAxisAlignment: MainAxisAlignment.center,
             children: [
               Directionality(
                 textDirection: textDirection,
@@ -203,17 +203,18 @@ class ApiPdf {
         buildText(
           staticText: 'قبضت من السيد   ',
           dynamicText: whoIsTake,
-          secondaryStaticText: 'المحترم',
+          secondaryStaticText: '  المحترم.',
         ),
         SizedBox(height: 0.5 * PdfPageFormat.cm),
         buildText(
             staticText: 'مبلغاً وقدره فقط  ',
             dynamicText: amountText.toString(),
-            secondaryStaticText: 'ل.س لاغير'),
+            secondaryStaticText: '  ل.س لاغير .'),
         SizedBox(height: 0.5 * PdfPageFormat.cm),
         buildText(
           staticText: 'وذلك لقاء  ',
-          dynamicText: causeOfPayment,
+          dynamicText: '. '+causeOfPayment ,
+
         ),
       ]);
 }
