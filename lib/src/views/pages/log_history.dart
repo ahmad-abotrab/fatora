@@ -20,7 +20,7 @@ import '../components/loading_widget.dart';
 
 // ignore: must_be_immutable
 class LogHistory extends StatefulWidget {
-  LogHistory({
+  const LogHistory({
     Key? key,
   }) : super(key: key);
 

@@ -9,7 +9,7 @@ import '../../data/repository/receipt_repository.dart';
 import '../components/field_data.dart';
 
 class BeforeSplash extends StatefulWidget {
-  BeforeSplash({Key? key}) : super(key: key);
+  const BeforeSplash({Key? key}) : super(key: key);
 
   @override
   State<BeforeSplash> createState() => _BeforeSplashState();
@@ -20,6 +20,7 @@ class _BeforeSplashState extends State<BeforeSplash> {
 
   int state = 0;
   String error = '';
+  bool isLoading = false;
 
   @override
   Widget build(BuildContext context) {
@@ -48,6 +49,9 @@ class _BeforeSplashState extends State<BeforeSplash> {
                         border: Border.all(color: ColorApp.primaryColor)),
                     child: MaterialButton(
                       onPressed: () async {
+                        setState(() {
+                          isLoading = true;
+                        });
                         try {
                           var localIdForReceipt = LocalIdForReceipt();
                           localIdForReceipt = await ReceiptRepository()
@@ -81,10 +85,11 @@ class _BeforeSplashState extends State<BeforeSplash> {
                           setState(() {
                             state = 2;
                             error = e.toString();
+                            isLoading = false;
                           });
                         }
                       },
-                      child: const Text('استعادة ال id'),
+                      child:isLoading ?const CircularProgressIndicator(): const Text('استعادة ال id'),
                     ),
                   )
                 : state == 1
@@ -108,6 +113,7 @@ class _BeforeSplashState extends State<BeforeSplash> {
                             onPressed: () {
                               setState(() {
                                 state = 0;
+                                isLoading = false;
                               });
                             },
                             icon: const Icon(

@@ -61,7 +61,7 @@ class ReceiptApi {
     try {
       final response = await dio?.post(URLApi.getBeforeLocalID,data: {"charId":charId});
       return response!.data;
-    } on DioError catch (dioError) {
+    } on DioError {
       rethrow;
     }
   }
@@ -94,16 +94,10 @@ class ReceiptApi {
     var urlAddNewReceipt = URLApi.addNewReceipt;
 
     try {
-      print("third");
-      print(receiptObject['statusSend_WhatsApp']);
       final responseAddReceipt =
           await dio?.post(urlAddNewReceipt, data: receiptObject);
-      print(responseAddReceipt);
-      print("tggggghird");
       if (responseAddReceipt!.data == "success") {
-        print('hsshhs');
         try {
-          print("fourthx");
           var res = await store(receiptFile, fileName);
           return res;
         } on DioError catch (dioError) {

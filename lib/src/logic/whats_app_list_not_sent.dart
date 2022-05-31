@@ -6,6 +6,7 @@ class WhatsAppNotSent extends GetxController{
   List<Map> receiptsNotSend = [];
   ReceiptsDB receiptsDB = ReceiptsDB();
 
+  @override
   void onInit() async{
     await getReceiptNotSend();
     super.onInit();

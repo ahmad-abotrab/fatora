@@ -1,5 +1,5 @@
 class URLApi {
-  static String baseUrl = 'http://192.168.0.119:8080/';
+  static String baseUrl = 'http://192.168.1.11:8080/';
   static String getAllReceipts = 'api/allReceipt';
   static const String addNewIdChar = 'api/getLocalCharID';
   static String store = 'api/store';
@@ -11,7 +11,7 @@ class URLApi {
   static String  updateLocalNumId = 'api/updateLocalNumId';
   static String updateStatusOfWhatsAppSend = 'api/updateStatusOfWhatsAppSend';
   static String getBeforeLocalID = 'api/getBeforeLocalID';
-  static const String host= '192.168.0.119';
+  static const String host= '192.168.1.11';
   static int port = 8080;
 
 }

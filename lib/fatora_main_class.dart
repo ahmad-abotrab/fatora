@@ -45,7 +45,7 @@ class Fatora extends StatelessWidget {
         ),
         GetPage(
           name: RouteScreens.beforeSplashScreen,
-          page: () =>  BeforeSplash(),
+          page: () =>  const BeforeSplash(),
         ),
       ],
     );

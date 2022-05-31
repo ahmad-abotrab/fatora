@@ -1,6 +1,5 @@
 import 'package:fatora/src/views/pages/create_or_get_local_id.dart';
 import 'package:fatora/src/views/pages/home.dart';
-import 'package:fatora/src/views/pages/splash_screen.dart';
 import 'package:flutter/material.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 

@@ -14,7 +14,7 @@ class ReceiptRepository {
     try {
       final response = receiptApi.updateLocalNumId(localID.toJson());
       return response;
-    } on DioError catch (dioError) {
+    } on DioError {
       rethrow;
     }
   }
@@ -24,13 +24,11 @@ class ReceiptRepository {
       final response = await receiptApi.getLocalIdExits(charId);
       try{
         var source = LocalIdForReceipt.fromJson(response);
-        print('dfsa');
         return source;
       }catch(e){
-        print('lllll');
         return LocalIdForReceipt();
       }
-    } on DioError catch (dioError) {
+    } on DioError {
       rethrow;
     }
   }
@@ -39,7 +37,7 @@ class ReceiptRepository {
     try{
       final response = await receiptApi.addLocalIdToServer(localId.toJson());
       return response;
-    } on DioError catch (dioError) {
+    } on DioError {
       rethrow;
     }
   }
@@ -48,7 +46,7 @@ class ReceiptRepository {
     try {
       final response = await receiptApi.updateStatusOfSendReceiptToWhatsApp(idLocal, status);
       return response;
-    } on DioError catch (dioError) {
+    } on DioError {
       rethrow;
     }
   }
@@ -92,7 +90,6 @@ class ReceiptRepository {
       Receipt receiptObject, File receiptFile, String fileName) async {
 
     try {
-      print("secind " + receiptObject.statusSend_WhatsApp.toString());
       String source = await ReceiptApi()
           .addNewReceipt(receiptObject.toJson(), receiptFile, fileName);
       return source;

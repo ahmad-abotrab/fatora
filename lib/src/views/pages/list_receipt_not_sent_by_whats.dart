@@ -29,7 +29,6 @@ class ListReceiptNotSentByWhatsUp extends StatelessWidget {
       receipts = await receiptsDB.readData(sql);
       return receipts;
     } catch (e) {
-      print(e.toString());
       return [];
     }
   }

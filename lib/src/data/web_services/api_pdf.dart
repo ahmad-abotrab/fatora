@@ -1,17 +1,17 @@
 import 'dart:io';
 
-import '../model/receipt_model.dart';
-import '/src/data/web_services/pdf_opened.dart';
 import 'package:flutter/services.dart';
-
 import 'package:pdf/pdf.dart';
 import 'package:pdf/widgets.dart';
+
+import '/src/data/web_services/pdf_opened.dart';
+import '../model/receipt_model.dart';
 
 class ApiPdf {
   static TextDirection textDirection = TextDirection.rtl;
 
-  static Future<File> generate(String fileName, Receipt data,
-      imageSignature, id, String dataTime) async {
+  static Future<File> generate(String fileName, Receipt data, imageSignature,
+      id, String dataTime) async {
     var arabicFontRegular = Font.ttf(
         await rootBundle.load("assets/fonts/Tajawal/Tajawal-Regular.ttf"));
     var arabicFontBold = Font.ttf(
@@ -146,48 +146,51 @@ class ApiPdf {
     required String dynamicText,
     secondaryStaticText,
   }) =>
-      Row(
-        mainAxisAlignment: MainAxisAlignment.end,
-        children: [
-          secondaryStaticText != null
-              ? Directionality(
-                  textDirection: textDirection,
-                  child: Text(
-                    secondaryStaticText,
-                    style: const TextStyle(
-                      fontSize: 25,
-                      color: PdfColor.fromInt(0x000000),
-                    ),
-                  ),
-                )
-              : Directionality(
-                  textDirection: textDirection,
-                  child: Text(''),
-                ),
-          SizedBox(width: 0.3 * PdfPageFormat.cm),
-          Directionality(
-            textDirection: textDirection,
-            child: Text(
-              dynamicText,
-              style: TextStyle(
-                  fontSize: 25,
-                  color: const PdfColor.fromInt(0x000000),
-                  fontWeight: FontWeight.bold),
+      Column(crossAxisAlignment: CrossAxisAlignment.end, children: [
+        Directionality(
+          textDirection: textDirection,
+          child: Text(
+            staticText,
+            style: const TextStyle(
+              fontSize: 20,
+              color: PdfColor.fromInt(0x000000),
             ),
           ),
-          SizedBox(width: 0.3 * PdfPageFormat.cm),
-          Directionality(
-            textDirection: textDirection,
-            child: Text(
-              staticText,
-              style: const TextStyle(
-                fontSize: 25,
-                color: PdfColor.fromInt(0x000000),
+        ),
+        SizedBox(height: 0.5 * PdfPageFormat.cm),
+        Row(
+          mainAxisAlignment: MainAxisAlignment.end,
+          children: [
+            secondaryStaticText != null
+                ? Directionality(
+                    textDirection: textDirection,
+                    child: Text(
+                      secondaryStaticText,
+                      style: const TextStyle(
+                        fontSize: 20,
+                        color: PdfColor.fromInt(0x000000),
+                      ),
+                    ),
+                  )
+                : Directionality(
+                    textDirection: textDirection,
+                    child: Text(''),
+                  ),
+            SizedBox(width: 0.01 * PdfPageFormat.cm),
+            Directionality(
+              textDirection: textDirection,
+              child: Text(
+                dynamicText,
+                style: TextStyle(
+                    fontSize: 20,
+                    color: const PdfColor.fromInt(0x000000),
+                    fontWeight: FontWeight.bold),
               ),
             ),
-          ),
-        ],
-      );
+            SizedBox(width: 3 * PdfPageFormat.cm),
+          ],
+        )
+      ]);
 
   static buildBody(
     whoIsTake,
@@ -200,20 +203,15 @@ class ApiPdf {
           dynamicText: whoIsTake,
           secondaryStaticText: 'المحترم',
         ),
-        SizedBox(height: 0.4 * PdfPageFormat.cm),
+        SizedBox(height: 0.5 * PdfPageFormat.cm),
         buildText(
             staticText: 'مبلغاً وقدره فقط  ',
             dynamicText: amountText.toString(),
             secondaryStaticText: 'ل.س لاغير'),
-        SizedBox(height: 0.4 * PdfPageFormat.cm),
+        SizedBox(height: 0.5 * PdfPageFormat.cm),
         buildText(
           staticText: 'وذلك لقاء  ',
           dynamicText: causeOfPayment,
         ),
-        // SizedBox(height: 0.4 * PdfPageFormat.cm),
-        // buildText(
-        //   staticText: 'ل ',
-        //   dynamicText: whoIsTake,
-        // ),
       ]);
 }

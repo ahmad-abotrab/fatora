@@ -223,8 +223,6 @@ class _HomePageState extends State<HomePage>
   }
 
   onPressedFloatingButton() async {
-    File? pdfFile;
-    bool checkIfUploadDataToServer = false;
     int id = 0;
     if (Get.find<SignaturePageController>().fileNameSignature == '') {
       dontHaveSignature();
@@ -245,15 +243,14 @@ class _HomePageState extends State<HomePage>
 
         var oldCharIdLocal = prefer.get(charIdAppLocal);
         var oldIdLocal = prefer.get(idAppLocal);
-        print("first");
         id = int.parse(oldIdLocal.toString()) + 1;
         receipt = createReceiptToNextProcess(id, oldCharIdLocal);
         Pair pair = await createPdfToNextProcess(receipt);
         receipt.receiptPdfFileName = pair.second;
         String sql = """
               INSERT INTO receipts
-              (idLocal,whoIsTake,amountText,amountNumeric,causeOfPayment,date,receiptPdfFileName,statusSend_WhatsApp)
-              VALUES (?,?,?,?,?,?,?,?);
+              (idLocal,whoIsTake,amountText,amountNumeric,causeOfPayment,date,receiptPdfFileName)
+              VALUES (?,?,?,?,?,?,?);
            """;
 
         List data = [
@@ -264,62 +261,141 @@ class _HomePageState extends State<HomePage>
           receipt.causeOfPayment,
           receipt.date!.toIso8601String(),
           receipt.receiptPdfFileName,
-          receipt.statusSend_WhatsApp,
         ];
 
-        await receiptsDB.insertData(sql, data);
+        try {
+          await receiptsDB.insertData(sql, data);
+        } catch (e) {
+          showDialog(
+              context: context,
+              builder: (_) => AlertDialog(
+                    shape: RoundedRectangleBorder(
+                        borderRadius: BorderRadius.circular(20)),
+                    title: const Text('تنبيه'),
+                    content: Text(e.toString()),
+                    actions: [
+                      TextButton(
+                          onPressed: () {
+                            Navigator.of(context);
+                          },
+                          child: const Text('رجوع'))
+                    ],
+                  ));
+        }
 
         sql = '';
         sql = '''
               INSERT INTO receiptStatus
-              (pathDB,idCharLocal,idLocal,statusSend_WhatsApp,statusSend_Server)
-              VALUES (?,?,?,?,?);
+              (pathDB,idCharLocal,idLocal)
+              VALUES (?,?,?);
           ''';
         data.clear();
-        data = [pair.first.path, oldCharIdLocal, receipt.idLocal, 0, 0];
+        data = [pair.first.path, oldCharIdLocal, receipt.idLocal];
 
-        await receiptsDB.insertData(sql, data);
-        print("first");
-
-        List<Map> d =
-            await receiptsDB.readData('select * from receipts where id = 2');
-        print(d);
         try {
-          // here should make store data on database
+          await receiptsDB.insertData(sql, data);
+        } catch (e) {
+          showDialog(
+              context: context,
+              builder: (_) => AlertDialog(
+                    shape: RoundedRectangleBorder(
+                        borderRadius: BorderRadius.circular(20)),
+                    title: const Text('تنبيه'),
+                    content: Text(e.toString()),
+                    actions: [
+                      TextButton(
+                          onPressed: () {
+                            Navigator.of(context);
+                          },
+                          child: const Text('رجوع'))
+                    ],
+                  ));
+        }
 
-          await ReceiptRepository()
-              .addNewReceipt(receipt, pair.first, pair.second);
-          print("first");
+        var hasInternet = await InternetConnectionChecker().hasConnection;
+        if (hasInternet) {
+          try {
+            // here should make store data on database
 
-          LocalIdForReceipt localID = LocalIdForReceipt(
-              charReceiptForEachEmployee: oldCharIdLocal.toString(),
-              idReceiptForEachEmployee: id.toString());
-          print("first");
-          await ReceiptRepository().updateLocalNumId(localID);
-          print("first");
-          // 'UPDATE Test SET receiptStatus statusSend_Server = ?  WHERE idLocal = ?'
+            await ReceiptRepository()
+                .addNewReceipt(receipt, pair.first, pair.second);
+
+            LocalIdForReceipt localID = LocalIdForReceipt(
+                charReceiptForEachEmployee: oldCharIdLocal.toString(),
+                idReceiptForEachEmployee: id.toString());
+
+            await ReceiptRepository().updateLocalNumId(localID);
+
+            sql = '''
+                  UPDATE receiptStatus
+                  SET statusSend_Server = ? ,
+                  statusSend_WhatsApp = ?
+                  WHERE idLocal = ?
+                ''';
+            data = [1, 0, receipt.idLocal];
+            await receiptsDB.updateData(sql, data);
+
+            await prefer.setString(idAppLocal, id.toString());
+            Get.find<LoadingAnimationController>().changeStatus();
+            await Future.delayed(const Duration(seconds: 1));
+            Navigator.of(context, rootNavigator: true).pop();
+            await showDialogWhatYouWantDoAfterUploadDataToServer(
+                pair.first, receipt.idLocal);
+          } catch (e) {
+            Navigator.of(context, rootNavigator: true).pop();
+            showDialog(
+              context: context,
+              builder: (_) => WarningDialog(
+                content: e.toString(),
+              ),
+            );
+          }
+        } else {
           sql = '''
                   UPDATE receiptStatus
                   SET statusSend_Server = ?
                   WHERE idLocal = ?
                 ''';
-          data = [1, receipt.idLocal];
-          await receiptsDB.updateData(sql, data);
+          data = [0, receipt.idLocal];
+          Navigator.of(context, rootNavigator: true).pop();
+          try {
+            await receiptsDB.updateData(sql, data);
+          } catch (e) {
+            showDialog(
+                context: context,
+                builder: (_) => AlertDialog(
+                      shape: RoundedRectangleBorder(
+                          borderRadius: BorderRadius.circular(20)),
+                      title: const Text('تنبيه'),
+                      content: Text(e.toString()),
+                      actions: [
+                        TextButton(
+                            onPressed: () {
+                              Navigator.of(context);
+                            },
+                            child: const Text('رجوع'))
+                      ],
+                    ));
+          }
 
           await prefer.setString(idAppLocal, id.toString());
-          Get.find<LoadingAnimationController>().changeStatus();
-          await Future.delayed(const Duration(seconds: 1));
-          Navigator.of(context, rootNavigator: true).pop();
-          await showDialogWhatYouWantDoAfterUploadDataToServer(
-              pair.first, receipt.idLocal);
-        } catch (e) {
-          Navigator.of(context, rootNavigator: true).pop();
           showDialog(
-            context: context,
-            builder: (_) => WarningDialog(
-              content: e.toString(),
-            ),
-          );
+              context: context,
+              builder: (_) => AlertDialog(
+                    shape: RoundedRectangleBorder(
+                      borderRadius: BorderRadius.circular(20),
+                    ),
+                    title: const Text('تنبيه'),
+                    content: const Text(
+                        'لا يوجد اتصال بالانترنت ، لن يتم رفع الفاتورة وبيانتها على السيرفر، تم حفظهم على الجهاز بشكل مؤقت الرجاء رفعها بأقرب وقت ممكن'),
+                    actions: [
+                      TextButton(
+                          onPressed: () {
+                            Navigator.pop(context);
+                          },
+                          child: const Text('رجوع'))
+                    ],
+                  ));
         }
       }
     }
@@ -444,7 +520,25 @@ class _HomePageState extends State<HomePage>
                   WHERE idLocal = ?;
                   ''';
       List data = [1, id];
-      await receiptsDB.updateData(sql, data);
+      try {
+        await receiptsDB.updateData(sql, data);
+      } catch (e) {
+        showDialog(
+            context: context,
+            builder: (_) => AlertDialog(
+                  shape: RoundedRectangleBorder(
+                      borderRadius: BorderRadius.circular(20)),
+                  title: const Text('تنبيه'),
+                  content: Text(e.toString()),
+                  actions: [
+                    TextButton(
+                        onPressed: () {
+                          Navigator.of(context);
+                        },
+                        child: const Text('رجوع'))
+                  ],
+                ));
+      }
     } else {
       String sql = '''
                   UPDATE receiptStatus
@@ -452,7 +546,25 @@ class _HomePageState extends State<HomePage>
                   WHERE idLocal = ?;
                   ''';
       List data = [0, id];
-      await receiptsDB.updateData(sql, data);
+      try {
+        await receiptsDB.updateData(sql, data);
+      } catch (e) {
+        showDialog(
+            context: context,
+            builder: (_) => AlertDialog(
+                  shape: RoundedRectangleBorder(
+                      borderRadius: BorderRadius.circular(20)),
+                  title: const Text('تنبيه'),
+                  content: Text(e.toString()),
+                  actions: [
+                    TextButton(
+                        onPressed: () {
+                          Navigator.of(context);
+                        },
+                        child: const Text('رجوع'))
+                  ],
+                ));
+      }
     }
   }
 
@@ -598,7 +710,8 @@ class _HomePageState extends State<HomePage>
       Navigator.of(context, rootNavigator: true).pop();
 
       //go to log history
-      Navigator.push(context, MaterialPageRoute(builder: (_) => LogHistory()));
+      Navigator.push(
+          context, MaterialPageRoute(builder: (_) => const LogHistory()));
     } catch (e) {
       //close loading
       Navigator.of(context, rootNavigator: true).pop();
@@ -726,7 +839,27 @@ class _HomePageState extends State<HomePage>
                   ON r.idLocal = rs.idLocal
                   WHERE rs.statusSend_Server = 0
               ''';
-    List<Map> request = await receiptsDB.readData(sql);
+    List<Map> request = [];
+    try {
+      request = await receiptsDB.readData(sql);
+    } catch (e) {
+      showDialog(
+          context: context,
+          builder: (_) => AlertDialog(
+                shape: RoundedRectangleBorder(
+                    borderRadius: BorderRadius.circular(20)),
+                title: const Text('تنبيه'),
+                content: Text(e.toString()),
+                actions: [
+                  TextButton(
+                      onPressed: () {
+                        Navigator.of(context);
+                      },
+                      child: const Text('رجوع'))
+                ],
+              ));
+    }
+
     return request;
   }
 
@@ -754,43 +887,84 @@ class _HomePageState extends State<HomePage>
   }
 
   uploadReceiptToServer(List<Map> request) async {
+    bool hasConnectionInternet =
+        await InternetConnectionChecker().hasConnection;
     Navigator.pop(context);
-    loadingDialogFun(keyLoader);
-    for (int i = 0; i < request.length; i++) {
-      Receipt receiptObject = Receipt(
-        idLocal: request[i]['idLocal'],
-        whoIsTake: request[i]['whoIsTake'],
-        amountText: request[i]['amountText'],
-        amountNumeric: request[i]['amountNumeric'],
-        causeOfPayment: request[i]['causeOfPayment'],
-        date: DateTime.parse(request[i]['date']),
-        receiptPdfFileName: request[i]['receiptPdfFileName'],
-      );
-      File receiptFile = File(request[i]['pathDB']);
-      try {
-        await ReceiptRepository().addNewReceipt(
-            receiptObject, receiptFile, receiptObject.receiptPdfFileName!);
-        await ReceiptRepository()
-            .updateStatusOfSendReceiptToWhatsApp(receiptObject.idLocal, 0);
-        String sql = '''
+    if (hasConnectionInternet) {
+      loadingDialogFun(keyLoader);
+      for (int i = 0; i < request.length; i++) {
+        Receipt receiptObject = Receipt(
+          idLocal: request[i]['idLocal'],
+          whoIsTake: request[i]['whoIsTake'],
+          amountText: request[i]['amountText'],
+          amountNumeric: request[i]['amountNumeric'],
+          causeOfPayment: request[i]['causeOfPayment'],
+          date: DateTime.parse(request[i]['date']),
+          receiptPdfFileName: request[i]['receiptPdfFileName'],
+        );
+        File receiptFile = File(request[i]['pathDB']);
+        try {
+          await ReceiptRepository().addNewReceipt(
+              receiptObject, receiptFile, receiptObject.receiptPdfFileName!);
+          await ReceiptRepository()
+              .updateStatusOfSendReceiptToWhatsApp(receiptObject.idLocal, 0);
+          String sql = '''
           UPDATE receiptStatus
-          SET statusSend_Server = ?
+          SET statusSend_Server = ?,
+          statusSend_WhatsApp = ?
           WHERE idLocal = ?
       ''';
-        List data = [1, request[i]['idLocal']];
-        await receiptsDB.updateData(sql, data);
-
-      } catch (e) {
-        // print(e.toString());
-        Navigator.of(context, rootNavigator: true).pop();
-        showDialog(
-          context: context,
-          builder: (_) => WarningDialog(
-            content: e.toString(),
-          ),
-        );
+          List data = [1, 0, request[i]['idLocal']];
+          try {
+            await receiptsDB.updateData(sql, data);
+          } catch (e) {
+            showDialog(
+                context: context,
+                builder: (_) => AlertDialog(
+                      shape: RoundedRectangleBorder(
+                          borderRadius: BorderRadius.circular(20)),
+                      title: const Text('تنبيه'),
+                      content: Text(e.toString()),
+                      actions: [
+                        TextButton(
+                            onPressed: () {
+                              Navigator.of(context);
+                            },
+                            child: const Text('رجوع'))
+                      ],
+                    ));
+          }
+        } catch (e) {
+          // print(e.toString());
+          Navigator.of(context, rootNavigator: true).pop();
+          showDialog(
+            context: context,
+            builder: (_) => WarningDialog(
+              content: e.toString(),
+            ),
+          );
+        }
       }
+      Navigator.pop(context);
+    } else {
+      Navigator.pop(context);
+      showDialog(
+          context: context,
+          builder: (_) => AlertDialog(
+                shape: RoundedRectangleBorder(
+                  borderRadius: BorderRadius.circular(20),
+                ),
+                title: const Text('تنبيه'),
+                content:
+                    const Text('لا يوجد اتصال بالانترنت ، لن يتم اكمال المهمة'),
+                actions: [
+                  TextButton(
+                      onPressed: () {
+                        Navigator.pop(context);
+                      },
+                      child: const Text('رجوع'))
+                ],
+              ));
     }
-    Navigator.pop(context);
   }
 }

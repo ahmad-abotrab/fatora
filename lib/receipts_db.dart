@@ -32,8 +32,8 @@ class ReceiptsDB {
           idCharLocal TEXT NOT NULL,
           idLocal TEXT NOT NULL,
           pathDB TEXT NOT NULL,
-          statusSend_WhatsApp INTEGER NOT NULL,
-          statusSend_Server INTEGER NOT NULL
+          statusSend_WhatsApp INTEGER,
+          statusSend_Server INTEGER
         );
     ''';
     await db.execute(sql);
@@ -46,7 +46,7 @@ class ReceiptsDB {
           amountNumeric TEXT NOT NULL,
           causeOfPayment TEXT NOT NULL,
           receiptPdfFileName TEXT NOT NULL,
-          statusSend_WhatsApp INTEGER NOT NULL,
+          statusSend_WhatsApp INTEGER,
           date TEXT NOT NULL
         );
         ''';
