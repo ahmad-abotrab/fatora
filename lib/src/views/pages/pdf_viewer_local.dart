@@ -2,7 +2,6 @@ import 'package:advance_pdf_viewer/advance_pdf_viewer.dart';
 import 'package:fatora/src/views/components/empty_widget_response.dart';
 import 'package:flutter/material.dart';
 
-import '../../data/repository/receipt_repository.dart';
 class PdfViewerLocal extends StatefulWidget{
   PdfViewerLocal({Key? key, required this.fileName}) : super(key: key);
   String? fileName;
@@ -31,7 +30,7 @@ class _PdfViewerLocalState extends State<PdfViewerLocal> {
           future: _future(),
           builder: (context,AsyncSnapshot snapshot){
             if(snapshot.connectionState == ConnectionState.waiting){
-              return Center(child: CircularProgressIndicator(),);
+              return const Center(child: CircularProgressIndicator(),);
             }else{
               if(snapshot.connectionState == ConnectionState.done){
                 if(snapshot.hasData){
@@ -41,7 +40,7 @@ class _PdfViewerLocalState extends State<PdfViewerLocal> {
                 }
               }
             }
-            return EmptyWidgetResponse(title: 'title', content: 'لايوجد ملف');
+            return const EmptyWidgetResponse(title: 'title', content: 'لايوجد ملف');
           },
         ),
       ),

@@ -6,7 +6,6 @@ import 'src/constant/route_screen.dart';
 import 'src/views/pages/check_if_it_is_once_time_to_open_app.dart';
 import 'src/views/pages/home.dart';
 import 'src/views/pages/signature_page.dart';
-import 'src/views/pages/splash_screen.dart';
 
 class Fatora extends StatelessWidget {
   const Fatora({

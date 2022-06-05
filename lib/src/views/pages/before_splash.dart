@@ -100,9 +100,9 @@ class _BeforeSplashState extends State<BeforeSplash> {
                       )
                     : Column(
                         children: [
-                          Padding(
-                            padding:  const EdgeInsets.all(8.0),
-                            child:  const Text('يوجد خطأ بالاتصال بالسيرفر'),
+                          const Padding(
+                            padding:  EdgeInsets.all(8.0),
+                            child:  Text('يوجد خطأ بالاتصال بالسيرفر'),
                           ),
                           const SizedBox(
                             height: 10,

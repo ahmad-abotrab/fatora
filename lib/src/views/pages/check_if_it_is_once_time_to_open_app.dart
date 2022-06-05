@@ -26,7 +26,7 @@ class _CheckIfItIsOnceTimeToOpenAppState extends State<CheckIfItIsOnceTimeToOpen
       return const Center(child: CircularProgressIndicator(),);
     }else{
       if(idApp == null){
-        return CreateOrGetLocalId();
+        return const CreateOrGetLocalId();
 
       }else{
         return const HomePage();

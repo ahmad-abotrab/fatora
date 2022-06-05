@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:flutter_typeahead/flutter_typeahead.dart';
 import 'package:intl/intl.dart';
 
 class FieldData extends StatelessWidget {
@@ -25,19 +26,41 @@ class FieldData extends StatelessWidget {
     return '';
   }
 
-  String get _currency =>
-      NumberFormat.compactSimpleCurrency(locale: _locale).currencySymbol;
+  // String get _currency =>
+  //     NumberFormat.compactSimpleCurrency(locale: _locale).currencySymbol;
 
   @override
   Widget build(BuildContext context) {
     return Padding(
       padding: EdgeInsets.symmetric(
           horizontal: MediaQuery.of(context).size.width * 0.06),
-      child:  TextFormField(
+      child: isSuggestion
+          ? TypeAheadField<String>(
+              textFieldConfiguration: TextFieldConfiguration(
+                  autofocus: true,
+                  style: DefaultTextStyle.of(context)
+                      .style
+                      .copyWith(fontStyle: FontStyle.italic),
+                  decoration:
+                      const InputDecoration(border: OutlineInputBorder())),
+              suggestionsCallback: (pattern) {
+                return ['شركة الحياة', 'شركة الأمل'];
+              },
+              itemBuilder: (context, suggestion) {
+                return ListTile(
+                  title: Text(suggestion),
+                );
+              },
+              onSuggestionSelected: (suggestion) {
+                print(suggestion);
+              },
+            )
+          : TextFormField(
               validator: (value) {
                 if (value == null || value.isEmpty) {
                   return 'لا يمكن ترك هذا الحقل فارغاً';
                 }
+                return null;
               },
               controller: controller,
               onChanged: (string) {
@@ -86,8 +109,6 @@ class FieldData extends StatelessWidget {
     );
   }
 }
-
-
 
 /*
 isSuggestion

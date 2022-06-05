@@ -1,8 +1,6 @@
 import 'dart:io';
 
 import 'package:dio/dio.dart';
-import 'package:flutter/foundation.dart';
-import 'package:path_provider/path_provider.dart';
 
 import '/src/data/model/local_id_for_receipt.dart';
 import '../model/receipt_model.dart';
