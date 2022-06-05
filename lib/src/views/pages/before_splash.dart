@@ -36,10 +36,12 @@ class _BeforeSplashState extends State<BeforeSplash> {
             Padding(
               padding: const EdgeInsets.all(8.0),
               child: FieldData(
+
                 controller: textEditingController,
                 labelText: 'أدخل الحرف الذي كان يتكون منه ال id',
                 hintText: 'حرف ال id',
                 isNumber: false,
+                isSuggestion: false,
               ),
             ),
             state == 0
@@ -99,8 +101,8 @@ class _BeforeSplashState extends State<BeforeSplash> {
                     : Column(
                         children: [
                           Padding(
-                            padding: const EdgeInsets.all(8.0),
-                            child: Text(error.toString()),
+                            padding:  const EdgeInsets.all(8.0),
+                            child:  const Text('يوجد خطأ بالاتصال بالسيرفر'),
                           ),
                           const SizedBox(
                             height: 10,

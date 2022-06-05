@@ -33,6 +33,7 @@ Route::controller(ReceiptController::class)->group(function () {
     Route::post('/addLocalIdToServer','addLocalIdToServer');
     Route::post('/getBeforeLocalID','getBeforeLocalID');
     Route::put('/updateStatusOfWhatsAppSend' , 'updateStatusOfWhatsAppSend');
+    Route::post('/isThere' , 'isThere');
 
 
 });

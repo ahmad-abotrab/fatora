@@ -3,6 +3,7 @@ import 'dart:io';
 import 'package:dio/dio.dart';
 import 'package:flutter/foundation.dart';
 import 'package:path_provider/path_provider.dart';
+
 import '/src/data/model/local_id_for_receipt.dart';
 import '../model/receipt_model.dart';
 import '../web_services/receipt_api.dart';
@@ -10,7 +11,7 @@ import '../web_services/receipt_api.dart';
 class ReceiptRepository {
   ReceiptApi receiptApi = ReceiptApi();
 
-  Future<dynamic> updateLocalNumId(LocalIdForReceipt localID) async{
+  Future<dynamic> updateLocalNumId(LocalIdForReceipt localID) async {
     try {
       final response = receiptApi.updateLocalNumId(localID.toJson());
       return response;
@@ -19,13 +20,13 @@ class ReceiptRepository {
     }
   }
 
-  Future <dynamic> getLocalIdExits(charId)async{
+  Future<dynamic> getLocalIdExits(charId) async {
     try {
       final response = await receiptApi.getLocalIdExits(charId);
-      try{
+      try {
         var source = LocalIdForReceipt.fromJson(response);
         return source;
-      }catch(e){
+      } catch (e) {
         return LocalIdForReceipt();
       }
     } on DioError {
@@ -33,8 +34,8 @@ class ReceiptRepository {
     }
   }
 
-  Future <dynamic> addLocalIdToServer(LocalIdForReceipt localId)async{
-    try{
+  Future<dynamic> addLocalIdToServer(LocalIdForReceipt localId) async {
+    try {
       final response = await receiptApi.addLocalIdToServer(localId.toJson());
       return response;
     } on DioError {
@@ -44,13 +45,23 @@ class ReceiptRepository {
 
   Future<dynamic> updateStatusOfSendReceiptToWhatsApp(idLocal, status) async {
     try {
-      final response = await receiptApi.updateStatusOfSendReceiptToWhatsApp(idLocal, status);
+      final response =
+          await receiptApi.updateStatusOfSendReceiptToWhatsApp(idLocal, status);
       return response;
     } on DioError {
       rethrow;
     }
   }
 
+  Future<dynamic> checkIfThereId(id) async {
+    try {
+      print("Fs");
+      final f = await receiptApi.checkIfThereId(id);
+      return f;
+    } on DioError {
+      rethrow;
+    }
+  }
 
   Future<dynamic> createNewLocalCharID() async {
     try {
@@ -72,24 +83,23 @@ class ReceiptRepository {
     }
   }
 
-  Future<dynamic> downloadReceipt(fileName)async{
-    try{
+  Future<dynamic> downloadReceipt(fileName) async {
+    try {
       var source = await ReceiptApi().downloadReceipt(fileName);
-      var dir = (await getTemporaryDirectory()).path;
-      File file = File(dir + '/' + fileName);
-      var bytes = await consolidateHttpClientResponseBytes(source);
-      File newFile = await file.writeAsBytes(bytes);
-      return newFile;
-    } catch(error){
-      rethrow ;
+      // var dir = (await getTemporaryDirectory()).path;
+      // File file = File(dir + '/' + fileName);
+      // var bytes = await consolidateHttpClientResponseBytes(source);
+      // File newFile = await file.writeAsBytes(bytes);
+      return source;
+    } catch (error) {
+      rethrow;
     }
   }
 
   Future<dynamic> addNewReceipt(
-
       Receipt receiptObject, File receiptFile, String fileName) async {
-
     try {
+      print('lll');
       String source = await ReceiptApi()
           .addNewReceipt(receiptObject.toJson(), receiptFile, fileName);
       return source;

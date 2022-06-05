@@ -32,10 +32,6 @@ class Fatora extends StatelessWidget {
           page: () => const CheckIfItIsOnceTimeToOpenApp(),
         ),
         GetPage(
-          name: RouteScreens.splashScreen,
-          page: () => const SplashScreen(),
-        ),
-        GetPage(
           name: RouteScreens.home,
           page: () => const HomePage(),
         ),

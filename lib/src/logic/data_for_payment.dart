@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+
 import 'package:get/get.dart';
 
 class DataForPayment extends GetxController {
@@ -14,7 +15,7 @@ class DataForPayment extends GetxController {
     price = TextEditingController();
     amountText = TextEditingController();
     whoIsTake = TextEditingController();
-    priceWithText = TextEditingController();
+    // priceWithText = TextEditingController();
     causeOfPayment = TextEditingController();
     selectedTabIndex = 0;
     super.onInit();
@@ -33,12 +34,11 @@ class DataForPayment extends GetxController {
     update();
   }
 
-
   reinitialize() {
     price = TextEditingController();
     amountText = TextEditingController();
     whoIsTake = TextEditingController();
-    priceWithText = TextEditingController();
+    // priceWithText = TextEditingController();
     causeOfPayment = TextEditingController();
     update();
   }

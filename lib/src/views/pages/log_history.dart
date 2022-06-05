@@ -3,6 +3,7 @@ import 'dart:io';
 
 import 'package:fatora/receipts_db.dart';
 import 'package:fatora/src/data/web_services/pdf_opened.dart';
+import 'package:fatora/src/views/pages/pdf_viewer_local.dart';
 import 'package:flutter/material.dart';
 import 'package:font_awesome_flutter/font_awesome_flutter.dart';
 import 'package:get/get.dart';
@@ -203,13 +204,13 @@ class _LogHistoryState extends State<LogHistory> {
             DataCell(
               Text(
                 receipts[i].date!.year.toString() +
-                    ":" +
+                    "-" +
                     receipts[i].date!.month.toString() +
-                    ":" +
+                    "-" +
                     receipts[i].date!.day.toString() +
-                    "/" +
-                    receipts[i].date!.hour.toString() +
                     ":" +
+                    receipts[i].date!.hour.toString() +
+                    "-" +
                     receipts[i].date!.minute.toString(),
               ),
             ),
@@ -236,9 +237,7 @@ class _LogHistoryState extends State<LogHistory> {
               File file = File(fullPath);
               await PDFOpened.openFile(file);
             } else {
-              File file = await ReceiptRepository()
-                  .downloadReceipt(receipt.receiptPdfFileName!);
-              await PDFOpened.openFile(file);
+                Navigator.push(context, MaterialPageRoute(builder: (_)=>PdfViewerLocal(fileName: receipt.receiptPdfFileName!)));
             }
           },
           child: Row(
@@ -270,11 +269,11 @@ class _LogHistoryState extends State<LogHistory> {
           child: Row(
             children: const [
               Text(
-                'ارسال الملف عبر',
+                'إرسال الملف عبر',
                 style: TextStyle(color: Colors.black),
               ),
               Expanded(child: SizedBox()),
-              FaIcon(FontAwesomeIcons.whatsapp, color: Colors.green)
+              Icon(Icons.share ,color: Colors.blue,),
             ],
           ),
         ),

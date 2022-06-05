@@ -93,7 +93,7 @@ class _ListReceiptNotSentByWhatsUpState
                                   // PDFOpened.openFile(file);
                                   sendReceiptPdfByWhatsApp(file, id, context);
                                 },
-                                icon: const Icon(Icons.send),
+                                icon: const Icon(Icons.share ,color:Colors.blue,),
                               ),
                               title:
                                   Text(controller.receipts[index]['whoIsTake']),

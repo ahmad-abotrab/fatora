@@ -19,14 +19,14 @@ class _CheckIfItIsOnceTimeToOpenAppState extends State<CheckIfItIsOnceTimeToOpen
     if(initial){
       SharedPreferences.getInstance().then((value) {
         setState(() {
-          idApp = value.getString('charReceiptForEachEmployee');
+          idApp = value.getString('isPassword');
           initial = false;
         });
       });
       return const Center(child: CircularProgressIndicator(),);
     }else{
       if(idApp == null){
-        return const CreateOrGetLocalId();
+        return CreateOrGetLocalId();
 
       }else{
         return const HomePage();

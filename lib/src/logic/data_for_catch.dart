@@ -6,7 +6,7 @@ class DataForCatch extends GetxController {
   TextEditingController? price;
   TextEditingController? amountText;
   TextEditingController? whoIsTake;
-  TextEditingController? priceWithText;
+
   TextEditingController? causeOfPayment;
 
 
@@ -15,7 +15,7 @@ class DataForCatch extends GetxController {
     price = TextEditingController();
     amountText = TextEditingController();
     whoIsTake = TextEditingController();
-    priceWithText = TextEditingController();
+
     causeOfPayment = TextEditingController();
     selectedTabIndex = 0;
     super.onInit();
@@ -38,7 +38,7 @@ class DataForCatch extends GetxController {
     price = TextEditingController();
     amountText = TextEditingController();
     whoIsTake = TextEditingController();
-    priceWithText = TextEditingController();
+    // priceWithText = TextEditingController();
     causeOfPayment = TextEditingController();
     update();
   }

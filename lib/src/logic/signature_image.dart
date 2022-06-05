@@ -1,24 +1,52 @@
-import 'package:get/get.dart';
+import 'dart:io';
 
-class SignaturePageController extends GetxController{
-  String fileNameSignature = '';
+import 'package:flutter/material.dart';
+import 'package:flutter/services.dart';
+import 'package:get/get.dart';
+import 'package:syncfusion_flutter_signaturepad/signaturepad.dart';
+
+class SignaturePageController extends GetxController {
+  String pathSignatureCompany = '';
   int selectedIndex = 0;
+  ByteData? bytesImage;
+
+  var signaturePadKey = GlobalKey<SfSignaturePadState>();
+
   @override
   void onInit() {
     selectedIndex = 0;
-    fileNameSignature = '';
+    pathSignatureCompany = '';
+    signaturePadKey = GlobalKey<SfSignaturePadState>();
     super.onInit();
   }
-  changedPathToSignature(value){
-    fileNameSignature = value;
+
+
+  changedPathToSignature(value) {
+    pathSignatureCompany = value;
+    signaturePadKey.currentState!.clear();
     update();
   }
-  updateSelectedIndex(value){
+
+
+
+  updateSelectedIndex(value) {
     selectedIndex = value;
     update();
   }
-  reinitialize(){
-    fileNameSignature = '';
+
+  changeFileForSignature(bytes) {
+
+    bytesImage = bytes;
+    update();
+  }
+
+  changePathSignatureCompany(value){
+    pathSignatureCompany = value;
+    update();
+  }
+
+  reinitialize() {
+    bytesImage = null;
     update();
   }
 }

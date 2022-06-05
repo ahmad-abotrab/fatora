@@ -48,6 +48,7 @@ class PaymentPage extends StatelessWidget {
           controller: controller.whoIsTake,
           labelText: 'قبضت من السيد ...',
           hintText: 'قبضت من السيد ...',
+          isSuggestion: true,
         ),
         SizedBox(
           height: MediaQuery.of(context).size.height * 0.03,
@@ -57,6 +58,7 @@ class PaymentPage extends StatelessWidget {
           controller: controller.price,
           labelText: 'مبلغاً وقدره رقماً ...',
           hintText: 'مبلغاً وقدره رقماً ...',
+          isSuggestion: false,
         ),
         SizedBox(
           height: MediaQuery.of(context).size.height * 0.03,
@@ -66,6 +68,7 @@ class PaymentPage extends StatelessWidget {
           controller: controller.amountText,
           labelText: 'مبلغاً وقدره كتابةً ...',
           hintText: 'مبلغاً وقدره كتابةً ...',
+          isSuggestion: false,
         ),
         SizedBox(
           height: MediaQuery.of(context).size.height * 0.03,
@@ -75,6 +78,7 @@ class PaymentPage extends StatelessWidget {
           controller: controller.causeOfPayment,
           labelText: 'وذلك لقاء ...',
           hintText: 'وذلك لقاء ...',
+          isSuggestion: false,
         ),
       ],
     );

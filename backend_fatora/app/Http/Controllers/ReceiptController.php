@@ -136,21 +136,54 @@ class ReceiptController extends Controller
         }
     }
 
+    public function isThere(Request $request)
+    {
+        $r = DB::table('id_receipts')->where('charReceiptForEachEmployee',$request->input('id'))->get();
+        if($r->isEmpty()){
+            return "false";
+        }else{
+            return "true";
+        }
+    }
+
     public function createNewLocalCharID()
     {
         $anotherIdChar = '';
         $anotherId = '';
         $result = DB::table('id_receipts')
-            ->orderBy('charReceiptForEachEmployee', 'desc')
+            ->orderBy('id', 'desc')
             ->first();
 
         if (!$result) {
             $anotherIdChar = 'A';
             $anotherId = '0';
         } else {
-            $anotherIdChar = $this->incrementChar($result->charReceiptForEachEmployee);
-            $anotherId = '0';
+            if (strlen($result->charReceiptForEachEmployee) == 1) {
+                if ($result->charReceiptForEachEmployee == 'Z') {
+                    $temp = 'A';
+                    $anotherIdChar = 'A' . $temp;
+                    $anotherId = '0';
+                } else {
+                    $anotherIdChar = $this->incrementChar($result->charReceiptForEachEmployee);
+                    $anotherId = '0';
+                }
+            } else {
+                $lastChar = $result->charReceiptForEachEmployee[strlen($result->charReceiptForEachEmployee) - 1];
+                $firstChar = $result->charReceiptForEachEmployee[0];
+                if ($lastChar == 'Z') {
+                    $lastChar = 'A';
+                    $temp = $this->incrementChar($firstChar);
+                    $anotherIdChar = $temp . $lastChar;
+                    $anotherId = '0';
+                }
+                else{
+                    $temp = $this->incrementChar($lastChar);
+                    $anotherIdChar = $firstChar . $temp;
+                    $anotherId = '0';
+                }
+            }
         }
+
         return array('charReceiptForEachEmployee' => $anotherIdChar, "idReceiptForEachEmployee" => $anotherId, "statusSend_WhatsApp" => 0);
     }
 
@@ -201,7 +234,7 @@ class ReceiptController extends Controller
     public function getBeforeLocalID(Request $request)
     {
 
-        $result= DB::table('id_receipts')
+        $result = DB::table('id_receipts')
             ->where('charReceiptForEachEmployee', $request->input('charId'))
             ->get();
         if ($result->isEmpty()) {

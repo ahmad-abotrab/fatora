@@ -57,6 +57,16 @@ class ReceiptApi {
     }
   }
 
+  Future<dynamic> checkIfThereId(id)async{
+    try{
+      print('dsf');
+      var result = await dio?.post('api/isThere', data: {"id": id});
+      return result!.data;
+    }on DioError catch (dioError) {
+      throw DioExceptions.fromDioError(dioError);
+    }
+  }
+
   Future <dynamic> getLocalIdExits(charId)async{
     try {
       final response = await dio?.post(URLApi.getBeforeLocalID,data: {"charId":charId});
@@ -70,7 +80,6 @@ class ReceiptApi {
     var url = URLApi.getAllReceipts;
     try {
       final response = await dio?.get(url);
-
       return response!.data;
     } on DioError catch (dioError) {
       throw DioExceptions.fromDioError(dioError);
@@ -79,11 +88,8 @@ class ReceiptApi {
 
   Future<dynamic> downloadReceipt(fileName) async {
     try {
-      var httpClient = HttpClient();
-      var request = await httpClient.post(URLApi.host, URLApi.port,
-          '/api/checkIfDirIsThere?fileName=$fileName');
-      var response = request.close();
-      return response;
+      var response  = await dio?.post('/api/checkIfDirIsThere',data: {"fileName":fileName});
+      return response!.data;
     } on DioError catch (error) {
       throw DioExceptions.fromDioError(error);
     }
@@ -94,8 +100,10 @@ class ReceiptApi {
     var urlAddNewReceipt = URLApi.addNewReceipt;
 
     try {
+      print('uuuu');
       final responseAddReceipt =
           await dio?.post(urlAddNewReceipt, data: receiptObject);
+      print(responseAddReceipt);
       if (responseAddReceipt!.data == "success") {
         try {
           var res = await store(receiptFile, fileName);

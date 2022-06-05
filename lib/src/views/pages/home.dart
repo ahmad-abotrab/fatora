@@ -56,7 +56,7 @@ class _HomePageState extends State<HomePage>
   Color? selectedTabColor;
   late GlobalKey<State> keyLoader = GlobalKey<State>();
   var controllerLogHistory = Get.put<LogController>(LogController());
-  var controllerValidation = Get.put(FormValidation(),permanent: true);
+  var controllerValidation = Get.put(FormValidation(), permanent: true);
   final snackbar = SnackBar(
       content: Text(Get.find<ConnectionInternetController>()
           .connectivityResult
@@ -137,22 +137,83 @@ class _HomePageState extends State<HomePage>
               ),
             ),
             GetBuilder<SignaturePageController>(
-                init: SignaturePageController(),
-                builder: (controller) {
-                  return Padding(
-                    padding: EdgeInsets.only(
-                      bottom: MediaQuery.of(context).size.height * 0.035,
-                      left: MediaQuery.of(context).size.width * 0.43,
-                    ),
-                    child: controller.selectedIndex == 0
-                        ? controller.fileNameSignature == ''
-                            ? addSignature()
-                            : loadImageFromInternalPath(
-                                controller.fileNameSignature)
-                        : loadSignatureFromAssetFile(
-                            'assets/images/signature.jpg'),
-                  );
-                })
+              init: SignaturePageController(),
+              builder: (controller) {
+                return GestureDetector(
+                  onDoubleTap: () async {
+                    controller.reinitialize();
+                  },
+                  child: Padding(
+                      padding: EdgeInsets.only(
+                        bottom: MediaQuery.of(context).size.height * 0.035,
+                        left: MediaQuery.of(context).size.width * 0.55,
+                      ),
+                      child: controller.selectedIndex == 0
+                          ? controller.bytesImage == null
+                              ? buttonAddSomeThing(
+                                  'إضافة توقيع',
+                                  false,
+                                  functionality: () =>
+                                      Get.toNamed(RouteScreens.signaturePage),
+                                )
+                              : loadImageFromInternalPath(controller.bytesImage)
+                          : buttonAddSomeThing(
+                              'اختيار ختم الشركة',
+                              Get.find<SignaturePageController>()
+                                          .pathSignatureCompany ==
+                                      ''
+                                  ? false
+                                  : true,
+                              functionality: () {
+                                showDialog(
+                                  context: context,
+                                  builder: (_) => AlertDialog(
+                                    shape: RoundedRectangleBorder(
+                                        borderRadius:
+                                            BorderRadius.circular(20)),
+                                    title: const Text('اختيار التوقيع'),
+                                    content: Row(
+                                      mainAxisAlignment:
+                                          MainAxisAlignment.spaceBetween,
+                                      children: [
+                                        Expanded(
+                                          child: GestureDetector(
+                                            onTap: () {
+                                              Get.find<
+                                                      SignaturePageController>()
+                                                  .changePathSignatureCompany(
+                                                      'assets/images/signature.jpg');
+                                              Navigator.pop(context);
+                                            },
+                                            child: loadSignatureFromAssetFile(
+                                                'assets/images/signature.jpg'),
+                                          ),
+                                        ),
+                                        const SizedBox(
+                                          width: 20,
+                                        ),
+                                        Expanded(
+                                          child: GestureDetector(
+                                            onTap: () {
+                                              Get.find<
+                                                      SignaturePageController>()
+                                                  .changePathSignatureCompany(
+                                                      'assets/images/logo_2.jpeg');
+                                              Navigator.pop(context);
+                                            },
+                                            child: loadSignatureFromAssetFile(
+                                                'assets/images/logo_2.jpeg'),
+                                          ),
+                                        ),
+                                      ],
+                                    ),
+                                  ),
+                                );
+                              },
+                            )),
+                );
+              },
+            ),
           ],
         ),
         floatingActionButton: FloatingActionButton(
@@ -164,7 +225,7 @@ class _HomePageState extends State<HomePage>
     );
   }
 
-  addSignature() {
+  buttonAddSomeThing(content, chooseImageOrNot, {functionality}) {
     return Container(
       decoration: BoxDecoration(
         border: Border.all(
@@ -173,16 +234,22 @@ class _HomePageState extends State<HomePage>
         ),
         borderRadius: BorderRadius.circular(12),
       ),
-      child: TextButton(
-        onPressed: () {
-          Get.toNamed(RouteScreens.signaturePage);
-        },
-        child: const Text(
-          'Add signature',
-          style: TextStyle(
-            fontSize: 18,
-            fontFamily: 'Forum-Regular',
-            color: ColorApp.primaryColor,
+      child: SizedBox(
+        width: MediaQuery.of(context).size.width * 0.4,
+        height: MediaQuery.of(context).size.width * 0.15,
+        child: Center(
+          child: GestureDetector(
+            onTap: functionality,
+            child: !chooseImageOrNot
+                ? Text(
+                    content,
+                    style: const TextStyle(
+                      fontSize: 18,
+                      fontFamily: 'Forum-Regular',
+                      color: ColorApp.primaryColor,
+                    ),
+                  )
+                : loadSignatureFromAssetFile(Get.find<SignaturePageController>().pathSignatureCompany),
           ),
         ),
       ),
@@ -206,7 +273,7 @@ class _HomePageState extends State<HomePage>
     );
   }
 
-  loadImageFromInternalPath(pathImageSignature) {
+  loadImageFromInternalPath(bytes) {
     return Container(
       decoration: BoxDecoration(
         border: Border.all(
@@ -215,8 +282,8 @@ class _HomePageState extends State<HomePage>
         ),
         borderRadius: BorderRadius.circular(12),
       ),
-      child: Image.file(
-        File(pathImageSignature),
+      child: Image.memory(
+        bytes!.buffer.asUint8List(),
         height: MediaQuery.of(context).size.width * 0.25,
         width: MediaQuery.of(context).size.width * 0.4,
       ),
@@ -224,22 +291,19 @@ class _HomePageState extends State<HomePage>
   }
 
   onPressedFloatingButton() async {
-
-      if (tabController!.index == 0) {
-        if(controllerValidation.formCatch.currentState!.validate()){
-          if (Get.find<SignaturePageController>().fileNameSignature == '') {
-            dontHaveSignature();
-          } else {
-            await makeSubmitReceiptToServer(0);
-          }
-        }
-
-      } else {
-        if(controllerValidation.formPayment.currentState!.validate()) {
-          await makeSubmitReceiptToServer(1);
+    if (tabController!.index == 0) {
+      if (controllerValidation.formCatch.currentState!.validate()) {
+        if (Get.find<SignaturePageController>().bytesImage == null) {
+          dontHaveSignature();
+        } else {
+          await makeSubmitReceiptToServer(0);
         }
       }
-
+    } else {
+      if (controllerValidation.formPayment.currentState!.validate()) {
+        await makeSubmitReceiptToServer(1);
+      }
+    }
   }
 
   makeSubmitReceiptToServer(type) async {
@@ -254,7 +318,8 @@ class _HomePageState extends State<HomePage>
     var oldIdLocal = prefer.get(idAppLocal);
     id = int.parse(oldIdLocal.toString()) + 1;
     receipt = createReceiptToNextProcess(id, oldCharIdLocal);
-    Pair pair = await createPdfToNextProcess(receipt,type);
+    Pair pair = await createPdfToNextProcess(receipt, type,
+        Get.find<SignaturePageController>().pathSignatureCompany);
     receipt.receiptPdfFileName = pair.second;
     String sql = """
               INSERT INTO receipts
@@ -408,9 +473,11 @@ class _HomePageState extends State<HomePage>
                         Navigator.pop(context);
                       },
                       child: const Text('رجوع')),
-                  TextButton(onPressed: (){
-                    PDFOpened.openFile(pair.first);
-                  }, child: const Text('عرض ال pdf'))
+                  TextButton(
+                      onPressed: () {
+                        PDFOpened.openFile(pair.first);
+                      },
+                      child: const Text('عرض ال pdf'))
                 ],
               ));
     }
@@ -445,22 +512,29 @@ class _HomePageState extends State<HomePage>
     return receipt;
   }
 
-  createPdfToNextProcess(receipt,type) async {
+  createPdfToNextProcess(receipt, type, anySignature) async {
     Pair pair = Pair();
     File pdfFile;
     String fileName;
-    String imageSignature = 'assets/images/signature.jpg';
+    String imageSignature = anySignature;
     if (tabController!.index == 0) {
-      fileName = 'catch${receipt.idLocal}.pdf';
+      const first = 'دفع ـ';
+      final second = '(${receipt.idLocal})';
+      const third = '.pdf';
+      fileName = first + second + third;
       pdfFile = await createPdfReceipts(
           fileName,
           receipt,
-          Get.find<SignaturePageController>().fileNameSignature,
-          receipt.idLocal,type);
+          Get.find<SignaturePageController>().bytesImage,
+          receipt.idLocal,
+          type);
     } else {
-      fileName = 'payment${receipt.idLocal}.pdf';
+      const first = 'قبض ـ';
+      final second = '(${receipt.idLocal})';
+      const third = '.pdf';
+      fileName = first + second + third;
       pdfFile = await createPdfReceipts(
-          fileName, receipt, imageSignature, receipt.idLocal,type);
+          fileName, receipt, imageSignature, receipt.idLocal, type);
     }
     pair.first = pdfFile;
     pair.second = fileName;
@@ -478,7 +552,7 @@ class _HomePageState extends State<HomePage>
       actions: [
         IconButton(
             onPressed: () => sendReceiptPdfByWhatsApp(pdfFile!.path, id),
-            icon: const FaIcon(FontAwesomeIcons.whatsapp, color: Colors.green)),
+            icon: const Icon(Icons.share, color: Colors.blue)),
         IconButton(
             onPressed: () {
               PDFOpened.openFile(pdfFile!);
@@ -612,9 +686,9 @@ class _HomePageState extends State<HomePage>
     );
   }
 
-  createPdfReceipts(fileName, data, imageSignature, id,type) async {
+  createPdfReceipts(fileName, data, imageSignature, id, type) async {
     final DateTime now = DateTime.now();
-    final DateFormat formatter = DateFormat('yyyy-MM-dd-hh:mm');
+    final DateFormat formatter = DateFormat('yyyy-MM-dd');
     final String dateTime = formatter.format(now);
     Uint8List imagePath;
 
@@ -622,12 +696,10 @@ class _HomePageState extends State<HomePage>
     if (tabController!.index == 1) {
       imagePath = (await rootBundle.load(imageSignature)).buffer.asUint8List();
     } else {
-      File file = File(imageSignature);
-      var bytes = await file.readAsBytes();
-      imagePath = bytes.buffer.asUint8List();
+      imagePath = imageSignature.buffer.asUint8List();
     }
 
-    return await ApiPdf.generate(fileName, data, imagePath, id, dateTime,type);
+    return await ApiPdf.generate(fileName, data, imagePath, id, dateTime, type);
   }
 
   AppBar appBar(BuildContext context) {
@@ -642,12 +714,12 @@ class _HomePageState extends State<HomePage>
       actions: [
         IconButton(
           onPressed: () {
+            signatureCon.reinitialize();
             if (tabController!.index == 0) {
               formCatchCon.reinitialize();
             } else {
               formPaymentCon.reinitialize();
             }
-            signatureCon.reinitialize();
           },
           icon: const Icon(Icons.cleaning_services_rounded),
           tooltip: 'تهيئة',
@@ -675,7 +747,7 @@ class _HomePageState extends State<HomePage>
         child: Container(
           padding: const EdgeInsets.symmetric(horizontal: 20.0, vertical: 8.0),
           child: Text(
-            'وصل قبض',
+            'وصل دفع',
             style: TextStyle(
               color: index == 0 ? Colors.white : Colors.white54,
               fontFamily: 'Fourm',
@@ -691,7 +763,7 @@ class _HomePageState extends State<HomePage>
         child: Container(
           padding: const EdgeInsets.symmetric(horizontal: 20.0, vertical: 8.0),
           child: Text(
-            'وصل دفع',
+            'وصل قبض',
             style: TextStyle(
               color: index == 1 ? Colors.white : Colors.white54,
               fontFamily: 'Fourm',
@@ -706,37 +778,60 @@ class _HomePageState extends State<HomePage>
 
   // get receipts form server to open log history
   loadReceiptsFormServer() async {
-    try {
-      // Loading widget
+    bool checkConnectionInternet =
+        await InternetConnectionChecker().hasConnection;
+    if (checkConnectionInternet) {
+      try {
+        // Loading widget
+        showDialog(
+          barrierDismissible: false,
+          context: context,
+          builder: (_) => LoadingWidget(
+            keyLoader: keyLoader,
+          ),
+        );
+
+        // connect with api to get data
+        await ReceiptRepository()
+            .getAllReceipts()
+            .then((value) => controllerLogHistory.updateReceiptsList(value));
+
+        // close loading dialog
+        Navigator.of(context, rootNavigator: true).pop();
+
+        //go to log history
+        Navigator.push(
+            context, MaterialPageRoute(builder: (_) => const LogHistory()));
+      } catch (e) {
+        //close loading
+        Navigator.of(context, rootNavigator: true).pop();
+        //error widget
+        showDialog(
+          context: context,
+          builder: (_) => WarningDialog(
+            content: e.toString(),
+          ),
+        );
+      }
+    } else {
+      Navigator.pop(context);
       showDialog(
-        barrierDismissible: false,
-        context: context,
-        builder: (_) => LoadingWidget(
-          keyLoader: keyLoader,
-        ),
-      );
-
-      // connect with api to get data
-      await ReceiptRepository()
-          .getAllReceipts()
-          .then((value) => controllerLogHistory.updateReceiptsList(value));
-
-      // close loading dialog
-      Navigator.of(context, rootNavigator: true).pop();
-
-      //go to log history
-      Navigator.push(
-          context, MaterialPageRoute(builder: (_) => const LogHistory()));
-    } catch (e) {
-      //close loading
-      Navigator.of(context, rootNavigator: true).pop();
-      //error widget
-      showDialog(
-        context: context,
-        builder: (_) => WarningDialog(
-          content: e.toString(),
-        ),
-      );
+          context: context,
+          builder: (_) => AlertDialog(
+                shape: RoundedRectangleBorder(
+                  borderRadius: BorderRadius.circular(20),
+                ),
+                title: const Text('تنبيه'),
+                content:
+                    const Text('لا يوجد اتصال بالانترنت ، لن يتم اكمال المهمة'),
+                actions: [
+                  TextButton(
+                      onPressed: () {
+                        Navigator.pop(context);
+                      },
+                      child: const Text('رجوع'))
+                ],
+              ));
     }
   }
 
@@ -748,12 +843,11 @@ class _HomePageState extends State<HomePage>
         PopupMenuItem(
           child: TextButton(
             onPressed: () async {
-              // Navigator.pop(context);
-              // List<Map> d =  await receiptNotUploadToServer();
-              // print(d);
+              loadingDialogFun(keyLoader);
               try {
                 List<Map> request = await receiptNotUploadToServer();
                 if (request.isEmpty) {
+                  Navigator.pop(context);
                   showDialog(
                       context: context,
                       builder: (_) => AlertDialog(
@@ -830,8 +924,8 @@ class _HomePageState extends State<HomePage>
             child: Row(
               children: const [
                 Icon(
-                  Icons.whatsapp,
-                  color: Colors.green,
+                  Icons.share,
+                  color: Colors.blue,
                 ),
                 Expanded(child: SizedBox()),
                 Text(
@@ -879,6 +973,7 @@ class _HomePageState extends State<HomePage>
   }
 
   dialogToShowHowMuchReceiptsNotUploading(List<Map> request, context) async {
+    Navigator.pop(context);
     showDialog(
       context: context,
       builder: (_) => AlertDialog(

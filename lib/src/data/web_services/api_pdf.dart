@@ -11,8 +11,7 @@ class ApiPdf {
   static TextDirection textDirection = TextDirection.rtl;
 
   static Future<File> generate(String fileName, Receipt data, imageSignature,
-      id, String dataTime,type) async {
-    print(type);
+      id, String dataTime, type) async {
     var arabicFontRegular = Font.ttf(
         await rootBundle.load("assets/fonts/Tajawal/Tajawal-Regular.ttf"));
     var arabicFontBold = Font.ttf(
@@ -45,12 +44,7 @@ class ApiPdf {
     return PDFOpened.saveDocument(name: fileName, pdf: pdf);
   }
 
-  static buildHeader(
-    id,
-    price,
-      type
-  ) =>
-      Column(
+  static buildHeader(id, price, type) => Column(
         crossAxisAlignment: CrossAxisAlignment.end,
         children: [
           Row(
@@ -59,7 +53,7 @@ class ApiPdf {
               Directionality(
                 textDirection: textDirection,
                 child: Text(
-                  type == 0  ? 'وصل قبض' : 'وصل دفع',
+                  type == 0 ? 'وصل استلام' : 'وصل قبض',
                   style: TextStyle(
                     fontWeight: FontWeight.bold,
                     fontSize: 30,
@@ -77,7 +71,7 @@ class ApiPdf {
               Directionality(
                 textDirection: textDirection,
                 child: Text(
-                  price + "    " + ' ل.س' + ' فقط لاغير',
+                  price + "    " + ' ل.س',
                   style: TextStyle(
                     fontSize: 23,
                     fontWeight: FontWeight.bold,
@@ -143,78 +137,79 @@ class ApiPdf {
         ],
       );
 
+
   static buildText({
     required String staticText,
     required String dynamicText,
     secondaryStaticText,
   }) =>
-      Column(crossAxisAlignment: CrossAxisAlignment.end, children: [
-        Directionality(
-          textDirection: textDirection,
-          child: Text(
-            staticText,
-            style: const TextStyle(
-              fontSize: 20,
-              color: PdfColor.fromInt(0x000000),
-            ),
-          ),
-        ),
-        SizedBox(height: 0.5 * PdfPageFormat.cm),
-        Row(
-          mainAxisAlignment: MainAxisAlignment.end,
-          children: [
-            secondaryStaticText != null
-                ? Directionality(
-                    textDirection: textDirection,
-                    child: Text(
-                      secondaryStaticText,
-                      style: const TextStyle(
-                        fontSize: 20,
-                        color: PdfColor.fromInt(0x000000),
-                      ),
+      Row(
+        mainAxisAlignment: MainAxisAlignment.start,
+        children: [
+          secondaryStaticText != null
+              ? Directionality(
+                  textDirection: textDirection,
+                  child: Text(
+                    secondaryStaticText,
+                    style:  const TextStyle(
+                      fontSize: 25,
+                      color: PdfColor.fromInt(0x000000),
+
                     ),
-                  )
-                : Directionality(
-                    textDirection: textDirection,
-                    child: Text(''),
                   ),
-            SizedBox(width: 0.01 * PdfPageFormat.cm),
-            Directionality(
+                )
+              : Directionality(
+                  textDirection: textDirection,
+                  child: Text(''),
+                ),
+          // SizedBox(width: 0.01 * PdfPageFormat.cm),
+          Expanded(
+            child: Directionality(
               textDirection: textDirection,
               child: Text(
                 dynamicText,
-                style: TextStyle(
-                    fontSize: 20,
-                    color: const PdfColor.fromInt(0x000000),
-                    fontWeight: FontWeight.bold),
+                style: const TextStyle(
+                    fontSize: 17,
+                    color: PdfColor.fromInt(0x000000),
+                    ),
               ),
             ),
-            SizedBox(width: 3 * PdfPageFormat.cm),
-          ],
-        )
-      ]);
+          ),
+          // SizedBox(width: 0.01 * PdfPageFormat.cm),
+          Directionality(
+            textDirection: textDirection,
+            child: Text(
+              staticText,
+              style:  TextStyle(
+                fontSize: 15,
+                color: const PdfColor.fromInt(0x000000),
+                  fontWeight: FontWeight.bold
+              ),
+            ),
+          ),
+        ],
+      );
 
+  /// build body
   static buildBody(
     whoIsTake,
     amountText,
     causeOfPayment,
   ) =>
-      Column(crossAxisAlignment: CrossAxisAlignment.end, children: [
+      Column(crossAxisAlignment: CrossAxisAlignment.start, children: [
         buildText(
-          staticText: 'قبضت من السيد   ',
-          dynamicText: whoIsTake,
-          secondaryStaticText: '  المحترم.',
+          staticText: 'قبضت من السيد :',
+          dynamicText: whoIsTake + ' المحترم.',
         ),
         SizedBox(height: 0.5 * PdfPageFormat.cm),
         buildText(
-            staticText: 'مبلغاً وقدره فقط  ',
-            dynamicText: amountText.toString(),
-            secondaryStaticText: '  ل.س لاغير .'),
+          staticText: 'مبلغاً وقدره فقط:',
+          dynamicText: amountText.toString() + ' لاغير .',
+        ),
         SizedBox(height: 0.5 * PdfPageFormat.cm),
         buildText(
           staticText: 'وذلك لقاء  ',
-          dynamicText: '. '+causeOfPayment ,
-
+          dynamicText: '..' + causeOfPayment,
         ),
       ]);
 }

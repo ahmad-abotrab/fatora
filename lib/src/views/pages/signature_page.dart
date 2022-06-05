@@ -18,10 +18,11 @@ class SignaturePage extends StatefulWidget {
 }
 
 class _SignaturePageState extends State<SignaturePage> {
-  var signaturePadKey = GlobalKey<SfSignaturePadState>();
+  var s = Get.put(SignaturePageController());
 
   @override
   Widget build(BuildContext context) {
+    // var sign = Get.lazyPut(() => SignaturePageController());
     return Scaffold(
       appBar: AppBar(
         backgroundColor: ColorApp.primaryColor,
@@ -35,7 +36,7 @@ class _SignaturePageState extends State<SignaturePage> {
           Align(
             alignment: Alignment.topCenter,
             child: SfSignaturePad(
-              key: signaturePadKey,
+              key: s.signaturePadKey,
               backgroundColor: Colors.white,
               strokeColor: Colors.blue,
               minimumStrokeWidth: 4.0,
@@ -91,19 +92,13 @@ class _SignaturePageState extends State<SignaturePage> {
   }
 
   clearButton() {
-    signaturePadKey.currentState!.clear();
+    s.signaturePadKey.currentState!.clear();
   }
 
   saveButton() async {
-    ui.Image image = await signaturePadKey.currentState!.toImage();
+    ui.Image image = await s.signaturePadKey.currentState!.toImage();
     final bytesData = await image.toByteData(format: ui.ImageByteFormat.png);
-    final Uint8List imageBytes = bytesData!.buffer
-        .asUint8List(bytesData.offsetInBytes, bytesData.lengthInBytes);
-    final String path = (await getApplicationDocumentsDirectory()).path;
-    final String fileName = "$path/signature.jpg";
-    Get.find<SignaturePageController>().changedPathToSignature(fileName);
-    final File file = File(fileName);
-    await file.writeAsBytes(imageBytes, flush: true);
+    s.changeFileForSignature(bytesData);
     Navigator.pop(context);
   }
 }
