@@ -53,7 +53,7 @@ class ReceiptRepository {
 
   Future<dynamic> checkIfThereId(id) async {
     try {
-      print("Fs");
+
       final f = await receiptApi.checkIfThereId(id);
       return f;
     } on DioError {

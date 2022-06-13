@@ -53,7 +53,7 @@ class ApiPdf {
               Directionality(
                 textDirection: textDirection,
                 child: Text(
-                  type == 0 ? 'وصل استلام' : 'وصل قبض',
+                  type == 0 ? 'وصل دفع' : 'وصل قبض',
                   style: TextStyle(
                     fontWeight: FontWeight.bold,
                     fontSize: 30,
@@ -203,13 +203,13 @@ class ApiPdf {
         ),
         SizedBox(height: 0.5 * PdfPageFormat.cm),
         buildText(
-          staticText: 'مبلغاً وقدره فقط:',
-          dynamicText: amountText.toString() + ' لاغير .',
+          staticText: 'مبلغاً وقدره:',
+          dynamicText: ' فقط'+amountText.toString() + ' لاغير .',
         ),
         SizedBox(height: 0.5 * PdfPageFormat.cm),
         buildText(
-          staticText: 'وذلك لقاء  ',
-          dynamicText: '..' + causeOfPayment,
+          staticText: ' وذلك لقاء :',
+          dynamicText:  '.'+ causeOfPayment ,
         ),
       ]);
 }

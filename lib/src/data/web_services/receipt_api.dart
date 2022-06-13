@@ -30,6 +30,7 @@ class ReceiptApi {
 
   Future<dynamic> addLocalIdToServer(localId) async {
     try {
+
       final response =
           await dio?.post(URLApi.addLocalIdToServer, data: localId);
       return response!.data;
@@ -57,19 +58,21 @@ class ReceiptApi {
     }
   }
 
-  Future<dynamic> checkIfThereId(id)async{
-    try{
-      print('dsf');
+  Future<dynamic> checkIfThereId(id) async {
+    try {
+
       var result = await dio?.post('api/isThere', data: {"id": id});
+
       return result!.data;
-    }on DioError catch (dioError) {
+    } on DioError catch (dioError) {
       throw DioExceptions.fromDioError(dioError);
     }
   }
 
-  Future <dynamic> getLocalIdExits(charId)async{
+  Future<dynamic> getLocalIdExits(charId) async {
     try {
-      final response = await dio?.post(URLApi.getBeforeLocalID,data: {"charId":charId});
+      final response =
+          await dio?.post(URLApi.getBeforeLocalID, data: {"charId": charId});
       return response!.data;
     } on DioError {
       rethrow;
@@ -80,6 +83,7 @@ class ReceiptApi {
     var url = URLApi.getAllReceipts;
     try {
       final response = await dio?.get(url);
+      // print(response!.data);
       return response!.data;
     } on DioError catch (dioError) {
       throw DioExceptions.fromDioError(dioError);
@@ -88,7 +92,8 @@ class ReceiptApi {
 
   Future<dynamic> downloadReceipt(fileName) async {
     try {
-      var response  = await dio?.post('/api/checkIfDirIsThere',data: {"fileName":fileName});
+      var response = await dio
+          ?.post('/api/checkIfDirIsThere', data: {"fileName": fileName});
       return response!.data;
     } on DioError catch (error) {
       throw DioExceptions.fromDioError(error);
@@ -100,13 +105,14 @@ class ReceiptApi {
     var urlAddNewReceipt = URLApi.addNewReceipt;
 
     try {
-      print('uuuu');
       final responseAddReceipt =
           await dio?.post(urlAddNewReceipt, data: receiptObject);
-      print(responseAddReceipt);
+
       if (responseAddReceipt!.data == "success") {
         try {
-          var res = await store(receiptFile, fileName);
+          print('googe');
+          var res = await store(receiptFile, fileName,receiptObject['type']);
+
           return res;
         } on DioError catch (dioError) {
           throw DioExceptions.fromDioError(dioError);
@@ -117,16 +123,17 @@ class ReceiptApi {
     }
   }
 
-  Future<dynamic> store(File file, fileName) async {
+  Future<dynamic> store(File file, fileName,type) async {
     var urlUploadFile = URLApi.store;
     var formData = FormData.fromMap({
       'receipt': await MultipartFile.fromFile(file.path, filename: fileName),
       'date': DateTime.now().toIso8601String(),
+      'type':type.toString(),
     });
     try {
-
-      await dio?.post(urlUploadFile, data: formData);
-      return "success";
+      var response = await dio?.post(urlUploadFile, data: formData);
+      print(response!.data);
+      return response.data;
     } on DioError catch (dioError) {
       throw DioExceptions.fromDioError(dioError);
     }
@@ -140,8 +147,8 @@ class ReceiptApi {
         URLApi.getReceiptsBetweenRangeDate,
         data: temp.toJson(),
       );
-
-      return response!.data;
+      print(response!.data);
+      return response.data;
     } on DioError catch (dioError) {
       throw DioExceptions.fromDioError(dioError);
     }

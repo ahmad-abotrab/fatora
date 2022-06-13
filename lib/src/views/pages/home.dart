@@ -178,7 +178,7 @@ class _HomePageState extends State<HomePage>
                                       children: [
                                         Expanded(
                                           child: GestureDetector(
-                                            onTap: () {
+                                            onDoubleTap: () {
                                               Get.find<
                                                       SignaturePageController>()
                                                   .changePathSignatureCompany(
@@ -194,7 +194,7 @@ class _HomePageState extends State<HomePage>
                                         ),
                                         Expanded(
                                           child: GestureDetector(
-                                            onTap: () {
+                                            onDoubleTap: () {
                                               Get.find<
                                                       SignaturePageController>()
                                                   .changePathSignatureCompany(
@@ -226,50 +226,48 @@ class _HomePageState extends State<HomePage>
   }
 
   buttonAddSomeThing(content, chooseImageOrNot, {functionality}) {
-    return Container(
-      decoration: BoxDecoration(
-        border: Border.all(
-          color: ColorApp.primaryColor,
-          width: 1,
-        ),
-        borderRadius: BorderRadius.circular(12),
-      ),
-      child: SizedBox(
-        width: MediaQuery.of(context).size.width * 0.4,
-        height: MediaQuery.of(context).size.width * 0.15,
-        child: Center(
-          child: GestureDetector(
-            onTap: functionality,
-            child: !chooseImageOrNot
-                ? Text(
-                    content,
-                    style: const TextStyle(
-                      fontSize: 18,
-                      fontFamily: 'Forum-Regular',
-                      color: ColorApp.primaryColor,
-                    ),
-                  )
-                : loadSignatureFromAssetFile(Get.find<SignaturePageController>().pathSignatureCompany),
+    return Row(
+      children: [
+        Expanded(
+          child: Container(
+            decoration: BoxDecoration(
+              border: Border.all(
+                color: ColorApp.primaryColor,
+                width: 1,
+              ),
+              borderRadius: BorderRadius.circular(12),
+            ),
+            child: SizedBox(
+              width: MediaQuery.of(context).size.width * 0.4,
+              height: MediaQuery.of(context).size.width * 0.15,
+              child: Center(
+                child: GestureDetector(
+                  onTap: functionality,
+                  child: !chooseImageOrNot
+                      ? Text(
+                          content,
+                          style: const TextStyle(
+                            fontSize: 18,
+                            fontFamily: 'Forum-Regular',
+                            color: ColorApp.primaryColor,
+                          ),
+                        )
+                      : loadSignatureFromAssetFile(Get.find<SignaturePageController>().pathSignatureCompany),
+                ),
+              ),
+            ),
           ),
         ),
-      ),
+      ],
     );
   }
 
   loadSignatureFromAssetFile(pathImageSignature) {
-    return Container(
-      decoration: BoxDecoration(
-        border: Border.all(
-          color: ColorApp.helperColor,
-          width: 1,
-        ),
-        borderRadius: BorderRadius.circular(12),
-      ),
-      child: Image.asset(
+    return  Image.asset(
         pathImageSignature,
         height: MediaQuery.of(context).size.width * 0.25,
         width: MediaQuery.of(context).size.width * 0.4,
-      ),
+
     );
   }
 
@@ -316,17 +314,22 @@ class _HomePageState extends State<HomePage>
 
     var oldCharIdLocal = prefer.get(charIdAppLocal);
     var oldIdLocal = prefer.get(idAppLocal);
-    id = int.parse(oldIdLocal.toString()) + 1;
+    print(oldIdLocal);
+    id = 1;
+    //id = int.parse(oldIdLocal.toString()) + 1;
     receipt = createReceiptToNextProcess(id, oldCharIdLocal);
+ print('1');
     Pair pair = await createPdfToNextProcess(receipt, type,
+
         Get.find<SignaturePageController>().pathSignatureCompany);
+    print('2');
     receipt.receiptPdfFileName = pair.second;
     String sql = """
               INSERT INTO receipts
-              (idLocal,whoIsTake,amountText,amountNumeric,causeOfPayment,date,receiptPdfFileName)
-              VALUES (?,?,?,?,?,?,?);
+              (idLocal,whoIsTake,amountText,amountNumeric,causeOfPayment,date,receiptPdfFileName,type)
+              VALUES (?,?,?,?,?,?,?,?);
            """;
-
+    print('3');
     List data = [
       receipt.idLocal,
       receipt.whoIsTake,
@@ -335,7 +338,9 @@ class _HomePageState extends State<HomePage>
       receipt.causeOfPayment,
       receipt.date!.toIso8601String(),
       receipt.receiptPdfFileName,
+      receipt.type,
     ];
+    print('4');
 
     try {
       await receiptsDB.insertData(sql, data);
@@ -356,6 +361,7 @@ class _HomePageState extends State<HomePage>
                 ],
               ));
     }
+    print('5');
 
     sql = '';
     sql = '''
@@ -365,7 +371,7 @@ class _HomePageState extends State<HomePage>
           ''';
     data.clear();
     data = [pair.first.path, oldCharIdLocal, receipt.idLocal];
-
+    print('6');
     try {
       await receiptsDB.insertData(sql, data);
     } catch (e) {
@@ -390,21 +396,19 @@ class _HomePageState extends State<HomePage>
                 ],
               ));
     }
-
+    print('7');
     var hasInternet = await InternetConnectionChecker().hasConnection;
     if (hasInternet) {
       try {
         // here should make store data on database
-
         await ReceiptRepository()
             .addNewReceipt(receipt, pair.first, pair.second);
-
+        print('8');
         LocalIdForReceipt localID = LocalIdForReceipt(
             charReceiptForEachEmployee: oldCharIdLocal.toString(),
             idReceiptForEachEmployee: id.toString());
-
         await ReceiptRepository().updateLocalNumId(localID);
-
+        print('9');
         sql = '''
                   UPDATE receiptStatus
                   SET statusSend_Server = ? ,
@@ -494,17 +498,19 @@ class _HomePageState extends State<HomePage>
 
   Receipt createReceiptToNextProcess(id, oldCharIDLocal) {
     Receipt receipt = Receipt();
-    receipt.idLocal = id.toString() + oldCharIDLocal;
+    receipt.idLocal = id.toString() + "_"+ oldCharIDLocal;
     if (tabController!.index == 0) {
       receipt.whoIsTake = formCatchCon.whoIsTake!.text;
       receipt.amountText = formCatchCon.amountText!.text;
       receipt.amountNumeric = formCatchCon.price!.text.toString();
       receipt.causeOfPayment = formCatchCon.causeOfPayment!.text;
+      receipt.type = 0;
     } else {
       receipt.whoIsTake = formPaymentCon.whoIsTake!.text;
       receipt.amountText = formPaymentCon.amountText!.text;
       receipt.amountNumeric = formPaymentCon.price!.text.toString();
       receipt.causeOfPayment = formPaymentCon.causeOfPayment!.text;
+      receipt.type = 1;
     }
     receipt.date = DateTime.now();
     receipt.statusSend_WhatsApp = 0;
@@ -546,7 +552,7 @@ class _HomePageState extends State<HomePage>
       shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(20)),
       title: const Text('هل تريد ؟ '),
       content: const Text(
-        'إرسال الملف حالاً عبد الواتس اب\nعرض ملف الإيصال\nلاشيء.. لكن سيتم حفظ الملف في الـذاكدة المؤقتة لحين إرسالها عبر الواتس آب\n',
+        'إرسال الملف حالاً عبر الواتس اب\nعرض ملف الإيصال\nلاشيء.. لكن سيتم حفظ الملف في الـذاكرة المؤقتة لحين إرسالها عبر الواتس آب\n',
         maxLines: 3,
       ),
       actions: [
@@ -942,7 +948,7 @@ class _HomePageState extends State<HomePage>
 
   receiptNotUploadToServer() async {
     String sql = '''
-                  SELECT rs.pathDB , r.idLocal , r.whoIsTake, r.amountText , r.amountNumeric , r.causeOfPayment , r.date , r.receiptPdfFileName , r.statusSend_WhatsApp
+                  SELECT rs.pathDB , r.idLocal , r.whoIsTake, r.amountText , r.amountNumeric , r.causeOfPayment , r.date , r.receiptPdfFileName , r.statusSend_WhatsApp,r.type
                   FROM receipts r
                   INNER JOIN receiptStatus rs
                   ON r.idLocal = rs.idLocal
@@ -1011,6 +1017,7 @@ class _HomePageState extends State<HomePage>
           causeOfPayment: request[i]['causeOfPayment'],
           date: DateTime.parse(request[i]['date']),
           receiptPdfFileName: request[i]['receiptPdfFileName'],
+          type: request[i]['type'],
         );
         File receiptFile = File(request[i]['pathDB']);
         try {

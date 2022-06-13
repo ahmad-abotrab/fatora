@@ -7,6 +7,7 @@ class Receipt {
   String? causeOfPayment;
   DateTime? date;
   String? receiptPdfFileName;
+  int? type;
   int? statusSend_WhatsApp =0;
 
 
@@ -18,6 +19,7 @@ class Receipt {
     this.causeOfPayment,
     this.date,
     this.receiptPdfFileName,
+    this.type,
     this.statusSend_WhatsApp =0
   });
 
@@ -29,11 +31,17 @@ class Receipt {
     causeOfPayment = json['causeOfPayment'];
     receiptPdfFileName = json['receiptPdfFileName'];
     statusSend_WhatsApp = json['statusSend_WhatsApp'];
+    if(json['type'] != null) {
+      type = int.parse(json['type']);
+    } else {
+      type = 0;
+    }
     date = DateTime.parse(json['date']);
   }
 
   Map<String, dynamic> toJson() {
     final Map<String, dynamic> data = <String, dynamic>{};
+    print('this is type : ' + type.toString());
     data['idLocal'] = idLocal;
     data['whoIsTake'] = whoIsTake;
     data['amountText'] = amountText;
@@ -41,6 +49,7 @@ class Receipt {
     data['causeOfPayment'] = causeOfPayment;
     data['receiptPdfFileName'] = receiptPdfFileName;
     data['statusSend_WhatsApp'] = statusSend_WhatsApp;
+    data['type'] = type.toString();
     data['date'] = date!.toIso8601String();
     return data;
   }

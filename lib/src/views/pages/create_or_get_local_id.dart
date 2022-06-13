@@ -78,42 +78,63 @@ class _CreateOrGetLocalIdState extends State<CreateOrGetLocalId> {
                             isLoading = true;
                           });
 
-                          String isThere = await ReceiptRepository()
-                              .checkIfThereId(userName.text);
+                          try {
+                            var isThere = await ReceiptRepository()
+                                .checkIfThereId(userName.text);
+                            if (isThere != null &&
+                                password.text == passwordApp) {
+                              SharedPreferences sharedPreferences =
+                                  await SharedPreferences.getInstance();
 
-                          if (password.text == passwordApp &&
-                              isThere == 'true') {
-                            SharedPreferences sharedPreferences =
-                                await SharedPreferences.getInstance();
+                              final shared = sharedPreferences;
 
-                            final shared = sharedPreferences;
+                              await shared.setString('isPassword', 'yes');
+                              await shared.setString(
+                                  'charReceiptForEachEmployee', userName.text);
+                              await shared.setString(
+                                  'idReceiptForEachEmployee', isThere);
 
-                            await shared.setString('isPassword', 'yes');
-                            await shared.setString(
-                                'charReceiptForEachEmployee', userName.text);
-                            await shared.setString(
-                                'idReceiptForEachEmployee', '0');
-
-                            Navigator.pushReplacementNamed(
-                                context, RouteScreens.home);
-                          } else {
-                            setState(() {
-                              isLoading = false;
-                            });
+                              Navigator.pushReplacementNamed(
+                                  context, RouteScreens.home);
+                            } else {
+                              setState(() {
+                                isLoading = false;
+                              });
+                              showDialog(
+                                  context: context,
+                                  builder: (_) => AlertDialog(
+                                        title: const Text('تنبيه'),
+                                        content: const Text(
+                                            'كلمة المرور او id غير صحيحة'),
+                                        actions: [
+                                          TextButton(
+                                              onPressed: () {
+                                                Navigator.pop(context);
+                                              },
+                                              child: const Text('رجوع'))
+                                        ],
+                                      ));
+                            }
+                          } catch (error) {
                             showDialog(
-                                context: context,
-                                builder: (_) => AlertDialog(
-                                      title: const Text('تنبيه'),
-                                      content: const Text(
-                                          'كلمة المرور او id غير صحيحة'),
-                                      actions: [
-                                        TextButton(
-                                            onPressed: () {
-                                              Navigator.pop(context);
-                                            },
-                                            child: const Text('رجوع'))
-                                      ],
-                                    ));
+                              context: context,
+                              builder: (_) => AlertDialog(
+                                shape: RoundedRectangleBorder(
+                                    borderRadius: BorderRadius.circular(20)),
+                                title: const Text('تنبيه'),
+                                content: Text(error.toString()),
+                                actions: [
+                                  TextButton(
+                                      onPressed: () {
+                                        Navigator.pop(context);
+                                        setState(() {
+                                          isLoading = false;
+                                        });
+                                      },
+                                      child: const Text('رجوع')),
+                                ],
+                              ),
+                            );
                           }
                         }
                       },

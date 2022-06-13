@@ -8,6 +8,7 @@ use Exception;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\File;
+use Illuminate\Support\Facades\Storage;
 
 class ReceiptController extends Controller
 {
@@ -62,7 +63,10 @@ class ReceiptController extends Controller
 
     public function store(Request $request)
     {
-        try {
+       $test =  $request->input('date');
+       return $test;
+       return Storage::putFileAs('public/yyyyyyy',$request->file('receipt'),$request->file('receipt')->getClientOriginalName());
+        try{
             $date = $request->input('date');
             $year = date('Y');
             $month = date('m');
@@ -70,10 +74,11 @@ class ReceiptController extends Controller
             if ($request->hasFile("receipt")) {
                 $file = $request->file("receipt");
                 $fileName = $file->getClientOriginalName();
-                $path = '/receipt/' . $year . '/' . $month . '/' . $day;
-                $tempPath = '/receipt/temp';
-                $file->storeAs($path, $fileName);
-                $file->storeAs($tempPath, $fileName);
+                //$path = "\receipt\" .  $year . "\" . $month . "\" . $day;
+               // $tempPath = '/receipt/temp';
+                //$fullPath = base_path() . 'public\storage' . $path;
+               // $file->storeAs($path, $fileName);
+               // $file->storeAs($tempPath, $fileName);
                 return "done store";
             } else {
                 return "no i not found it";
@@ -99,6 +104,7 @@ class ReceiptController extends Controller
 
     public function filterByDate(Request $request)
     {
+        return base_path();
         $startDateInput = $request->input("startDate");
         $endDateInput = $request->input("endDate");
         $startDate_convertedToTimestamp = strtotime($startDateInput);
@@ -118,6 +124,7 @@ class ReceiptController extends Controller
 
     public function getLastId()
     {
+        return base_path();
         return Receipt::latest()->first();
     }
 

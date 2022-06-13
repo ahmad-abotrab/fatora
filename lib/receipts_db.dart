@@ -47,7 +47,8 @@ class ReceiptsDB {
           causeOfPayment TEXT NOT NULL,
           receiptPdfFileName TEXT NOT NULL,
           statusSend_WhatsApp INTEGER,
-          date TEXT NOT NULL
+          date TEXT NOT NULL,
+          type INTEGER
         );
         ''';
     await db.execute(sql);

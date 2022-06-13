@@ -1,5 +1,6 @@
 class URLApi {
   static String baseUrl = 'http://77.44.176.222:8080/';
+  // static String baseUrl = 'http://127.0.0.1:8000/';
   static String getAllReceipts = 'api/allReceipt';
   static const String addNewIdChar = 'api/getLocalCharID';
   static String store = 'api/store';
