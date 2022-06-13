@@ -204,7 +204,7 @@ class ApiPdf {
         SizedBox(height: 0.5 * PdfPageFormat.cm),
         buildText(
           staticText: 'مبلغاً وقدره:',
-          dynamicText: ' فقط'+amountText.toString() + ' لاغير .',
+          dynamicText: ' فقط '+amountText.toString() + ' لاغير .',
         ),
         SizedBox(height: 0.5 * PdfPageFormat.cm),
         buildText(

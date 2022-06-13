@@ -83,7 +83,6 @@ class ReceiptApi {
     var url = URLApi.getAllReceipts;
     try {
       final response = await dio?.get(url);
-      // print(response!.data);
       return response!.data;
     } on DioError catch (dioError) {
       throw DioExceptions.fromDioError(dioError);

@@ -314,20 +314,18 @@ class _HomePageState extends State<HomePage>
 
     var oldCharIdLocal = prefer.get(charIdAppLocal);
     var oldIdLocal = prefer.get(idAppLocal);
-    print(oldIdLocal);
-    id = 1;
-    //id = int.parse(oldIdLocal.toString()) + 1;
+    id = int.parse(oldIdLocal.toString()) + 1;
     receipt = createReceiptToNextProcess(id, oldCharIdLocal);
- print('1');
+
     Pair pair = await createPdfToNextProcess(receipt, type,
 
         Get.find<SignaturePageController>().pathSignatureCompany);
-    print('2');
+
     receipt.receiptPdfFileName = pair.second;
     String sql = """
               INSERT INTO receipts
-              (idLocal,whoIsTake,amountText,amountNumeric,causeOfPayment,date,receiptPdfFileName,type)
-              VALUES (?,?,?,?,?,?,?,?);
+              (idLocal,whoIsTake,amountText,amountNumeric,causeOfPayment,date,receiptPdfFileName)
+              VALUES (?,?,?,?,?,?,?);
            """;
     print('3');
     List data = [
@@ -338,7 +336,6 @@ class _HomePageState extends State<HomePage>
       receipt.causeOfPayment,
       receipt.date!.toIso8601String(),
       receipt.receiptPdfFileName,
-      receipt.type,
     ];
     print('4');
 
@@ -504,13 +501,11 @@ class _HomePageState extends State<HomePage>
       receipt.amountText = formCatchCon.amountText!.text;
       receipt.amountNumeric = formCatchCon.price!.text.toString();
       receipt.causeOfPayment = formCatchCon.causeOfPayment!.text;
-      receipt.type = 0;
     } else {
       receipt.whoIsTake = formPaymentCon.whoIsTake!.text;
       receipt.amountText = formPaymentCon.amountText!.text;
       receipt.amountNumeric = formPaymentCon.price!.text.toString();
       receipt.causeOfPayment = formPaymentCon.causeOfPayment!.text;
-      receipt.type = 1;
     }
     receipt.date = DateTime.now();
     receipt.statusSend_WhatsApp = 0;
