@@ -21,7 +21,6 @@ class _PdfViewerLocalState extends State<PdfViewerLocal> {
 
   @override
   void initState() {
-    print(widget.fileName!);
     super.initState();
     _future();
   }

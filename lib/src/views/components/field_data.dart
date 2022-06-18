@@ -25,8 +25,6 @@ class FieldData extends StatelessWidget {
     return '';
   }
 
-  String get _currency =>
-      NumberFormat.compactSimpleCurrency(locale: _locale).currencySymbol;
 
   @override
   Widget build(BuildContext context) {

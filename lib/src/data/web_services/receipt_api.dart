@@ -30,7 +30,6 @@ class ReceiptApi {
 
   Future<dynamic> addLocalIdToServer(localId) async {
     try {
-
       final response =
           await dio?.post(URLApi.addLocalIdToServer, data: localId);
       return response!.data;
@@ -60,7 +59,6 @@ class ReceiptApi {
 
   Future<dynamic> checkIfThereId(id) async {
     try {
-
       var result = await dio?.post('api/isThere', data: {"id": id});
 
       return result!.data;
@@ -83,6 +81,7 @@ class ReceiptApi {
     var url = URLApi.getAllReceipts;
     try {
       final response = await dio?.get(url);
+
       return response!.data;
     } on DioError catch (dioError) {
       throw DioExceptions.fromDioError(dioError);
@@ -109,8 +108,8 @@ class ReceiptApi {
 
       if (responseAddReceipt!.data == "success") {
         try {
-          print('googe');
-          var res = await store(receiptFile, fileName,receiptObject['type']);
+
+          var res = await store(receiptFile, fileName, receiptObject['type']);
 
           return res;
         } on DioError catch (dioError) {
@@ -122,17 +121,16 @@ class ReceiptApi {
     }
   }
 
-  Future<dynamic> store(File file, fileName,type) async {
+  Future<dynamic> store(File file, fileName, type) async {
     var urlUploadFile = URLApi.store;
     var formData = FormData.fromMap({
       'receipt': await MultipartFile.fromFile(file.path, filename: fileName),
       'date': DateTime.now().toIso8601String(),
-      'type':type.toString(),
+      'type': type.toString(),
     });
     try {
       var response = await dio?.post(urlUploadFile, data: formData);
-      print(response!.data);
-      return response.data;
+      return response!.data;
     } on DioError catch (dioError) {
       throw DioExceptions.fromDioError(dioError);
     }
@@ -146,8 +144,7 @@ class ReceiptApi {
         URLApi.getReceiptsBetweenRangeDate,
         data: temp.toJson(),
       );
-      print(response!.data);
-      return response.data;
+      return response!.data;
     } on DioError catch (dioError) {
       throw DioExceptions.fromDioError(dioError);
     }

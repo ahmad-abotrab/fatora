@@ -63,10 +63,10 @@ class ReceiptController extends Controller
 
     public function store(Request $request)
     {
-       $test =  $request->input('date');
-       return $test;
-       return Storage::putFileAs('public/yyyyyyy',$request->file('receipt'),$request->file('receipt')->getClientOriginalName());
-        try{
+        $test = $request->input('date');
+        return $test;
+        return Storage::putFileAs('public/yyyyyyy', $request->file('receipt'), $request->file('receipt')->getClientOriginalName());
+        try {
             $date = $request->input('date');
             $year = date('Y');
             $month = date('m');
@@ -75,10 +75,10 @@ class ReceiptController extends Controller
                 $file = $request->file("receipt");
                 $fileName = $file->getClientOriginalName();
                 //$path = "\receipt\" .  $year . "\" . $month . "\" . $day;
-               // $tempPath = '/receipt/temp';
+                // $tempPath = '/receipt/temp';
                 //$fullPath = base_path() . 'public\storage' . $path;
-               // $file->storeAs($path, $fileName);
-               // $file->storeAs($tempPath, $fileName);
+                // $file->storeAs($path, $fileName);
+                // $file->storeAs($tempPath, $fileName);
                 return "done store";
             } else {
                 return "no i not found it";
@@ -104,7 +104,8 @@ class ReceiptController extends Controller
 
     public function filterByDate(Request $request)
     {
-        return base_path();
+
+//        return base_path();
         $startDateInput = $request->input("startDate");
         $endDateInput = $request->input("endDate");
         $startDate_convertedToTimestamp = strtotime($startDateInput);
@@ -117,7 +118,7 @@ class ReceiptController extends Controller
         } else {
             return
                 Receipt::
-                whereBetween('created_at', [$startDate_usedToQuery, $endDate_usedToQuery])
+                whereBetween('id', [$startDate_usedToQuery, $endDate_usedToQuery])
                     ->get();
         }
     }
@@ -145,10 +146,10 @@ class ReceiptController extends Controller
 
     public function isThere(Request $request)
     {
-        $r = DB::table('id_receipts')->where('charReceiptForEachEmployee',$request->input('id'))->get();
-        if($r->isEmpty()){
+        $r = DB::table('id_receipts')->where('charReceiptForEachEmployee', $request->input('id'))->get();
+        if ($r->isEmpty()) {
             return "false";
-        }else{
+        } else {
             return "true";
         }
     }
@@ -182,8 +183,7 @@ class ReceiptController extends Controller
                     $temp = $this->incrementChar($firstChar);
                     $anotherIdChar = $temp . $lastChar;
                     $anotherId = '0';
-                }
-                else{
+                } else {
                     $temp = $this->incrementChar($lastChar);
                     $anotherIdChar = $firstChar . $temp;
                     $anotherId = '0';

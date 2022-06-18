@@ -327,7 +327,7 @@ class _HomePageState extends State<HomePage>
               (idLocal,whoIsTake,amountText,amountNumeric,causeOfPayment,date,receiptPdfFileName)
               VALUES (?,?,?,?,?,?,?);
            """;
-    print('3');
+
     List data = [
       receipt.idLocal,
       receipt.whoIsTake,
@@ -337,7 +337,7 @@ class _HomePageState extends State<HomePage>
       receipt.date!.toIso8601String(),
       receipt.receiptPdfFileName,
     ];
-    print('4');
+
 
     try {
       await receiptsDB.insertData(sql, data);
@@ -358,7 +358,7 @@ class _HomePageState extends State<HomePage>
                 ],
               ));
     }
-    print('5');
+
 
     sql = '';
     sql = '''
@@ -368,7 +368,7 @@ class _HomePageState extends State<HomePage>
           ''';
     data.clear();
     data = [pair.first.path, oldCharIdLocal, receipt.idLocal];
-    print('6');
+
     try {
       await receiptsDB.insertData(sql, data);
     } catch (e) {
@@ -393,19 +393,19 @@ class _HomePageState extends State<HomePage>
                 ],
               ));
     }
-    print('7');
+
     var hasInternet = await InternetConnectionChecker().hasConnection;
     if (hasInternet) {
       try {
         // here should make store data on database
         await ReceiptRepository()
             .addNewReceipt(receipt, pair.first, pair.second);
-        print('8');
+
         LocalIdForReceipt localID = LocalIdForReceipt(
             charReceiptForEachEmployee: oldCharIdLocal.toString(),
             idReceiptForEachEmployee: id.toString());
         await ReceiptRepository().updateLocalNumId(localID);
-        print('9');
+
         sql = '''
                   UPDATE receiptStatus
                   SET statusSend_Server = ? ,

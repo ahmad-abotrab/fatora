@@ -209,7 +209,7 @@ class ApiPdf {
         SizedBox(height: 0.5 * PdfPageFormat.cm),
         buildText(
           staticText: ' وذلك لقاء :',
-          dynamicText:  '.'+ causeOfPayment ,
+          dynamicText:  causeOfPayment ,
         ),
       ]);
 }
