@@ -1,7 +1,7 @@
 import 'package:fatora/src/constant/constant_value.dart';
 import 'package:flutter/material.dart';
 import 'package:shared_preferences/shared_preferences.dart';
-
+import 'package:get/get.dart';
 import '/src/constant/route_screen.dart';
 import '../../Constant/color_app.dart';
 import '../../Constant/path_images.dart';
@@ -17,7 +17,7 @@ class CreateOrGetLocalId extends StatefulWidget {
 
 class _CreateOrGetLocalIdState extends State<CreateOrGetLocalId> {
   TextEditingController userName = TextEditingController();
-
+  TextEditingController ip = TextEditingController();
   TextEditingController password = TextEditingController();
   bool isLoading = false;
 
@@ -65,83 +65,152 @@ class _CreateOrGetLocalIdState extends State<CreateOrGetLocalId> {
                   SizedBox(
                     height: MediaQuery.of(context).size.width * 0.08,
                   ),
-                  Container(
-                    decoration: BoxDecoration(
-                        borderRadius: BorderRadius.circular(20),
-                        border: Border.all(
-                          color: ColorApp.primaryColor,
-                        )),
-                    child: MaterialButton(
-                      onPressed: () async {
-                        if (keyForm.currentState!.validate()) {
-                          setState(() {
-                            isLoading = true;
-                          });
-
-                          try {
-                            var isThere = await ReceiptRepository()
-                                .checkIfThereId(userName.text);
-                            if (isThere != null &&
-                                password.text == passwordApp) {
-                              SharedPreferences sharedPreferences =
-                                  await SharedPreferences.getInstance();
-
-                              final shared = sharedPreferences;
-
-                              await shared.setString('isPassword', 'yes');
-                              await shared.setString(
-                                  'charReceiptForEachEmployee', userName.text);
-                              await shared.setString(
-                                  'idReceiptForEachEmployee', isThere);
-
-                              Navigator.pushReplacementNamed(
-                                  context, RouteScreens.home);
-                            } else {
+                  Row(
+                    mainAxisAlignment: MainAxisAlignment.center,
+                    crossAxisAlignment: CrossAxisAlignment.center,
+                    children: [
+                      Container(
+                        decoration: BoxDecoration(
+                            borderRadius: BorderRadius.circular(20),
+                            border: Border.all(
+                              color: ColorApp.primaryColor,
+                            )),
+                        child: MaterialButton(
+                          onPressed: () async {
+                            if (keyForm.currentState!.validate()) {
                               setState(() {
-                                isLoading = false;
+                                isLoading = true;
                               });
-                              showDialog(
+
+                              try {
+                                var isThere = await ReceiptRepository()
+                                    .checkIfThereId(userName.text);
+                                if (isThere != null &&
+                                    password.text == passwordApp) {
+                                  SharedPreferences sharedPreferences =
+                                      await SharedPreferences.getInstance();
+
+                                  final shared = sharedPreferences;
+
+                                  await shared.setString('isPassword', 'yes');
+                                  await shared.setString(
+                                      'charReceiptForEachEmployee',
+                                      userName.text);
+                                  await shared.setString(
+                                      'idReceiptForEachEmployee', isThere);
+
+                                  Navigator.pushReplacementNamed(
+                                      context, RouteScreens.home);
+                                } else {
+                                  setState(() {
+                                    isLoading = false;
+                                  });
+                                  showDialog(
+                                      context: context,
+                                      builder: (_) => AlertDialog(
+                                            title: const Text('تنبيه'),
+                                            content: const Text(
+                                                'كلمة المرور او id غير صحيحة'),
+                                            actions: [
+                                              TextButton(
+                                                  onPressed: () {
+                                                    Navigator.pop(context);
+                                                  },
+                                                  child: const Text('رجوع'))
+                                            ],
+                                          ));
+                                }
+                              } catch (error) {
+                                showDialog(
                                   context: context,
                                   builder: (_) => AlertDialog(
-                                        title: const Text('تنبيه'),
-                                        content: const Text(
-                                            'كلمة المرور او id غير صحيحة'),
-                                        actions: [
-                                          TextButton(
-                                              onPressed: () {
-                                                Navigator.pop(context);
-                                              },
-                                              child: const Text('رجوع'))
-                                        ],
-                                      ));
+                                    shape: RoundedRectangleBorder(
+                                        borderRadius:
+                                            BorderRadius.circular(20)),
+                                    title: const Text('تنبيه'),
+                                    content: Text(error.toString()),
+                                    actions: [
+                                      TextButton(
+                                          onPressed: () {
+                                            Navigator.pop(context);
+                                            setState(() {
+                                              isLoading = false;
+                                            });
+                                          },
+                                          child: const Text('رجوع')),
+                                    ],
+                                  ),
+                                );
+                              }
                             }
-                          } catch (error) {
-                            showDialog(
-                              context: context,
-                              builder: (_) => AlertDialog(
-                                shape: RoundedRectangleBorder(
-                                    borderRadius: BorderRadius.circular(20)),
-                                title: const Text('تنبيه'),
-                                content: Text(error.toString()),
+                          },
+                          child: isLoading
+                              ? const CircularProgressIndicator()
+                              : const Text('تسجيل الدخول'),
+                        ),
+                      ),
+                      SizedBox(width: 20),
+                      Container(
+                        decoration: BoxDecoration(
+                          borderRadius: BorderRadius.circular(20),
+                          color: ColorApp.primaryColor,
+                        ),
+                        child: MaterialButton(
+                          onPressed: () async {
+                            Get.dialog(
+                              AlertDialog(
+                                title: const Text("تغيير ip"),
+                                content: TextFormField(
+                                  autocorrect: true,
+                                  controller: ip,
+                                  decoration: InputDecoration(
+                                    hintText: "IP ...",
+                                    enabledBorder: OutlineInputBorder(
+                                      borderRadius: BorderRadius.circular(12),
+                                    ),
+                                    focusedBorder: OutlineInputBorder(
+                                      borderRadius: BorderRadius.circular(12),
+                                    ),
+                                    disabledBorder: OutlineInputBorder(
+                                      borderRadius: BorderRadius.circular(12),
+                                    ),
+                                  ),
+                                ),
                                 actions: [
-                                  TextButton(
-                                      onPressed: () {
-                                        Navigator.pop(context);
-                                        setState(() {
-                                          isLoading = false;
-                                        });
-                                      },
-                                      child: const Text('رجوع')),
+                                  MaterialButton(
+                                    onPressed: () async {
+                                      SharedPreferences sharedPreferences =
+                                          await SharedPreferences.getInstance();
+                                      sharedPreferences.setString(
+                                          "baseUrl", ip.text);
+                                      Get.back();
+                                      Get.snackbar(
+                                        "تم بنجاح",
+                                        "تم بنجاح تغيير ال ip الخاص بك",
+                                        snackPosition: SnackPosition.TOP,
+                                      );
+                                    },
+                                    child: const Text("تغيير"),
+                                  ),
+                                  MaterialButton(
+                                    onPressed: () {
+                                      Get.back();
+                                    },
+                                    child: const Text("تجاهل"),
+                                  ),
                                 ],
                               ),
                             );
-                          }
-                        }
-                      },
-                      child: isLoading
-                          ? const CircularProgressIndicator()
-                          : const Text('تسجيل الدخول'),
-                    ),
+                          },
+                          child: isLoading
+                              ? const CircularProgressIndicator()
+                              : const Text(
+                                  'تغيير ip',
+                                  style: TextStyle(color: Colors.white),
+                                ),
+                        ),
+                      ),
+                    ],
                   ),
                 ],
               ),

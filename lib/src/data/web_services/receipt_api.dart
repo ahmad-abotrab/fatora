@@ -108,7 +108,6 @@ class ReceiptApi {
 
       if (responseAddReceipt!.data == "success") {
         try {
-
           var res = await store(receiptFile, fileName, receiptObject['type']);
 
           return res;
