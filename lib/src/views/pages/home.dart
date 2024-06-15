@@ -4,6 +4,7 @@ import 'dart:typed_data';
 import 'package:connectivity_plus/connectivity_plus.dart';
 import 'package:fatora/pair.dart';
 import 'package:fatora/src/data/model/local_id_for_receipt.dart';
+import 'package:fatora/src/views/pages/create_or_get_local_id.dart';
 import 'package:fatora/src/views/pages/list_receipt_not_sent_by_whats.dart';
 import 'package:flutter/gestures.dart';
 import 'package:flutter/material.dart';
@@ -252,7 +253,9 @@ class _HomePageState extends State<HomePage>
                             color: ColorApp.primaryColor,
                           ),
                         )
-                      : loadSignatureFromAssetFile(Get.find<SignaturePageController>().pathSignatureCompany),
+                      : loadSignatureFromAssetFile(
+                          Get.find<SignaturePageController>()
+                              .pathSignatureCompany),
                 ),
               ),
             ),
@@ -263,11 +266,10 @@ class _HomePageState extends State<HomePage>
   }
 
   loadSignatureFromAssetFile(pathImageSignature) {
-    return  Image.asset(
-        pathImageSignature,
-        height: MediaQuery.of(context).size.width * 0.25,
-        width: MediaQuery.of(context).size.width * 0.4,
-
+    return Image.asset(
+      pathImageSignature,
+      height: MediaQuery.of(context).size.width * 0.25,
+      width: MediaQuery.of(context).size.width * 0.4,
     );
   }
 
@@ -318,7 +320,6 @@ class _HomePageState extends State<HomePage>
     receipt = createReceiptToNextProcess(id, oldCharIdLocal);
 
     Pair pair = await createPdfToNextProcess(receipt, type,
-
         Get.find<SignaturePageController>().pathSignatureCompany);
 
     receipt.receiptPdfFileName = pair.second;
@@ -337,7 +338,6 @@ class _HomePageState extends State<HomePage>
       receipt.date!.toIso8601String(),
       receipt.receiptPdfFileName,
     ];
-
 
     try {
       await receiptsDB.insertData(sql, data);
@@ -358,7 +358,6 @@ class _HomePageState extends State<HomePage>
                 ],
               ));
     }
-
 
     sql = '';
     sql = '''
@@ -495,7 +494,7 @@ class _HomePageState extends State<HomePage>
 
   Receipt createReceiptToNextProcess(id, oldCharIDLocal) {
     Receipt receipt = Receipt();
-    receipt.idLocal = id.toString() + "_"+ oldCharIDLocal;
+    receipt.idLocal = id.toString() + "_" + oldCharIDLocal;
     if (tabController!.index == 0) {
       receipt.whoIsTake = formCatchCon.whoIsTake!.text;
       receipt.amountText = formCatchCon.amountText!.text;
@@ -865,7 +864,8 @@ class _HomePageState extends State<HomePage>
                             ],
                           ));
                 } else {
-                  dialogToShowHowMuchReceiptsNotUploading(request, context);
+                  await dialogToShowHowMuchReceiptsNotUploading(
+                      request, context);
                 }
               } catch (e) {
                 showDialog(
@@ -937,6 +937,34 @@ class _HomePageState extends State<HomePage>
             ),
           ),
         ),
+        PopupMenuItem(
+          child: TextButton(
+            onPressed: () async {
+              SharedPreferences sharedPreferences =
+                  await SharedPreferences.getInstance();
+              sharedPreferences.clear();
+              Navigator.pushAndRemoveUntil(
+                  context,
+                  MaterialPageRoute(
+                    builder: (_) => const CreateOrGetLocalId(),
+                  ),
+                  (route) => false);
+            },
+            child: Row(
+              children: const [
+                Icon(
+                  Icons.logout,
+                  color: Colors.blue,
+                ),
+                Expanded(child: SizedBox()),
+                Text(
+                  'تسجيل خروج',
+                  style: TextStyle(color: Colors.black),
+                )
+              ],
+            ),
+          ),
+        ),
       ],
     );
   }
@@ -975,7 +1003,7 @@ class _HomePageState extends State<HomePage>
 
   dialogToShowHowMuchReceiptsNotUploading(List<Map> request, context) async {
     Navigator.pop(context);
-    showDialog(
+    await showDialog(
       context: context,
       builder: (_) => AlertDialog(
         shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(20)),

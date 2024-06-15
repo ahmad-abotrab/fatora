@@ -18,22 +18,22 @@ use Illuminate\Support\Facades\Route;
 Route::middleware('auth:sanctum')->get('/user', function (Request $request) {
     return $request->user();
 });
-
+Route::get('/', function (Request $request) {
+    return "home";
+});
 Route::controller(ReceiptController::class)->group(function () {
-    Route::get('/allReceipt', 'allReceipt');
+    Route::get('/allRxeceipt', 'allReceipt');
     Route::post('/addReceipt', 'addReceipt');
     Route::post('/store', 'store');
     Route::get('/lastRecord', 'lastRecord');
     Route::post('/filterByDate', 'filterByDate');
-    Route::get('/createNewLocalCharID' , 'createNewLocalCharID');
-    Route::put('/updateIdNumberForEmployee' , 'updateIdNumberForEmployee');
-    Route::get('/allLocalIdChar','allLocalIdChar');
-    Route::post('/checkIfDirIsThere' , 'checkIfDirIsThere');
-    Route::put('/updateLocalNumId' , 'updateLocalNumId');
-    Route::post('/addLocalIdToServer','addLocalIdToServer');
-    Route::post('/getBeforeLocalID','getBeforeLocalID');
-    Route::put('/updateStatusOfWhatsAppSend' , 'updateStatusOfWhatsAppSend');
-    Route::post('/isThere' , 'isThere');
-
-
+    Route::get('/createNewLocalCharID', 'createNewLocalCharID');
+    Route::put('/updateIdNumberForEmployee', 'updateIdNumberForEmployee');
+    Route::get('/allLocalIdChar', 'allLocalIdChar');
+    Route::post('/checkIfDirIsThere', 'checkIfDirIsThere');
+    Route::put('/updateLocalNumId', 'updateLocalNumId');
+    Route::post('/addLocalIdToServer', 'addLocalIdToServer');
+    Route::post('/getBeforeLocalID', 'getBeforeLocalID');
+    Route::put('/updateStatusOfWhatsAppSend', 'updateStatusOfWhatsAppSend');
+    Route::post('/isThere', 'isThere');
 });

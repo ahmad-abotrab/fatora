@@ -17,7 +17,7 @@ class CreateOrGetLocalId extends StatefulWidget {
 
 class _CreateOrGetLocalIdState extends State<CreateOrGetLocalId> {
   TextEditingController userName = TextEditingController();
-  TextEditingController ip = TextEditingController();
+  TextEditingController ipController = TextEditingController();
   TextEditingController password = TextEditingController();
   bool isLoading = false;
 
@@ -162,7 +162,7 @@ class _CreateOrGetLocalIdState extends State<CreateOrGetLocalId> {
                                 title: const Text("تغيير ip"),
                                 content: TextFormField(
                                   autocorrect: true,
-                                  controller: ip,
+                                  controller: ipController,
                                   decoration: InputDecoration(
                                     hintText: "IP ...",
                                     enabledBorder: OutlineInputBorder(
@@ -181,8 +181,10 @@ class _CreateOrGetLocalIdState extends State<CreateOrGetLocalId> {
                                     onPressed: () async {
                                       SharedPreferences sharedPreferences =
                                           await SharedPreferences.getInstance();
+                                      String ip =
+                                          "http://${ipController.text}:8080/";
                                       sharedPreferences.setString(
-                                          "baseUrl", ip.text);
+                                          "baseUrl", ip);
                                       Get.back();
                                       Get.snackbar(
                                         "تم بنجاح",
@@ -202,12 +204,10 @@ class _CreateOrGetLocalIdState extends State<CreateOrGetLocalId> {
                               ),
                             );
                           },
-                          child: isLoading
-                              ? const CircularProgressIndicator()
-                              : const Text(
-                                  'تغيير ip',
-                                  style: TextStyle(color: Colors.white),
-                                ),
+                          child: const Text(
+                            'تغيير ip',
+                            style: TextStyle(color: Colors.white),
+                          ),
                         ),
                       ),
                     ],

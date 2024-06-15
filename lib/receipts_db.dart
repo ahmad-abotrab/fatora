@@ -48,6 +48,7 @@ class ReceiptsDB {
           receiptPdfFileName TEXT NOT NULL,
           statusSend_WhatsApp INTEGER,
           date TEXT NOT NULL,
+          type TEXT
         );
         ''';
     await db.execute(sql);
@@ -71,18 +72,18 @@ class ReceiptsDB {
     * if query is success return number of raw added
     * if query is fail return 0
    */
-  insertData(String sql,data) async {
+  insertData(String sql, data) async {
     Database? myDatabase = await db;
-    int response = await myDatabase!.rawInsert(sql,data);
+    int response = await myDatabase!.rawInsert(sql, data);
     return response;
   }
 
   /*
     * if query is success return 1
   */
-  updateData(String sql,data) async {
+  updateData(String sql, data) async {
     Database? myDatabase = await db;
-    int response = await myDatabase!.rawUpdate(sql,data);
+    int response = await myDatabase!.rawUpdate(sql, data);
     return response;
   }
 
@@ -95,7 +96,7 @@ class ReceiptsDB {
     return response;
   }
 
-  deleteDatabaseInMyApp()async{
+  deleteDatabaseInMyApp() async {
     String path = await getDatabasesPath();
     String pathWithName = join(path, 'ReceiptsDB.db');
     deleteDatabase(pathWithName);

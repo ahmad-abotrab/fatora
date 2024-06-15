@@ -8,8 +8,11 @@ Future<void> main() async {
   WidgetsFlutterBinding.ensureInitialized();
   SharedPreferences sharedPreferences = await SharedPreferences.getInstance();
   String baseURL = sharedPreferences.getString("baseUrl") ?? "";
-  URLApi.baseUrl =
-      (baseURL != null && baseURL != "") ? baseURL : "http://185.194.126.157/";
+
+  URLApi.baseUrl = (baseURL != null && baseURL != "")
+      ? baseURL
+      : "http://185.194.126.157:8080/";
+
   int s;
   runApp(const Fatora());
 }
